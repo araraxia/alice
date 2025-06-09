@@ -30,6 +30,15 @@ class Alice:
         self.set_routes()
         self.app.logger.info("Alice initialized")
 
+    
+    def init_login_manager(self):
+        login_manager = LoginManager()
+        login_manager.init_app(self.app)
+        login_manager.login_view = "fort/login"
+        login_manager.session_protection = "strong"
+        login_manager.remember_cookie_duration = timedelta(days=7)
+        return login_manager
+    
     def get_secret(self):
         secret_file = "cred/secret_key.pkl"
         if os.path.exists(secret_file):

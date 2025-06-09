@@ -11,17 +11,27 @@ print(bash_dir)
 
 def restart_webhook():
     """
-    Restart the Meno Helper Webhook server.
+    Restart the server.
     """
     try:
-        print("Restarting webhook server...")
-        process = subprocess.Popen(
-            [bash_dir],
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
-        )
+        print("Restarting server...")
+        if os.name == 'nt':
+            # For Windows, use 'start' to run the script in a new process
+            process = subprocess.Popen(
+                [bash_dir],
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+            )
+        else:
+            # For Unix-like systems, use 'bash' to run the script
+            process = subprocess.Popen(
+                ["bash", bash_dir],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True
+            )
 
         stdout, stderr = process.communicate()
         if process.returncode != 0:
@@ -71,7 +81,7 @@ def args_parser():
     """
     Parse command line arguments.
     """
-    parser = argparse.ArgumentParser(description="Meno Helper Webhook Restarter")
+    parser = argparse.ArgumentParser(description="Alice API Restarter")
     parser.add_argument(
         "--restart",
         type=bool,
@@ -105,7 +115,7 @@ if __name__ == "__main__":
         for proc in process:
             kill_pid(proc.info['pid'])
             
-    print("Starting Meno Helper Webhook Restarter...")
+    print("Starting Alice API Restarter...")
     if get_python_processes(watched_command):
         restart_webhook()
     print("Webhook Restarter finished.")
