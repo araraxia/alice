@@ -17,7 +17,8 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 
 class Alice:
     def __init__(self):
-        self.app = Flask(__name__,
+        self.app = Flask(
+            __name__,
                         template_folder=template_dir,
                         static_folder=static_dir,)
 
