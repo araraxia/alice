@@ -1,6 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 from flask_login import LoginManager
-from flask_limiter.util import get_remote_address
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -24,12 +23,14 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 class Alice:
     def __init__(self):
         self.app = Flask(
-            __name__,
-                        template_folder=template_dir,
-                        static_folder=static_dir,)
+__name__,
+            template_folder=template_dir,
+            static_folder=static_dir,
+            )
 
         self.init_attributes()
         limiter.init_app(self.app)
+        self.init_login_manager()
 
         # Blueprint registration
         for route in route_list:
@@ -44,9 +45,8 @@ class Alice:
         self.app.secret_key = self.get_secret()
         self.app = setup_logger(self.app)
         self.app.config['VERSION'] = '0.1.0'
+        self.app.config['CURRENT_YEAR'] = 2025
         self.app.permanent_session_lifetime = timedelta(minutes=90)
-        
-        self.init_login_manager()
         
         self.static_dir = static_dir
         self.template_dir = template_dir
@@ -73,13 +73,34 @@ class Alice:
             return secret
 
     def set_routes(self):
+        @self.app.before_request
+        def before_request():
+            client_ip = (
+                request.headers.get("X-Forwarded-For") or
+                request.remote_addr
+            )
+            self.app.logger.debug(f"Request from {client_ip}")
+        
         @self.app.route("/", methods=["GET"])
         def index():
-                return "Welcome to Alice!"
-        
+            return redirect(url_for("fort.homepage"))
+
         @self.app.route("/health", methods=["GET"])
         def health_check():
             return jsonify({"status": "ok"}), 200
+        
+        @self.app.errorhandler(404)
+        def not_found_error(e):
+            return render_template("404.html"), 404
+        
+        @self.app.errorhandler(500)
+        def internal_error(e):
+            self.app.logger.error(f"Internal server error: {e}")
+            return render_template("500.html"), 500
+        
+        @self.app.route("/favicon.ico")
+        def favicon():
+            return send_file(self.favicon_path, mimetype="image/webp")
         
 if __name__ == "__main__":
     alice = Alice()

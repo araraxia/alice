@@ -1,13 +1,13 @@
 
 from flask import (Flask,
-                   request,
-                   jsonify,
-                   current_app,
-                   Blueprint,
-                   redirect,
-                   url_for,
-                   session,
-                   )
+    request,
+    jsonify,
+    current_app,
+    Blueprint,
+    redirect,
+    url_for,
+    session,
+)
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -19,13 +19,23 @@ fort_route = Blueprint('fort', __name__, url_prefix='/fort')
 app = current_app
 log = app.logger
 
+def redirect_home(app, user, next_page=None):
+    """
+    Redirect end users to different endpoints depending on their user settings.
+    """
+    if next_page:
+        app.logger.debug(f"Redirecting to {next_page} after login")
+        return redirect(next_page)
+    
+    return redirect(url_for('fort.homepage'))
+
 @fort_route.route('/lounge', methods=['GET'])
 @login_required
-def lounge():
+def homepage():
     return jsonify({"message": "Welcome to the lounge!"})
 
 @fort_route.route('/entrance', methods=['POST'])
-def entrance():
+def login():
     log.debug(f"Entrance route accessed {current_user}")
     
     if current_user.is_authenticated:
