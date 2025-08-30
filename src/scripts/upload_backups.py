@@ -25,6 +25,6 @@ for file in files:
         print(f"Successfully uploaded {file_path} to {destination_blob}")
         os.remove(file_path)
     except Exception as e:
-        print(f"Failed to upload {file_path} to {destination_blob}: {e}", exc_info=True)
+        print(f"Failed to upload {file_path} to {destination_blob}: {e}")
 
 print(f"Backup upload process completed.")
