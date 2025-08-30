@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+import os, sys
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, project_root)
 
 from src.util.gcloud_helper import GCloudBucket
-import os
 
 BACKUP_PATH = "/user/alice/Backups_Local/"
 BUCKET_NAME = "alice-api-backups"
