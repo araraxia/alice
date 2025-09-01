@@ -325,3 +325,36 @@ def get_file(url: str):
     except requests.RequestException as e:
         _logger.error(f"Error downloading file from {url}: {e}")
         raise
+
+def validate_input(input_value, expected_type: str = "USERNAME"):
+    """
+    Validate the input value against the expected type.
+    Args:
+        input_value (str): The input value to validate.
+        expected_type (str): The expected type of the input value. Can be "USERNAME" or "PASSWORD".
+    Returns:
+        str: The validated input value.
+    Raises:
+        ValueError: If the input value does not match the expected type.
+    """
+    if expected_type == "USERNAME":
+        input_value = input_value.strip()
+        if not isinstance(input_value, str):
+            raise ValueError("Username must be a string.")
+        if len(input_value) < 3 or len(input_value) > 50:
+            raise ValueError("Username must be between 3 and 50 characters long.")
+        if not re.match(r"^[a-zA-Z0-9_]+$", input_value):
+            raise ValueError(
+                "Username can only contain letters, numbers, and underscores."
+            )
+    elif expected_type == "PASSWORD":
+        if not isinstance(input_value, str):
+            raise ValueError("Password must be a string.")
+        if len(input_value) < 8 or len(input_value) > 50:
+            raise ValueError("Password must be between 8 and 50 characters long.")
+        if not re.match(r"^[a-zA-Z0-9!@#$%^&*()_\-+=]+$", input_value):
+            raise ValueError(
+                "Password can only contain letters, numbers, and special characters."
+            )
+
+    return input_value
