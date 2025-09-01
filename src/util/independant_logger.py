@@ -6,8 +6,8 @@ from logging.handlers import TimedRotatingFileHandler
 class Logger:
     def __init__(self,
         log_name: str,
-        log_dir: str,
         log_file: str,
+        log_dir: str = "logs",
         format: str = "%(asctime)s - %(levelname)s - %(name)s - %(module)s - %(message)s",
         interval: int = 1,
         backup_count: int = 7,
