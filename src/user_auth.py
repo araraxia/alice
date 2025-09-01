@@ -4,11 +4,11 @@ import psycopg2, hashlib, os, sys
 from flask_login import UserMixin
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from util.helpers import (
+from src.util.helpers import (
     generate_token,
     generate_password,
 )
-from util.sql_helper import (
+from src.util.sql_helper import (
     init_psql_con_cursor,
     get_record,
     update_existing_record,
@@ -25,57 +25,23 @@ class UserAuth(UserMixin):
         user_id: str = None,
         api_token: str = None,
         role: str = "",
-        company_uuid: str = None,
-        company_code: str = None,
     ):
         # Class util attr
         self.log = log
         self.db_name = "accounts"
         self.schema = "auth"
         self.table = "users"
-        self.secret_key = None
 
         # User attributes
         self.username = username
         self.password = password
-        if self.password:
-            self.password_hash = hashlib.sha256(password.encode()).hexdigest()
-        else:
-            self.password_hash = None
+        self.secret_key = api_token
         self.user_id = user_id
         self.email = email
-        self.token_hash = None
-        self.given_token = (
-            hashlib.sha256(api_token.encode()).hexdigest() if api_token else None
-        )
-        self.created_at = None
-        self.company_uuid = company_uuid
-        self.company_code = company_code
         self.role = role
+        
         self.init_user()
         self.user_settings = {}
-
-        if self.role == "customer-role" and not self.company_uuid:
-            self.user_settings = self.get_user_settings(database="meno_accounts")
-            customer_record = get_record(
-                database="meno_db",
-                schema="Meno",
-                table="Customers",
-                column="Customer ID",
-                value=self.company_code,
-            )
-            self.company_uuid = customer_record.get("primary_key_id", None)
-            log.info(f"Adding company_uuid to user auth for {self.username}")
-            update_existing_record(
-                database="meno_accounts",
-                schema="auth",
-                table="users",
-                update_columns=["company_uuid"],
-                update_values=[self.company_uuid],
-                where_column="username",
-                where_value=self.username,
-            )
-
         log.debug(
             f"UserAuth initialized with username: {self.username}, user_id: {self.user_id}, email: {self.email}"
         )
@@ -107,48 +73,25 @@ class UserAuth(UserMixin):
         else:
             self.log.warning("No user_id or username provided to initialize UserAuth.")
             return None
+
         if not psql_user:
             self.log.warning(f"User does not exist in the database.")
             return None
 
-        self.username = (
-            psql_user.get("username", self.username)
-            if not self.username
-            else self.username
-        )
+        if not self.username:
+            self.username = psql_user.get("username")
+        elif not self.user_id:
+            self.user_id = psql_user.get("user_id")
 
-        self.user_id = (
-            psql_user.get("user_id", self.user_id) if not self.user_id else self.user_id
-        )
-
-        self.email = (
-            psql_user.get("email", self.email) if not self.email else self.email
-        )
-
-        self.password_hash = (
-            psql_user.get("password_hash", self.password_hash)
-            if not self.password_hash
-            else self.password_hash
-        )
-
-        self.token_hash = (
-            psql_user.get("token_hash", self.given_token)
-            if not self.given_token
-            else self.token_hash
-        )
-
-        self.created_at = (
-            psql_user.get("created", None)
-            if self.created_at is None
-            else self.created_at
-        )
-
-        self.role = psql_user.get("role", self.role) if not self.role else self.role
-        self.company_uuid = psql_user.get("company_uuid", None)
+        self.email = psql_user.get("email", self.email)
+        self.password_hash = psql_user.get("password_hash", self.password_hash)
+        self.token_hash = psql_user.get("token_hash", self.token_hash)
+        self.created_at = psql_user.get("created_at", None)
+        self.role = psql_user.get("role", self.role)
 
         return self
 
-    def get_user_settings(self, database: str = "meno_accounts") -> dict:
+    def get_user_settings(self, database: str = "accounts") -> dict:
         """
         Retrieves the user settings from the database.
         This method checks if the user settings are already loaded, and if not, it fetches them from the database.
@@ -165,25 +108,7 @@ class UserAuth(UserMixin):
             value=self.user_id,
             database=database,
         )
-        if self.user_settings:
-            self.company_code = self.user_settings.get("company_code", "")
 
-        return self.user_settings
-
-    def reload_user_settings(self, database: str = "meno_accounts") -> dict:
-        """
-        Reloads the user settings from the database.
-        This is useful if the user settings have been changed and you want to refresh them.
-        """
-        self.user_settings = get_record(
-            schema="accounts",
-            table="settings",
-            column="user_id",
-            value=self.user_id,
-            database=database,
-        )
-        self.company_code = self.user_settings.get("company_code", "")
-        self.log.info(f"User {self.username} settings reloaded.")
         return self.user_settings
 
     #############################################
@@ -241,7 +166,7 @@ class UserAuth(UserMixin):
         cursor,
         connection,
         self,
-        database: str = "meno_accounts",
+        database: str = "accounts",
     ) -> object:
         """
         Adds a new customer to the database. If the customer already exists, it updates the existing record.
@@ -300,7 +225,7 @@ class UserAuth(UserMixin):
         cursor,
         connection,
         self,
-        database: str = "meno_accounts",
+        database: str = "accounts",
         role: str = "customer-role",
     ) -> object:
         """
@@ -379,7 +304,7 @@ class UserAuth(UserMixin):
         cursor,
         connection,
         self: object,
-        database: str = "meno_accounts",
+        database: str = "accounts",
     ):
         """
         Checks if the provided password matches the stored password hash for the user.
@@ -438,7 +363,7 @@ class UserAuth(UserMixin):
         cursor,
         connection,
         self: object,
-        database: str = "meno_accounts",
+        database: str = "accounts",
         new_password: str = None,
     ):
         """
@@ -494,7 +419,7 @@ class UserAuth(UserMixin):
         cursor,
         connection,
         self: object,
-        database: str = "meno_accounts",
+        database: str = "accounts",
     ):
         """
         Resets the token for a user in the database.
@@ -539,7 +464,7 @@ class UserAuth(UserMixin):
         cursor,
         connection,
         self,
-        database: str = "meno_accounts",
+        database: str = "accounts",
         new_email: str = None,
     ):
         """
@@ -620,7 +545,7 @@ if __name__ == "__main__":
     logger = logging.getLogger("UserAuth")
     username = "web-bot"
     user_id = "web-bot"
-    email = "no-reply@menoenterprises.com"
+    email = "corona.aria.a@gmail.com"
 
     user = UserAuth(
         username=username,
@@ -630,17 +555,17 @@ if __name__ == "__main__":
     )
 
     """
-    new_password = user.reset_user_password(database="meno_accounts",
+    new_password = user.reset_user_password(database="accounts",
         new_password=password)
     print(f"New password: {new_password}")
     """
 
-    new_token = user.reset_user_token(database="meno_accounts")
+    new_token = user.reset_user_token(database="accounts")
     print(f"New token: {new_token}")
 
     sys.exit(0)
 
-    user.add_user_to_sql(database="meno_accounts")
+    user.add_user_to_sql(database="accounts")
     secret = user.secret_key
     username = user.username
     package = {
