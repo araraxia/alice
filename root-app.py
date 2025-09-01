@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_file, current_app
 from flask_login import LoginManager
+from flask_wtf import CSRFProtect
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -30,6 +31,7 @@ __name__,
 
         self.init_attributes()
         limiter.init_app(self.app)
+        CSRFProtect(self.app)
         self.init_login_manager()
 
         # Blueprint registration
@@ -46,11 +48,12 @@ __name__,
         self.app = setup_logger(self.app)
         self.app.config['VERSION'] = '0.1.0'
         self.app.config['CURRENT_YEAR'] = 2025
+        self.app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64 MB
         self.app.permanent_session_lifetime = timedelta(minutes=90)
         
         self.static_dir = static_dir
         self.template_dir = template_dir
-        self.favicon_path = os.path.join(static_dir, "favicon.ico")
+        self.favicon_path = os.path.join(static_dir, "favicon.png")
         
     
     def init_login_manager(self):
@@ -66,10 +69,17 @@ __name__,
             return UserAuth(log=self.app.logger, user_id=user_id)
     
     def get_secret(self):
-        secret_file = "cred/secret_key.pkl"
+        secret_file = "/conf/cred/secret_key.pkl"
         if os.path.exists(secret_file):
             with open(secret_file, "rb") as f:
                 secret = pickle.load(f)
+            return secret
+        else:
+            import secrets
+            secret = secrets.token_hex(32)
+            os.makedirs(os.path.dirname(secret_file), exist_ok=True)
+            with open(secret_file, "wb") as f:
+                pickle.dump(secret, f)
             return secret
 
     def set_routes(self):
@@ -79,11 +89,13 @@ __name__,
                 request.headers.get("X-Forwarded-For") or
                 request.remote_addr
             )
-            self.app.logger.debug(f"Request from {client_ip}")
+            self.app.logger.debug(f"Request from {client_ip} to {request.path}")
         
         @self.app.route("/", methods=["GET"])
         def index():
-            return redirect(url_for("fort.homepage"))
+            from src.website.index import IndexPage
+            index_page = IndexPage(current_app)
+            return index_page.display()
 
         @self.app.route("/health", methods=["GET"])
         def health_check():
