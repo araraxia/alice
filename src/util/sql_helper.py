@@ -8,7 +8,7 @@ from functools import wraps
 from colorama import Fore
 
 # Access psql defaults
-with open("./cred/psql.json", "r") as f:
+with open("./conf/cred/psql.json", "r") as f:
     psql_cred = json.load(f)
 sql_ip = psql_cred.get("ip", "")
 sql_port = psql_cred.get("port", "")
@@ -66,7 +66,7 @@ def init_psql_con_cursor(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Extract DB connection details from kwargs
-        db = kwargs.get("database", "meno_accounts")
+        db = kwargs.get("database", "accounts")
         host = kwargs.pop("host", sql_ip)
         port = kwargs.pop("port", sql_port)
         user = kwargs.pop("user", sql_user)
