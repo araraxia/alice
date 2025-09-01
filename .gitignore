@@ -4,3 +4,5 @@ static/css/package.json
 static/css/98.css
 conf/cred/*
 conf/secret/*
+logs/*
+*_pycache_*
