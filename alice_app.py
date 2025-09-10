@@ -20,7 +20,7 @@ ROUTE_LIST = [
 from datetime import timedelta
 import os, pickle
 
-BASE_DIR = Path(__file__).resolve()
+BASE_DIR = Path(__file__).resolve().parent
 SRC_DIR = BASE_DIR / "src"
 TEMPLATE_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
@@ -118,6 +118,8 @@ __name__,
         def favicon():
             return send_file(self.favicon_path, mimetype="image/webp")
         
+alice = Alice()
+app = alice.app
+    
 if __name__ == "__main__":
-    alice = Alice()
-    serve(alice.app, host="0.0.0.0", port=6969, threads=4, expose_tracebacks=True)
+    serve(app, host="0.0.0.0", port=6969, threads=4, expose_tracebacks=True)
