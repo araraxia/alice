@@ -6,7 +6,7 @@ sys.path.insert(0, project_root)
 
 from src.util.gcloud_helper import GCloudBucket
 
-BACKUP_PATH = "/user/alice/Backups_Local/"
+BACKUP_PATH = "/home/aria/Backups_Local/"
 BUCKET_NAME = "alice-api-backups"
 
 files = [
@@ -25,6 +25,6 @@ for file in files:
         print(f"Successfully uploaded {file_path} to {destination_blob}")
         os.remove(file_path)
     except Exception as e:
-        print(f"Failed to upload {file_path} to {destination_blob}: {e}", exc_info=True)
+        print(f"Failed to upload {file_path} to {destination_blob}: {e}")
 
 print(f"Backup upload process completed.")
