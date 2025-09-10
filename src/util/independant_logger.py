@@ -16,8 +16,18 @@ class Logger:
         console_level: int = logging.DEBUG,
     ):
         """
-        INFO: 20
-        DEBUG: 10
+        Generates a logger instance with both file and console handlers, meant to be used by individual modules and independent scripts.
+        After initializing, call get_logger() to retrieve the logger instance.
+        Args:
+            log_name (str): Name of the logger instance.
+            log_file (str): Name of the log file.
+            log_dir (str): Directory where log files will be stored. Default is "logs".
+            format (str): Format of the log messages. Default includes timestamp, level, name, module, and message.
+            interval (int): Interval in days for rotating the log file. Default is 1 day.
+            backup_count (int): Number of backup log files to keep. Default is 7.
+            log_level (int): Overall logging level for the logger. Default is logging.INFO.
+            file_level (int): Logging level for the file handler. Default is logging.DEBUG.
+            console_level (int): Logging level for the console handler. Default is logging.DEBUG. logging.DEBUG = 10, logging.INFO = 20, logging.WARNING = 30, logging.ERROR = 40, logging.CRITICAL = 50
         """
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
@@ -46,4 +56,7 @@ class Logger:
         self.logger.debug("Logger initialized")
 
     def get_logger(self):
+        """
+        Returns the logger instance.
+        """
         return self.logger
