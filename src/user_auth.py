@@ -2,8 +2,6 @@
 
 import psycopg2, hashlib, os, sys
 from flask_login import UserMixin
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.util.helpers import (
     generate_token,
     generate_password,
@@ -12,7 +10,6 @@ from src.util.sql_helper import (
     init_psql_con_cursor,
     get_record,
     update_existing_record,
-    
 )
 
 class UserAuth(UserMixin):

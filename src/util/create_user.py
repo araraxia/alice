@@ -1,8 +1,8 @@
 
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from extras.sql_helper import update_record
-from extras.helpers import (
+from util.sql_helper import update_record
+from util.helpers import (
     generate_token,
     generate_password,
     hash_string,

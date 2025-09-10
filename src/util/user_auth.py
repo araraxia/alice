@@ -4,11 +4,11 @@ import psycopg2, hashlib, os, sys
 from flask_login import UserMixin
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from extras.helpers import (
+from util.helpers import (
     generate_token,
     generate_password,
 )
-from extras.sql_helper import init_psql_con_cursor, get_record
+from util.sql_helper import init_psql_con_cursor, get_record
 
 password = "ytb*kpk6enf2AZA2eca"
 

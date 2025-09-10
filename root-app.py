@@ -1,8 +1,10 @@
+import sys
 from flask import Flask, render_template, request, jsonify, send_file, current_app
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
+from pathlib import Path
 
 from src.user_auth import UserAuth
 from src.logger import setup_logger
@@ -10,7 +12,7 @@ from src.limiter import limiter
 
 from src.website.site_router import fort_route
 from src.website.wiki_router import wiki_route
-route_list = [
+ROUTE_LIST = [
     fort_route,
     wiki_route,
 ]
@@ -18,15 +20,18 @@ route_list = [
 from datetime import timedelta
 import os, pickle
 
-template_dir = os.path.join(os.path.dirname(__file__), "templates")
-static_dir = os.path.join(os.path.dirname(__file__), "static")
+BASE_DIR = Path(__file__).resolve()
+SRC_DIR = BASE_DIR / "src"
+TEMPLATE_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
+DEFAULT_SECRET_FILE = BASE_DIR / "conf" / "cred" / "secret_key.pkl"
 
 class Alice:
     def __init__(self):
         self.app = Flask(
 __name__,
-            template_folder=template_dir,
-            static_folder=static_dir,
+            template_folder=TEMPLATE_DIR,
+            static_folder=STATIC_DIR,
             )
 
         self.init_attributes()
@@ -35,7 +40,7 @@ __name__,
         self.init_login_manager()
 
         # Blueprint registration
-        for route in route_list:
+        for route in ROUTE_LIST:
             self.app.register_blueprint(route)
 
         self.set_routes()
@@ -51,9 +56,9 @@ __name__,
         self.app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64 MB
         self.app.permanent_session_lifetime = timedelta(minutes=90)
         
-        self.static_dir = static_dir
-        self.template_dir = template_dir
-        self.favicon_path = os.path.join(static_dir, "favicon.png")
+        self.static_dir = STATIC_DIR
+        self.template_dir = TEMPLATE_DIR
+        self.favicon_path = os.path.join(STATIC_DIR, "favicon.png")
         
     
     def init_login_manager(self):
@@ -69,16 +74,15 @@ __name__,
             return UserAuth(log=self.app.logger, user_id=user_id)
     
     def get_secret(self):
-        secret_file = "/conf/cred/secret_key.pkl"
-        if os.path.exists(secret_file):
-            with open(secret_file, "rb") as f:
+        if os.path.exists(DEFAULT_SECRET_FILE):
+            with open(DEFAULT_SECRET_FILE, "rb") as f:
                 secret = pickle.load(f)
             return secret
         else:
             import secrets
             secret = secrets.token_hex(32)
-            os.makedirs(os.path.dirname(secret_file), exist_ok=True)
-            with open(secret_file, "wb") as f:
+            os.makedirs(os.path.dirname(DEFAULT_SECRET_FILE), exist_ok=True)
+            with open(DEFAULT_SECRET_FILE, "wb") as f:
                 pickle.dump(secret, f)
             return secret
 
