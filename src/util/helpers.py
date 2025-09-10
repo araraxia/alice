@@ -3,7 +3,7 @@
 import sys, os, json, re, requests, logging
 from colorama import Fore
 
-DISC_GLOBAL_WARN_URL = "https://discord.com/api/webhooks/1367170628607541288/u9SAPyJVcD33CS85t54Hwbqd3xClW-d5c64rOa4uh-KdxtJbdwCdzGYtdrIoxxx43n0d"
+DISC_GLOBAL_WARN_URL = ""
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)

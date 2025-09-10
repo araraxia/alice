@@ -713,4 +713,3 @@ query: {alter_query}
         """
         connection.rollback()
         raise
-
