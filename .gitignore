@@ -5,4 +5,7 @@ static/css/98.css
 conf/cred/*
 conf/secret/*
 logs/*
+tmp/*
 *_pycache_*
+.env
+.venv/*
