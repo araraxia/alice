@@ -1,10 +1,165 @@
 from PIL import Image
 from io import BytesIO
 from urllib.request import urlopen
-import sys, os
+from pathlib import Path
+import sys, os, requests
+
+ROOT_PATH = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT_PATH))
+from src.util.independant_logger import Logger
+
+log = Logger(
+    log_name="image_formatter",
+    log_file="image_formatter.log",
+    log_dir="logs",
+    log_level=20,
+    file_level=20,
+    console_level=10,
+).get_logger()
 
 
 class ImageManip:
+    def __init__(
+        self,
+        image_path: str = None,
+        image_url: str = None,
+        image_io: BytesIO = None,
+        file_name: str = None,
+        file_format: str = None,
+        file_mimetype: str = None,
+    ):
+        if not image_path and not image_url and not image_io:
+            raise ValueError(
+                "Either image_path, image_url or image_io must be provided."
+            )
+
+        self.save_dir = "static/images"
+        self.tmp_dir = "tmp"
+        self.image_path = image_path
+        self.image_url = image_url
+        self.image_io = image_io
+        self.image_pil = None
+        self.img_width = None
+        self.img_height = None
+        self.file_size = None
+        self.file_name = file_name
+        self.file_format = file_format
+        self.file_mimetype = file_mimetype
+        log.debug(f"ImageManip initialized.")
+
+    def load_image(self):
+        """
+        Loads an image from the provided path, URL, or BytesIO object.
+        Returns:
+            PIL.Image: object
+        """
+        if self.image_path:
+            log.info(f"Loading image from path: {self.image_path}")
+            try:
+                self.image_pil = Image.open(self.image_path)
+                self.image_pil.load()
+                log.debug(f"Image loaded from path: {self.image_path}")
+                return self.image_pil
+            except Exception as e:
+                log.error(
+                    f"Error loading image from path {self.image_path}: {e}",
+                    exc_info=True,
+                )
+
+        elif self.image_url:
+            log.info(f"Loading image from URL: {self.image_url}")
+            try:
+                self._check_file_size(image_url=self.image_url)
+                self._download_image(image_url=self.image_url)
+                self._load_image_from_io(image_io=self.image_io)
+                log.debug(f"Image loaded from URL: {self.image_url}")
+                return self.image_pil
+            except Exception as e:
+                log.error(
+                    f"Error loading image from URL {self.image_url}: {e}", exc_info=True
+                )
+
+        elif self.image_io:
+            log.info(f"Loading image from BytesIO object.")
+            try:
+                self.image_pil = Image.open(self.image_io)
+                self.image_pil.load()
+                log.debug(f"Image loaded from BytesIO object.")
+                return self.image_pil
+            except Exception as e:
+                log.error(f"Error loading image from BytesIO: {e}", exc_info=True)
+
+        log.error(f"Failed to load image from all sources.")
+        raise ValueError("No valid image source provided or failed to load image.")
+
+    def close_image(self):
+        if self.image_pil:
+            self.image_pil.close()
+            log.debug("Image closed.")
+        else:
+            log.debug("No image to close.")
+
+    def _check_file_size(self, max_size_mb=20, image_url: str = None):
+        if not image_url or max_size_mb <= 0:
+            raise ValueError(
+                "image_url must be provided and max_size_mb must be greater than 0."
+            )
+        max_size = max_size_mb * 1024 * 1024  # Convert MB to bytes
+        file_size = None
+
+        try:
+            response = requests.head(image_url, allow_redirects=True)
+            content_length = response.headers.get("content-length")
+            file_size = int(content_length)
+            self.file_size = file_size
+            if content_length and file_size > max_size:
+                raise ValueError(
+                    f"Image size {content_length} bytes exceeds the maximum allowed size of {str(max_size)} bytes."
+                )
+        except Exception as e:
+            log.error(f"Error checking image size for {image_url}: {e}", exc_info=True)
+            raise
+
+        return file_size
+
+    def _download_image(self, image_url: str = None):
+        if not image_url:
+            raise ValueError("image_url must be provided.")
+        try:
+            response = urlopen(image_url)
+            image_data = response.read()
+            self._convert_data_to_io(data=image_data)
+            log.debug(f"Image downloaded from URL: {image_url}")
+            return self.image_io
+        except Exception as e:
+            log.error(f"Error downloading image from URL {image_url}: {e}", exc_info=True)
+            raise
+    
+    def _convert_data_to_io(self, data: bytes = None):
+        if not data:
+            raise ValueError("data must be provided.")
+        try:
+            self.image_io = BytesIO(data)
+            log.debug("BytesIO object created from data.")
+            return self.image_io
+        except Exception as e:
+            log.error(f"Error creating BytesIO from data: {e}", exc_info=True)
+            raise
+    
+    def _load_image_from_io(self, image_io: BytesIO = None):
+        if not image_io:
+            raise ValueError("image_io must be provided.")
+        try:
+            self.image_pil = Image.open(image_io)
+            self.image_pil.load()
+            log.debug("Image opened from BytesIO object.")
+            return self.image_pil
+        except Exception as e:
+            log.error(f"Error opening image from BytesIO: {e}", exc_info=True)
+            raise
+    
+
+class TerminalImageManip:
     def __init__(self, image_path: str = None, image_url: str = None):
         self.save_dir = "static/images"
         self.image_name = None
@@ -165,7 +320,7 @@ Input: """
         }
         return map.get(value, lambda: print("Invalid command. Please try again."))()
 
-    def run(self):
+    def run_terminal(self):
         while True:
             message = """
 ========== Image Manipulation Menu ==========
@@ -183,5 +338,5 @@ Input: """
 
 if __name__ == "__main__":
     # Example usage
-    img = ImageManip()
-    img.run()
+    img = TerminalImageManip()
+    img.run_terminal()
