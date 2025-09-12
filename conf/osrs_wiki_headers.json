@@ -1,0 +1,3 @@
+{
+    "User-Agent": "Python Flask/Waitress Server (alice) - Aria Corona, <alice@araxia.xyz> - <https://araxia.xyz> - <Github: https://github.com/araraxia/alice> - Use case: Pulling item price data via python_requests to store on local pSQL for price tracking, calculations, notifications and analysis."
+}
