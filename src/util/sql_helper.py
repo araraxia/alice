@@ -263,98 +263,6 @@ def search_records(
 
 
 @init_psql_con_cursor
-def add_update_record(
-    cursor,
-    connection,
-    database: str,
-    schema: str,
-    table: str,
-    columns: list,
-    values: list,
-    conflict_target: list = ["primary_key_id"],
-    on_conflict: str = "DO UPDATE SET",
-) -> bool:
-    """
-    Adds or updates a single record in a specified database table.
-    Args:
-        - database (str): The name of the database.
-        - schema (str): The schema where the target table resides.
-        - table (str): The name of the target table.
-        - columns (list): A list of column names to be inserted or updated.
-        - values (list): A list of values corresponding to the columns.
-        - conflict_target (list): A list of columns to check for conflicts.
-        - on_conflict (str): The conflict resolution strategy.
-            - "DO UPDATE SET": Update existing record on conflict.
-            - "DO NOTHING": Do nothing on conflict.
-    """
-    # Validate inputs
-    if len(columns) != len(values):
-        raise ValueError("Columns and values must have the same length.")
-
-    schema_str = sql.Identifier(schema)
-    table_str = sql.Identifier(table)
-    columns_str = sql.SQL(", ").join(map(sql.Identifier, columns))
-    placeholders_str = sql.SQL(", ").join(sql.Placeholder() for _ in columns)
-    conflict_target_str = sql.SQL(", ").join(map(sql.Identifier, conflict_target))
-
-    if on_conflict == "DO UPDATE SET":
-        updates = sql.SQL(", ").join(
-            sql.SQL("{} = EXCLUDED.{}").format(sql.Identifier(col), sql.Identifier(col))
-            for col in columns
-        )
-
-        query = sql.SQL(
-            """
-            INSERT INTO {schema}.{table} ({columns})
-            VALUES ({placeholders})
-            ON CONFLICT ({conflict}) {on_conflict}
-            {updates}
-        """
-        ).format(
-            schema=schema_str,
-            table=table_str,
-            columns=columns_str,
-            placeholders=placeholders_str,
-            conflict=conflict_target_str,
-            on_conflict=sql.SQL(on_conflict),
-            updates=updates,
-        )
-    elif on_conflict == "DO NOTHING":
-        query = sql.SQL(
-            """
-            INSERT INTO {schema}.{table} ({columns})
-            VALUES ({placeholders})
-            ON CONFLICT ({conflict}) DO NOTHING
-        """
-        ).format(
-            schema=schema_str,
-            table=table_str,
-            columns=columns_str,
-            placeholders=placeholders_str,
-            conflict=conflict_target_str,
-        )
-    elif not on_conflict:
-        query = sql.SQL(
-            """
-            INSERT INTO {schema}.{table} ({columns})
-            VALUES ({placeholders})
-        """
-        ).format(
-            schema=schema_str,
-            table=table_str,
-            columns=columns_str,
-            placeholders=placeholders_str,
-        )
-
-    try:
-        cursor.execute(query, values)
-        connection.commit()
-    except Exception:
-        connection.rollback()
-        raise
-
-
-@init_psql_con_cursor
 def update_existing_record(
     cursor,
     connection,
@@ -632,6 +540,87 @@ def get_tables(
     return [row["table_name"] for row in cursor.fetchall()]
 
 
+@init_psql_con_cursor
+def ensure_table_exists(
+    cursor,
+    connection,
+    database: str,
+    log: object,
+    schema_name: str,
+    table_name: str,
+    columns: list[dict],
+):
+    """
+    Ensure that the specified table exists in the database. If the table does not exist, it will be created.
+    If the table exists, it will ensure that all specified columns exist, adding any that are missing.
+    Args:
+        database (str) : Name of the database
+        log (object) : Logger object for logging messages
+        schema (str) : Name of the schema
+        table (str) : Name of the table
+        columns (list[dict]) : List of column definitions
+            Each column definition should be a dictionary with the following keys:
+            - name (str) : Column name
+            - type (str) : Column data type (default: "TEXT")
+            - default (str) : Default value for the column (default: "NULL")
+            - not_null (bool) : Whether the column should be NOT NULL (default: False)
+    Returns:
+        Bool : True if the table exists or was created successfully, False otherwise.
+    """
+    log.debug(f"Ensuring table {table_name} exists in schema {schema_name}")
+
+    schema_name_obj = sql.Identifier(schema_name)
+    table_name_obj = sql.Identifier(table_name)
+
+    # Create table if not exists
+    column_defs = []
+    for col in columns:
+        col_name = col.get("name")
+        col_name_obj = sql.Identifier(col_name)
+        col_type = col.get("type", "TEXT")
+        col_type_obj = sql.SQL(col_type)
+        column_defs.append(
+            sql.SQL("{} {}").format(col_name_obj, col_type_obj)
+        )
+
+    query = sql.SQL("""
+        CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} ({column_defs})
+        """).format(
+        schema_name=schema_name_obj,
+        table_name=table_name_obj,
+        column_defs=sql.SQL(", ").join(column_defs)
+    )
+
+    try:
+        cursor.execute(query)
+        connection.commit()
+    except Exception as e:
+        log.error(f"Error creating table {table_name} in schema {schema_name}: {e}")
+        connection.rollback()
+        return False
+
+    # Ensure all columns exist
+    for col in columns:
+        col_name = col.get("name")
+        col_type = col.get("type", "TEXT")
+        default_value = col.get("default", "NULL")
+        not_null = col.get("not_null", False)
+        add_column_to_table(
+            cursor=cursor,
+            connection=connection,
+            database=database,
+            log=log,
+            schema_name=schema_name,
+            table_name=table_name,
+            column_name=col_name,
+            column_type=col_type,
+            default_value=default_value,
+            not_null=not_null,
+        )
+
+    log.debug(f"Table {table_name} ensured in schema {schema_name}")
+    return True
+
 def find_table_name(key: str, tables: list) -> str | None:
     """
     Attempts to find a table that closely matches a given key out of a list of tables.
@@ -682,34 +671,79 @@ def add_column_to_table(
     cursor,
     connection,
     database: str,
-    schema: str,
-    table: str,
-    column: str,
+    log,
+    schema_name: str,
+    table_name: str,
+    column_name: str,
     column_type: str,
     default_value: str = None,
     not_null: bool = False,
 ):
-    alter_query = f"""
-    ALTER TABLE "{schema}"."{table}"
-    ADD COLUMN "{column}" {column_type}
     """
-    if default_value:
-        alter_query += f" DEFAULT {default_value}"
-    if not_null:
-        alter_query += " NOT NULL"
+    Adds a new column to an existing table. If the column already exists, no action is taken.
+    Args:
+        database (str) : Name of the database
+        log (object) : Logger object for logging messages
+        schema_name (str) : Name of the schema
+        table_name (str) : Name of the table
+        column_name (str) : Name of the new column to add
+        column_type (str) : Data type of the new column (e.g., "TEXT", "INTEGER")
+        default_value (str) : Default value for the new column (default: "NULL")
+        not_null (bool) : Whether the new column should be NOT NULL (default: False)
+    Returns:
+        Bool : True if the column was added successfully or already exists, False otherwise.
+    """
+    schema_name_obj = sql.Identifier(schema_name)
+    table_name_obj = sql.Identifier(table_name)
+    
+    col_name_obj = sql.Identifier(column_name)
+    col_type_obj = sql.SQL(column_type)
+    col_default_obj = sql.SQL(default_value if default_value is not None else "NULL")
+    col_not_null = not_null
 
+    alter_query = sql.SQL(
+        """
+        ALTER TABLE {schema_name}.{table_name}
+        ADD COLUMN IF NOT EXISTS {col_name} {col_type} DEFAULT {col_default}
+        {not_null}
+    """
+    ).format(
+        schema_name=schema_name_obj,
+        table_name=table_name_obj,
+        col_name=col_name_obj,
+        col_type=col_type_obj,
+        col_default=col_default_obj,
+        not_null=sql.SQL("NOT NULL") if col_not_null else sql.SQL("")
+    )
     try:
         cursor.execute(alter_query)
         connection.commit()
+        return True
     except Exception as e:
-        error_message = f"""
-## Error adding column {column} to table {schema}.{table}:
-column_type: {column_type},
-default_value: {default_value},
-not_null: {not_null},
-query: {alter_query}
-
-```Error: {e}```
-        """
+        log.error(f"Error adding column {column_name} to table {schema_name}.{table_name}: {e}")
         connection.rollback()
-        raise
+        return False
+    
+def guess_column_type(value) -> str:
+    """
+    Attempts to guess the SQL column type based on a sample value.
+    Args:
+        value (any) : The sample value to analyze.
+    Returns:
+        column_type (str) : The guessed SQL column type.
+    """
+    if isinstance(value, int):
+        return "INTEGER"
+    elif isinstance(value, float):
+        return "FLOAT"
+    elif isinstance(value, bool):
+        return "BOOLEAN"
+    elif isinstance(value, dict):
+        return "JSONB"
+    elif isinstance(value, str):
+        return "TEXT"
+    elif isinstance(value, list):
+        if value:
+            return f"{guess_column_type(value[0])}[]"
+    else:
+        return "TEXT"
