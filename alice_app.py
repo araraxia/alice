@@ -12,9 +12,11 @@ from src.limiter import limiter
 
 from src.website.site_router import fort_route
 from src.website.wiki_router import wiki_route
+from src.discord.discord_router import discord_route
 ROUTE_LIST = [
     fort_route,
     wiki_route,
+    discord_route,
 ]
 
 from datetime import timedelta
