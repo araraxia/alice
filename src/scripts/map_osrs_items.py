@@ -1,11 +1,10 @@
-
 from pathlib import Path
 import sys
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent # alice/
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # alice/
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
-    
+
 from src.util.independant_logger import Logger
 from src.util.sql_helper import (
     init_psql_connection,
@@ -16,7 +15,9 @@ from src.util.sql_helper import (
 )
 from src.osrs.get_item_data import WikiDataGetter
 
-log = Logger(name="MapOSRSItems", log_file=ROOT_DIR / "logs" / "map_osrs_items.log")
+log = Logger(
+    log_name="MapOSRSItems", log_dir=ROOT_DIR / "logs", log_file="map_osrs_items.log"
+)
 DB_NAME = "osrs"
 SCHEMA_NAME = "items"
 TABLE_NAME = "map"
@@ -24,15 +25,17 @@ PK = "id"
 
 wiki_getter = WikiDataGetter()
 
+
 def get_map_data() -> list[dict]:
     return wiki_getter.get_data(endpoint="mapping")
+
 
 def create_map_columns(records: list[dict]) -> dict:
     log.info("Creating map columns from records.")
     if not records:
         log.error("No records provided to create_map_columns.")
         return {}
-    
+
     columns = []
     recorded_keys = set()
     for record in records:
@@ -43,6 +46,7 @@ def create_map_columns(records: list[dict]) -> dict:
                 recorded_keys.add(key)
     log.info(f"Found columns from records: {columns}")
     return columns
+
 
 def validate_table(conn, cursor, columns: dict):
     log.info("Validating table structure.")
@@ -75,18 +79,19 @@ def add_records(conn, cursor, records: list[dict]):
             log=log,
         )
     log.info("All records processed.")
-    
+
+
 def main():
     log.info("Starting OSRS item mapping process.")
     try:
         conn = init_psql_connection(db_name=DB_NAME, log=log)
         cursor = create_cursor(conn=conn, log=log)
-        
+
         records = get_map_data()
         if not records:
             log.error("No mapping data retrieved from WikiDataGetter.")
             return
-        
+
         columns = create_map_columns(records)
         if not columns:
             log.error("No columns created from records.")
@@ -107,6 +112,7 @@ def main():
         cursor.close()
         conn.close()
     log.info("OSRS item mapping process completed.")
+
 
 if __name__ == "__main__":
     main()
