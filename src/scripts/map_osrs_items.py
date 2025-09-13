@@ -87,7 +87,7 @@ def add_records(conn, cursor, records: list[dict]):
             table=TABLE_NAME,
             columns=columns,
             values=values,
-            conflict_target=PK,
+            conflict_target=[PK],
         )
     log.info("All records processed.")
 
