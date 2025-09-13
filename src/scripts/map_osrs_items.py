@@ -14,9 +14,99 @@ from src.util.sql_helper import (
     ensure_table_exists,
     guess_column_type,
 )
+from src.osrs.get_item_data import WikiDataGetter
 
 log = Logger(name="MapOSRSItems", log_file=ROOT_DIR / "logs" / "map_osrs_items.log")
 DB_NAME = "osrs"
 SCHEMA_NAME = "items"
 TABLE_NAME = "map"
-PK = "wiki_id"
+PK = "id"
+
+wiki_getter = WikiDataGetter()
+
+def get_map_data() -> list[dict]:
+    return wiki_getter.get_data(endpoint="mapping")
+
+def create_map_columns(records: list[dict]) -> dict:
+    log.info("Creating map columns from records.")
+    if not records:
+        log.error("No records provided to create_map_columns.")
+        return {}
+    
+    columns = []
+    recorded_keys = set()
+    for record in records:
+        for key, value in record.items():
+            if key not in recorded_keys and value:
+                col_type = guess_column_type(value)
+                columns.append((key, col_type))
+                recorded_keys.add(key)
+    log.info(f"Found columns from records: {columns}")
+    return columns
+
+def validate_table(conn, cursor, columns: dict):
+    log.info("Validating table structure.")
+    validated = ensure_table_exists(
+        conn=conn,
+        cursor=cursor,
+        database=DB_NAME,
+        log=log,
+        schema_name=SCHEMA_NAME,
+        table_name=TABLE_NAME,
+        columns=columns,
+    )
+    if validated:
+        log.info("Table structure validated.")
+    else:
+        log.error("Failed to validate table structure.")
+        raise Exception("Table validation failed.")
+
+
+def add_records(conn, cursor, records: list[dict]):
+    log.info("Adding or updating records in the database.")
+    for record in records:
+        add_update_record(
+            conn=conn,
+            cursor=cursor,
+            schema_name=SCHEMA_NAME,
+            table_name=TABLE_NAME,
+            record=record,
+            pk=PK,
+            log=log,
+        )
+    log.info("All records processed.")
+    
+def main():
+    log.info("Starting OSRS item mapping process.")
+    try:
+        conn = init_psql_connection(db_name=DB_NAME, log=log)
+        cursor = create_cursor(conn=conn, log=log)
+        
+        records = get_map_data()
+        if not records:
+            log.error("No mapping data retrieved from WikiDataGetter.")
+            return
+        
+        columns = create_map_columns(records)
+        if not columns:
+            log.error("No columns created from records.")
+            return
+
+        validate_table(
+            conn=conn,
+            cursor=cursor,
+            columns=columns,
+        )
+
+        add_records(
+            conn=conn,
+            cursor=cursor,
+            records=records,
+        )
+    finally:
+        cursor.close()
+        conn.close()
+    log.info("OSRS item mapping process completed.")
+
+if __name__ == "__main__":
+    main()
