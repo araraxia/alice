@@ -6,9 +6,11 @@ from psycopg2 import sql
 from psycopg2.extras import RealDictCursor, execute_values
 from functools import wraps
 from colorama import Fore
+from pathlib import Path
 
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent # alice/
 # Access psql defaults
-with open("./conf/cred/psql.json", "r") as f:
+with open(ROOT_DIR / "conf" / "cred" / "psql.json", "r") as f:
     psql_cred = json.load(f)
 sql_ip = psql_cred.get("ip", "")
 sql_port = psql_cred.get("port", "")
