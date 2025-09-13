@@ -23,7 +23,11 @@ if not HEADERS.get('User-Agent'):
 
 class WikiDataGetter:
     def __init__(self, headers: dict = HEADERS):
-        self.log = Logger(name="WikiDataGetter", log_file=ROOT_DIR / "logs" / "wiki_data_getter.log")
+        self.log = Logger(
+            log_name="WikiDataGetter",
+            log_dir=ROOT_DIR / "logs",
+            log_file="wiki_data_getter.log",
+        )
         self.headers = headers
         self.session = requests.Session()
         self.session.headers.update(self.headers)
