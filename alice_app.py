@@ -40,7 +40,7 @@ __name__,
             )
 
         self.init_attributes()
-        limiter.init_app(self.app)
+        self.init_limiter()
         CSRFProtect(self.app)
         self.init_login_manager()
 
