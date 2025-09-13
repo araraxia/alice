@@ -27,7 +27,7 @@ class WikiDataGetter:
             log_name="WikiDataGetter",
             log_dir=ROOT_DIR / "logs",
             log_file="wiki_data_getter.log",
-        )
+        ).get_logger()
         self.headers = headers
         self.session = requests.Session()
         self.session.headers.update(self.headers)

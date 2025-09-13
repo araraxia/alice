@@ -17,7 +17,7 @@ from src.osrs.get_item_data import WikiDataGetter
 
 log = Logger(
     log_name="MapOSRSItems", log_dir=ROOT_DIR / "logs", log_file="map_osrs_items.log"
-)
+).get_logger()
 DB_NAME = "osrs"
 SCHEMA_NAME = "items"
 TABLE_NAME = "map"
