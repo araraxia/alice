@@ -16,10 +16,10 @@ ENDPOINTS = {
     'mapping': 'https://prices.runescape.wiki/api/v1/osrs/mapping', 
 }
 
-with open(ROOT_DIR / 'conf' / 'osrs_item_ids.json', 'r', encoding='utf-8') as f:
+with open(ROOT_DIR / 'conf' / 'osrs_wiki_headers.json', 'r', encoding='utf-8') as f:
     HEADERS = json.load(f)
 if not HEADERS.get('User-Agent'):
-    raise ValueError("User-Agent not found in osrs_item_ids.json")
+    raise ValueError("User-Agent not found in osrs_wiki_headers.json")
 
 class WikiDataGetter:
     def __init__(self, headers: dict = HEADERS):
