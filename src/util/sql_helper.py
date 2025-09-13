@@ -393,9 +393,9 @@ def add_update_record(
             - "DO NOTHING": Do nothing on conflict.
     """
     # Validate inputs
-    if isinstance(on_conflict, str):
-        on_conflict = [on_conflict]
-    
+    if isinstance(conflict_target, str):
+        conflict_target = [conflict_target]
+
     if len(columns) != len(values):
         raise ValueError("Columns and values must have the same length.")
 
