@@ -85,7 +85,6 @@ def init_psql_con_cursor(func):
         )
 
         if needs_new_connection:
-            print(f"Connecting to database {db} at {host}:{port} as user {user}")
             con = init_psql_connection(db, host, port, user, password)
             cur = con.cursor(cursor_factory=RealDictCursor)
             try:
@@ -96,9 +95,6 @@ def init_psql_con_cursor(func):
                 cur.close()
                 con.close()
         else:
-            print(
-                f"Using existing connection to database {db} at {host}:{port} as user {user}"
-            )
             con = connection
             cur = cursor
             return func(cur, con, *args, **kwargs)
@@ -397,6 +393,9 @@ def add_update_record(
             - "DO NOTHING": Do nothing on conflict.
     """
     # Validate inputs
+    if isinstance(on_conflict, str):
+        on_conflict = [on_conflict]
+    
     if len(columns) != len(values):
         raise ValueError("Columns and values must have the same length.")
 
@@ -734,12 +733,12 @@ def guess_column_type(value) -> str:
     Returns:
         column_type (str) : The guessed SQL column type.
     """
-    if isinstance(value, int):
+    if isinstance(value, bool):
+        return "BOOLEAN"
+    elif isinstance(value, int):
         return "INTEGER"
     elif isinstance(value, float):
         return "FLOAT"
-    elif isinstance(value, bool):
-        return "BOOLEAN"
     elif isinstance(value, dict):
         return "JSONB"
     elif isinstance(value, str):
