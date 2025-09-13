@@ -81,14 +81,17 @@ __name__,
     def init_limiter(self):
         try:
             limiter.init_app(self.app)
+            self.log.info("Limiter initialized with Memcached storage")
         except Exception as e:
             self.app.logger.error(f"Error initializing limiter: {e}")
             self.app.logger.error("Attempting failover limiter setup")
-            limiter = Limiter(
+            failover_limiter = Limiter(
                 key_func=get_remote_address,
                 default_limits=["50000 per day", "1000 per hour"],
                 storage_uri="memory://",
             )
+            failover_limiter.init_app(self.app)
+            self.app.logger.info("Failover limiter initialized with in-memory storage")
     def get_secret(self):
         if os.path.exists(DEFAULT_SECRET_FILE):
             with open(DEFAULT_SECRET_FILE, "rb") as f:
