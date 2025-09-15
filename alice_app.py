@@ -53,7 +53,7 @@ __name__,
 
     
     def init_attributes(self):
-        self.app.wsgi_app = ProxyFix(self.app.wsgi_app, x_for=1, x_proto=1,)
+        self.app.wsgi_app = ProxyFix(self.app.wsgi_app, x_for=1, x_proto=1, x_host=1)
         self.app.secret_key = self.get_secret()
         self.app = setup_logger(self.app)
         self.app.config['VERSION'] = '0.1.0'
@@ -109,6 +109,7 @@ __name__,
         @self.app.before_request
         def before_request():
             client_ip = (
+                request.headers.get("Conn-Remote-Addr") or
                 request.headers.get("X-Forwarded-For") or
                 request.remote_addr
             )
