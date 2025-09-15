@@ -7,7 +7,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # alice/
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
-from scripts.map_osrs_items import validate_table
 from src.util.independant_logger import Logger
 from src.util.sql_helper import (
     init_psql_connection,
@@ -46,6 +45,7 @@ def init_connection(func):
         finally:
             cursor.close()
             conn.close()
+    return wrapper
 
 def create_data_columns(records: dict) -> dict:
     """
@@ -103,7 +103,9 @@ def get_1hr_prices() -> list[dict]:
     return wiki_getter.get_data(endpoint="1hr_prices")
 
 @init_connection
-def update_latest_prices(conn, cursor):
+def update_latest_prices(*args, **kwargs):
+    conn = args[0]
+    cursor = args[1]
     records = get_latest_prices()
     log.info("Updating latest prices.")
     if not records:
@@ -126,7 +128,7 @@ def update_latest_prices(conn, cursor):
         log.error(f"Failed to validate tables: {failed_tables}")
         return
 
-    for record in records:
+    for item_id, record in records.items():
         column_names = list(record.keys()).append(PK)
         column_values = list(record.values()).append(now)
         add_update_record(
@@ -134,14 +136,16 @@ def update_latest_prices(conn, cursor):
             connection=conn,
             database=DB_NAME,
             schema=SCHEMA_NAME,
-            table="latest_prices",
-            pk=PK,
-            record=record,
+            table=str(item_id),
+            columns=column_names,
+            values=column_values,
+            conflict_target=PK,
         )
     log.info("Latest prices updated successfully.")
 
 
-def main(conn, cursor):
+def main():
+    log.info("Starting OSRS item price update script.")
     update_latest_prices()
     
     
