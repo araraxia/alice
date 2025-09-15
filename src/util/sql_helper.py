@@ -724,7 +724,80 @@ def add_column_to_table(
         log.error(f"Error adding column {column_name} to table {schema_name}.{table_name}: {e}")
         connection.rollback()
         return False
+
+@init_psql_con_cursor
+def add_pk_constraint(
+    cursor,
+    connection,
+    database: str,
+    schema_name: str,
+    table_name: str,
+    pk_column: str,
+    constraint_name: str = None,
+):
+    """
+    Adds a primary key constraint to an existing table column.
+    Args:
+        database (str) : Name of the database
+        schema_name (str) : Name of the schema
+        table_name (str) : Name of the table
+        pk_column (str) : Name of the column to set as primary key
+        constraint_name (str) : Optional name for the primary key constraint
+    Returns:
+        Bool : True if the constraint was added successfully, False otherwise.
+    """
+    schema_name_obj = sql.Identifier(schema_name)
+    table_name_obj = sql.Identifier(table_name)
+    pk_column_obj = sql.Identifier(pk_column)
+    constraint_name_obj = (
+        sql.Identifier(constraint_name)
+        if constraint_name
+        else sql.SQL(f"{table_name}_pkey")
+    )
+
+    # Set to check if the column already has a primary key constraint
+    check_query = sql.SQL(
+        """
+        SELECT constraint_name
+        FROM information_schema.table_constraints
+        WHERE table_schema = {schema_name}
+        AND table_name = {table_name}
+        AND constraint_type = 'PRIMARY KEY'
+        """
+    ).format(
+        schema_name=schema_name_obj,
+        table_name=table_name_obj,
+    )
+    try:
+        cursor.execute(check_query)
+        existing_constraints = cursor.fetchall()
+        if existing_constraints:
+            return True  # Primary key constraint already exists
+    except Exception as e:
+        print(Fore.RED + f"Error checking existing constraints on {schema_name}.{table_name}: {e}" + Fore.RESET)
+        return False
     
+    alter_query = sql.SQL(
+        """
+        ALTER TABLE {schema_name}.{table_name}
+        ADD CONSTRAINT {constraint_name} PRIMARY KEY ({pk_column})
+    """
+    ).format(
+        schema_name=schema_name_obj,
+        table_name=table_name_obj,
+        constraint_name=constraint_name_obj,
+        pk_column=pk_column_obj,
+    )
+    try:
+        cursor.execute(alter_query)
+        connection.commit()
+        return True
+    except Exception as e:
+        print(Fore.RED + f"Error adding primary key constraint to {schema_name}.{table_name}: {e}" + Fore.RESET)
+        connection.rollback()
+        return False
+    
+
 def guess_column_type(value) -> str:
     """
     Attempts to guess the SQL column type based on a sample value.
