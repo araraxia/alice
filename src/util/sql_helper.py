@@ -756,26 +756,15 @@ def add_pk_constraint(
     )
 
     # Set to check if the column already has a primary key constraint
-    check_query = sql.SQL(
-        """
-        SELECT constraint_name
-        FROM information_schema.table_constraints
-        WHERE table_schema = {schema_name}
-        AND table_name = {table_name}
-        AND constraint_type = 'PRIMARY KEY'
-        """
-    ).format(
-        schema_name=schema_name_obj,
-        table_name=table_name_obj,
+    primary_key = get_primary_key_info(
+        cursor=cursor,
+        connection=connection,
+        database=database,
+        schema=schema_name,
+        table=table_name,
     )
-    try:
-        cursor.execute(check_query)
-        existing_constraints = cursor.fetchall()
-        if existing_constraints:
-            return True  # Primary key constraint already exists
-    except Exception as e:
-        print(Fore.RED + f"Error checking existing constraints on {schema_name}.{table_name}: {e}" + Fore.RESET)
-        return False
+    if primary_key:
+        return True
     
     alter_query = sql.SQL(
         """
@@ -808,16 +797,61 @@ def guess_column_type(value) -> str:
     """
     if isinstance(value, bool):
         return "BOOLEAN"
-    elif isinstance(value, int):
+    if isinstance(value, int):
         return "INTEGER"
-    elif isinstance(value, float):
+    if isinstance(value, float):
         return "FLOAT"
-    elif isinstance(value, dict):
+    if isinstance(value, dict):
         return "JSONB"
-    elif isinstance(value, str):
+    if isinstance(value, str):
         return "TEXT"
-    elif isinstance(value, list):
+    if isinstance(value, list):
         if value:
             return f"{guess_column_type(value[0])}[]"
-    else:
-        return "TEXT"
+        return "TEXT[]"  # empty list fallback
+    return "TEXT"
+
+
+@init_psql_con_cursor
+def get_primary_key_info(
+    cursor,
+    connection,
+    database: str,
+    schema: str,
+    table: str,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> dict | None:
+    """Return primary key constraint name and ordered columns for a table.
+
+    Args:
+        database (str): Database name.
+        schema (str): Schema name.
+        table (str): Table name.
+    Returns:
+        dict | None: { 'constraint_name': str, 'columns': [str, ...] } or None if no PK.
+    """
+    query = """
+        SELECT
+            tc.constraint_name,
+            kcu.column_name,
+            kcu.ordinal_position
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+         AND tc.table_schema = kcu.table_schema
+         AND tc.table_name = kcu.table_name
+        WHERE tc.table_schema = %s
+          AND tc.table_name = %s
+          AND tc.constraint_type = 'PRIMARY KEY'
+        ORDER BY kcu.ordinal_position;
+    """
+    cursor.execute(query, (schema, table))
+    rows = cursor.fetchall()
+    if not rows:
+        return None
+    constraint_name = rows[0]["constraint_name"]
+    columns = [r["column_name"] for r in rows]
+    return {"constraint_name": constraint_name, "columns": columns}
