@@ -66,7 +66,7 @@ def create_data_columns(records: dict) -> dict:
         log.error("No records provided to create_data_columns.")
         return {}
 
-    columns = [{"name": PK, "type": "INTEGER"}]
+    columns = [{"name": PK, "type": "TIMESTAMP"}]
     recorded_keys = [PK]
     for item_id, record in records.items():
         for key, value in record.items():
@@ -79,11 +79,13 @@ def create_data_columns(records: dict) -> dict:
     return columns
 
 
-def validate_tables(conn, cursor, columns: dict, records: dict) -> bool:
+def validate_tables(
+    conn, cursor, table_name_mod: str, columns: dict, records: dict
+) -> bool:
     validated_tables = []
     invalid_tables = []
     for record_id, record in records.items():
-        table_name = str(record_id)
+        table_name = str(record_id) + table_name_mod
         log.info(f"Validating table structure for {table_name}.")
         validated = ensure_table_exists(
             cursor=cursor,
@@ -106,6 +108,7 @@ def validate_tables(conn, cursor, columns: dict, records: dict) -> bool:
             schema_name=SCHEMA_NAME,
             table_name=table_name,
             pk_column=PK,
+            constraint_name=f"pk_{str(table_name)}_constraint",
         )
         if not validated:
             invalid_tables.append(table_name)
@@ -133,6 +136,7 @@ def get_1hr_prices() -> list[dict]:
 def update_latest_prices(*args, **kwargs):
     conn = args[0]
     cursor = args[1]
+    validate = kwargs.get("validate", True)
     response = get_latest_prices()
     records = response.get("data", {})
     log.info("Updating latest prices.")
@@ -142,20 +146,25 @@ def update_latest_prices(*args, **kwargs):
 
     now = datetime.now()
 
-    columns = create_data_columns(records)
-    if not columns:
-        log.error("Failed to create columns for latest prices.")
-        return
+    if validate:
+        columns = create_data_columns(records)
+        if not columns:
+            log.error("Failed to create columns for latest prices.")
+            return
 
-    valid_tables, failed_tables = validate_tables(
-        conn=conn, cursor=cursor, columns=columns, records=records
-    )
-    if failed_tables:
-        log.error(f"Failed to validate tables: {failed_tables}")
-        return
+        valid_tables, failed_tables = validate_tables(
+            conn=conn,
+            cursor=cursor,
+            table_name_mod="_latest",
+            columns=columns,
+            records=records,
+        )
+        if failed_tables:
+            log.error(f"Failed to validate tables: {failed_tables}")
+            return
 
     for item_id, record in records.items():
-        column_names, column_values = [], []
+        column_names, column_values = [PK], [now]
         for key, value in record.items():
             column_names.append(str(key))
             column_values.append(value)
@@ -170,7 +179,7 @@ def update_latest_prices(*args, **kwargs):
             connection=conn,
             database=DB_NAME,
             schema=SCHEMA_NAME,
-            table=str(item_id),
+            table=f"{str(item_id)}_latest",
             columns=column_names,
             values=column_values,
             conflict_target=PK,
@@ -180,7 +189,7 @@ def update_latest_prices(*args, **kwargs):
 
 def main():
     log.info("Starting OSRS item price update script.")
-    update_latest_prices()
+    update_latest_prices(validate=False)
 
 
 if __name__ == "__main__":
