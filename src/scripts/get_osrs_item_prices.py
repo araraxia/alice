@@ -204,7 +204,7 @@ def get_1hr_prices() -> list[dict]:
 def update_prices(*args, **kwargs):
     conn = args[0]
     cursor = args[1]
-    validate = kwargs.get("validate", False)
+    no_validate = kwargs.get("no_validate", False)
 
     get_map = {
         "update_latest_prices": get_latest_prices,
@@ -230,7 +230,7 @@ def update_prices(*args, **kwargs):
             continue
 
         # Validate tables if needed
-        if not validate:
+        if not no_validate:
             log.info(f"Validating tables for {update_key}.")
             columns = create_data_columns(records)
             if not columns:
@@ -303,10 +303,10 @@ def main():
     args = argsparser()
     log.info("Starting OSRS item price update script.")
     update_prices(
-        validate=args.validate,
+        no_validate=args.no_validate,
         update_latest_prices=args.update_latest_prices,
         update_5min_prices=args.update_5min_prices,
-        update_1hr_prices=args.update_1hr_prices,
+        update_1h_prices=args.update_1h_prices,
     )
 
 
