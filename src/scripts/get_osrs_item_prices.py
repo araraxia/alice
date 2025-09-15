@@ -88,7 +88,7 @@ def validate_tables(
     table_name_list = [str(record_id)+table_name_mod for record_id in records.keys()]
     log.info(f"Validating table structure for {table_name_list}.")
     for record_id, record in records.items():
-        table_name = str(record_id) + table_name_mod
+        table_name = str(record_id)+table_name_mod
         validated = ensure_table_exists(
             cursor=cursor,
             connection=conn,
@@ -119,6 +119,7 @@ def validate_tables(
         validated_tables.append(table_name)
         continue
 
+    log.info(f"Validation complete. Failed tables: {invalid_tables}")
     return validated_tables, invalid_tables
 
 
@@ -196,29 +197,30 @@ def get_5min_prices() -> list[dict]:
 
 
 def get_1hr_prices() -> list[dict]:
-    return wiki_getter.get_data(endpoint="1hr_prices")
+    return wiki_getter.get_data(endpoint="1h_prices")
 
 
 @init_connection
 def update_prices(*args, **kwargs):
     conn = args[0]
     cursor = args[1]
-    validate = kwargs.get("validate", True)
+    validate = kwargs.get("validate", False)
 
     get_map = {
         "update_latest_prices": get_latest_prices,
         "update_5min_prices": get_5min_prices,
-        "update_1hr_prices": get_1hr_prices,
+        "update_1h_prices": get_1hr_prices,
     }
 
     table_mod_map = {
         "update_latest_prices": "_latest",
         "update_5min_prices": "_5min",
-        "update_1hr_prices": "_1hr",
+        "update_1h_prices": "_1h",
     }
 
     for update_key, update_func in get_map.items():
         if not kwargs.get(update_key, False):
+            log.info(f"Skipping {update_key} as per arguments.")
             continue
         response = update_func()
         records = response.get("data", {})
@@ -228,7 +230,8 @@ def update_prices(*args, **kwargs):
             continue
 
         # Validate tables if needed
-        if validate:
+        if not validate:
+            log.info(f"Validating tables for {update_key}.")
             columns = create_data_columns(records)
             if not columns:
                 log.error(f"Failed to create columns for {update_key}.")
@@ -245,6 +248,7 @@ def update_prices(*args, **kwargs):
                 log.error(f"Failed to validate tables: {failed_tables}")
                 continue
 
+        log.info(f"Updating records for {update_key}.")
         for item_id, record in records.items():
             table_name = str(item_id) + table_mod_map[update_key]
             try:
@@ -268,10 +272,10 @@ def argsparser():
         description="Update OSRS item prices in the database."
     )
     parser.add_argument(
-        "--validate",
+        "--no-validate",
         action="store_true",
-        help="Do table validation before updating prices.",
-        default=True,
+        help="Skip table validation before updating prices.",
+        default=False,
     )
     parser.add_argument(
         "--update-latest-prices",
@@ -286,7 +290,7 @@ def argsparser():
         default=False,
     )
     parser.add_argument(
-        "--update-1hr-prices",
+        "--update-1h-prices",
         action="store_true",
         help="Update 1 hour prices.",
         default=False,
