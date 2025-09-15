@@ -81,7 +81,7 @@ __name__,
     def init_limiter(self):
         try:
             limiter.init_app(self.app)
-            self.log.info("Limiter initialized with Memcached storage")
+            self.app.logger.info("Limiter initialized with Memcached storage")
         except Exception as e:
             self.app.logger.error(f"Error initializing limiter: {e}")
             self.app.logger.error("Attempting failover limiter setup")
@@ -123,6 +123,15 @@ __name__,
         @self.app.route("/health", methods=["GET"])
         def health_check():
             return jsonify({"status": "ok"}), 200
+        
+        @self.app.route("/debug", methods=["GET"])
+        def debug_info():
+            info = {
+                "remote_addr": request.remote_addr,
+                "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+                "all_headers": dict(request.headers),
+            }
+            return jsonify(info), 200
         
         @self.app.errorhandler(404)
         def not_found_error(e):
