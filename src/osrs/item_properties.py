@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 from src.util.sql_helper import get_record, get_all_records, init_psql_connection, create_cursor
 from datetime import datetime
+from dataclasses import dataclass
 
 DB_NAME = "osrs"
 MAP_PK = "id"
@@ -11,6 +11,10 @@ PRICE_PK = "timestamp"
 
 @dataclass
 class osrsItemProperties:
+    def __post_init__(self):
+        self.load_stored_data()
+        self.destroy_conn_cursor()
+        
     # Required    
     item_id: int
 
