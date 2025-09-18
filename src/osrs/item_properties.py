@@ -1,13 +1,11 @@
 from src.util.sql_helper import (
     get_record,
-    get_all_records,
+    fetch_top,
     init_psql_connection,
     create_cursor,
 )
-from datetime import datetime
-from dataclasses import dataclass
-from math import inf
 from psycopg2.errors import UndefinedTable
+from functools import wraps
 
 DB_NAME = "osrs"
 MAP_PK = "id"
@@ -16,42 +14,51 @@ MAP_TABLE = "map"
 PRICE_SCHEMA = "prices"
 PRICE_PK = "timestamp"
 
+def manage_conn_cursor(func):
+    @wraps(func)
+    def wrapper(self: osrsItemProperties, *args, **kwargs):
+        if not hasattr(self, "conn") or not hasattr(self, "cursor"):
+            self.init_conn_cursor()
+        if self.conn.closed or self.cursor.closed:
+            self.init_conn_cursor()
+        try:
+            result = func(self, *args, **kwargs)
+        finally:
+            self.destroy_conn_cursor()
+        return result
+    return wrapper
 
-@dataclass
 class osrsItemProperties:
-    def __post_init__(self):
+    @manage_conn_cursor
+    def __init__(self, item_id: int):
+        self.item_id = item_id
+        
+        self.name: str = None
+        self.examine: str = None
+        self.members: bool = None
+        self.icon: str = None
+        self.limit: int = None
+        self.value: int = None
+        self.highalch: int = None
+        self.lowalch: int = None
+
+        self.latest_price: int = None
+        self.latest_price_high: int = None
+        self.latest_price_low: int = None
+
+        self.latest_5min_price: int = None
+        self.latest_5min_price_high: int = None
+        self.latest_5min_volume_high: int = None
+        self.latest_5min_price_low: int = None
+        self.latest_5min_volume_low: int = None
+
+        self.latest_1h_price: int = None
+        self.latest_1h_price_high: int = None
+        self.latest_1h_volume_high: int = None
+        self.latest_1h_price_low: int = None
+        self.latest_1h_volume_low: int = None
+
         self.load_stored_data()
-        self.destroy_conn_cursor()
-
-    # Required
-    item_id: int
-
-    # Optional
-    name: str = None
-    examine: str = None
-    members: bool = None
-    icon: str = None
-    limit: int = None
-    value: int = None
-    highalch: int = None
-    lowalch: int = None
-
-    latest_price: int = None
-    latest_price_high: int = None
-    latest_price_low: int = None
-
-    latest_5min_price: int = None
-    latest_5min_price_high: int = None
-    latest_5min_volume_high: int = None
-    latest_5min_price_low: int = None
-    latest_5min_volume_low: int = None
-
-    latest_1h_price: int = None
-    latest_1h_price_high: int = None
-    latest_1h_volume_high: int = None
-    latest_1h_price_low: int = None
-    latest_1h_volume_low: int = None
-
     """
     To-Do:
 
@@ -63,16 +70,15 @@ class osrsItemProperties:
         self.conn = init_psql_connection(db=DB_NAME)
         self.cursor = create_cursor(self.conn)
 
+
     def destroy_conn_cursor(self):
         if hasattr(self, "cursor"):
             self.cursor.close()
         if hasattr(self, "conn"):
             self.conn.close()
 
+    @manage_conn_cursor
     def load_stored_data(self):
-        if not hasattr(self, "conn") or not hasattr(self, "cursor"):
-            self.init_conn_cursor()
-
         if not self.item_id:
             return None
 
@@ -96,27 +102,27 @@ class osrsItemProperties:
         self.get_latest_5min_price()
         self.get_latest_1h_price()
 
+    @manage_conn_cursor
     def get_latest_latest_price(self):
-        if not hasattr(self, "conn") or not hasattr(self, "cursor"):
-            self.init_conn_cursor()
-
         try:
-            latest_prices = get_all_records(
+            latest_price = fetch_top(
                 cursor=self.cursor,
                 connection=self.conn,
                 database=DB_NAME,
                 schema=PRICE_SCHEMA,
                 table=f"{str(self.item_id)}_latest",
+                order_by=PRICE_PK,
+                limit=1,
             )
         except UndefinedTable:
-            # Clear aborted transaction state after an error
             self.conn.rollback()
-            latest_prices = []
+            latest_price = []
+        except Exception:
+            self.conn.rollback()
+            latest_price = []
 
-        if latest_prices:
-            recent_record = max(
-                latest_prices, key=lambda x: x.get("timestamp") or datetime.min
-            )
+        if latest_price:
+            recent_record = latest_price[0]
             self.latest_price_high = recent_record.get("high") or 0
             self.latest_price_low = recent_record.get("low") or 0
             # Eliminate large variations if only one price is available
@@ -135,25 +141,27 @@ class osrsItemProperties:
             self.latest_price_high = 0
             self.latest_price_low = 0
 
+    @manage_conn_cursor
     def get_latest_5min_price(self):
-        if not hasattr(self, "conn") or not hasattr(self, "cursor"):
-            self.init_conn_cursor()
-
         try:
-            prices_5min = get_all_records(
+            prices_5min = fetch_top(
                 cursor=self.cursor,
                 connection=self.conn,
                 database=DB_NAME,
                 schema=PRICE_SCHEMA,
                 table=f"{str(self.item_id)}_5min",
+                order_by=PRICE_PK,
+                limit=1,
             )
         except UndefinedTable:
-            # Clear aborted transaction state after an error
             self.conn.rollback()
             prices_5min = []
-
+        except Exception:
+            self.conn.rollback()
+            prices_5min = []
+            
         if prices_5min:
-            recent_record = max(prices_5min, key=lambda x: x.get("timestamp", 0))
+            recent_record = prices_5min[0]
             self.latest_5min_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_5min_price_low = recent_record.get("avgLowPrice") or 0
             self.latest_5min_volume_high = recent_record.get("highPriceVolume") or 0
@@ -176,25 +184,27 @@ class osrsItemProperties:
             self.latest_5min_volume_high = 0
             self.latest_5min_volume_low = 0
 
+    @manage_conn_cursor
     def get_latest_1h_price(self):
-        if not hasattr(self, "conn") or not hasattr(self, "cursor"):
-            self.init_conn_cursor()
-
         try:
-            prices_1h = get_all_records(
+            prices_1h = fetch_top(
                 cursor=self.cursor,
                 connection=self.conn,
                 database=DB_NAME,
                 schema=PRICE_SCHEMA,
                 table=f"{str(self.item_id)}_1h",
+                order_by=PRICE_PK,
+                limit=1,
             )
         except UndefinedTable:
-            # Clear aborted transaction state after an error
+            self.conn.rollback()
+            prices_1h = []
+        except Exception:
             self.conn.rollback()
             prices_1h = []
 
         if prices_1h:
-            recent_record = max(prices_1h, key=lambda x: x.get("timestamp", 0))
+            recent_record = prices_1h[0]
             self.latest_1h_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_1h_price_low = recent_record.get("avgLowPrice") or 0
             self.latest_1h_volume_high = recent_record.get("highPriceVolume") or 0
