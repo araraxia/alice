@@ -206,7 +206,7 @@ def get_all_records(
     port: int = sql_port,
     user: str = sql_user,
     password: str = sql_pass,
-) -> list:
+) -> list[dict]:
     """
     Query a postgreSQL table for all records.
     Args:
@@ -221,6 +221,70 @@ def get_all_records(
     records = cursor.fetchall()
     return records
 
+@init_psql_con_cursor
+def fetch_top(
+    cursor,
+    connection,
+    database: str,
+    schema_name: str,
+    table_name: str,
+    sort_col: str,
+    sort_desc: bool=True,
+    limit: int=1,
+    offset: int=0,
+    nulls_last: bool=True,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> list[dict]:
+    """
+    Fetch the top N records from a PostgreSQL table, ordered by a specified column.
+    Args:
+        cursor (object) : psycopg2 cursor object, uses provided. (injected by decorator, uses RealDictCursor)
+        connection (object) : psycopg2 connection object, uses provided. (injected by decorator)
+        database (str) : Required, name of database to be queried
+        schema_name (str) : Required, name of schema to be queried
+        table_name (str) : Required, name of table to be queried
+        sort_col (str) : Required, column name to sort by
+        sort_desc (bool) : Whether to sort in descending order (default: True)
+        limit (int) : Number of records to fetch (default: 1)
+        offset (int) : Number of records to skip (default: 0)
+        nulls_last (bool) : Whether NULL values should appear last (default: True)
+    returns:
+        records (list) : List of RealDictCursor dictionaries fetched with the
+            fetchall() method.
+    """
+    
+    if limit < 1:
+        raise ValueError(f"Limit must be at least 1, got {limit}")
+    if offset < 0:
+        raise ValueError(f"Offset cannot be negative, got {offset}")
+    
+    direction = sql.SQL("DESC") if sort_desc else sql.SQL("ASC")
+    nulls_order = sql.SQL("NULLS LAST") if nulls_last else sql.SQL("NULLS FIRST")
+    schema_obj = sql.Identifier(schema_name)
+    table_obj = sql.Identifier(table_name)
+    col_obj = sql.Identifier(sort_col)
+    
+    query = sql.SQL(""" 
+        SELECT * FROM {schema}.{table}
+        ORDER BY {col} {direction} {nulls_order}
+        LIMIT %s OFFSET %s                
+    """).format(
+        schema=schema_obj,
+        table=table_obj,
+        col=col_obj,
+        direction=direction,
+        nulls_order=nulls_order
+    )
+    try:
+        cursor.execute(query, (limit, offset))
+        records = cursor.fetchall()
+        return records
+    except Exception as e:
+        # eventually ill add an in-module logger
+        raise e
 
 @init_psql_con_cursor
 def search_records(
