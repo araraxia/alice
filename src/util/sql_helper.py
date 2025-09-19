@@ -194,6 +194,242 @@ def get_records(
     records = cursor.fetchall()
     return records
 
+@init_psql_con_cursor
+def search_records(
+    cursor,
+    connection,
+    database: str,
+    schema: str,
+    table: str,
+    column: str,
+    value: str,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> list[dict]:
+    """
+    Query a postgreSQL table for a list of records matching the given single value.
+    To query by multiple values, use get_records(...)
+    Args:
+        database (str) : Required, name of database to be queried
+        schema (str) : Required, name of schema to be queried
+        table (str) : Required, name of table to be queried
+        column (str) : Required, column name to query by
+        value (str) : Required, value to query by
+    Returns:
+        records (list[dict]) : List of RealDictCursor dictionaries fetched with the
+            fetchall() method.
+    """
+    schema_str = sql.Identifier(schema)
+    table_str = sql.Identifier(table)
+    column_str = sql.Identifier(column)
+    query = sql.SQL("SELECT * FROM {schema}.{table} WHERE {column} = %s").format(
+        schema=schema_str, table=table_str, column=column_str
+    )
+
+    cursor.execute(query, (value,))
+    records = cursor.fetchall()
+    return records
+
+
+@init_psql_con_cursor
+def fuzzy_search_records(
+    cursor,
+    connection,
+    database: str,
+    schema_name: str,
+    table_name: str,
+    column_name: str,
+    search_pattern: str,
+    case_sensitive: bool = False,
+    pattern_negation: bool = False,
+    escape_char: str = None,
+    regex: bool = False,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> list[dict]:
+    """
+    Use text patterns to search for records in a PostgreSQL table.
+    `%` is used to match any sequence of characters (including an empty sequence).
+    `_` is used to match any single character.
+
+    Args:
+        cursor (object) : psycopg2 cursor object, uses provided. (injected by decorator, uses RealDictCursor)
+        connection (object) : psycopg2 connection object, uses provided. (injected by decorator)
+        database (str) : Required, name of database to be queried
+        schema_name (str) : Required, name of schema to be queried
+        table_name (str) : Required, name of table to be queried
+        column_name (str) : Required, column name to query by
+        search_pattern (str) : Required, pattern to search for
+        case_sensitive (bool) : Whether the search should be case-sensitive (default: False)
+        pattern_negation (bool) : Whether to negate the pattern match (default: False)
+        escape_char (str) : Optional character to escape special characters in the pattern
+        regex (bool) : Whether to use regex matching instead of LIKE/ILIKE (default: False)
+    Returns:
+        records (list[dict]) : List of RealDictCursor dictionaries fetched with the
+            fetchall() method.
+    """
+    schema_obj = sql.Identifier(schema_name)
+    table_obj = sql.Identifier(table_name)
+    col_obj = sql.Identifier(column_name)
+    not_str = "NOT" if pattern_negation else ""
+    escape_str = f"ESCAPE '{escape_char}'" if escape_char else ""
+
+    if regex:
+        func_str = "~*"
+    elif case_sensitive:
+        func_str = "LIKE"
+        if not "%" in search_pattern and not "_" in search_pattern:
+            search_pattern = f"%{search_pattern}%"
+    else:
+        func_str = "ILIKE"
+        if not "%" in search_pattern and not "_" in search_pattern:
+            search_pattern = f"%{search_pattern}%"
+
+    query = (
+        sql.SQL(
+            """
+        SELECT * FROM {schema}.{table}
+        WHERE {col} {NOT} {FUNC} %s {ESCAPE}
+    """
+        )
+        .replace("{NOT}", not_str)
+        .replace("{FUNC}", func_str)
+        .replace("{ESCAPE}", escape_str)
+        .format(
+            schema=schema_obj,
+            table=table_obj,
+            col=col_obj,
+        )
+    )
+
+    try:
+        cursor.execute(query, (search_pattern,))
+        records = cursor.fetchall()
+        return records
+    except Exception as e:
+        # eventually ill add an in-module logger
+        raise e
+
+
+@init_psql_con_cursor
+def edit_distance_search_records(
+    cursor,
+    connection,
+    database,
+    schema_name,
+    table_name,
+    column_name,
+    search_pattern,
+    max_distance: int = 2,
+    limit: int = 10,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> list[dict]:
+    """
+    Use edit_distance string matching to search for records in a PostgreSQL table.
+    Requires the `fuzzystrmatch` extension to be enabled on the database.
+    Args:
+        cursor (object) : psycopg2 cursor object, uses provided. (injected by decorator, uses RealDictCursor)
+        connection (object) : psycopg2 connection object, uses provided. (injected by decorator)
+        database (str) : Required, name of database to be queried
+        schema_name (str) : Required, name of schema to be queried
+        table_name (str) : Required, name of table to be queried
+        column_name (str) : Required, column name to query by
+        search_pattern (str) : Required, pattern to search for
+        max_distance (int) : Maximum Levenshtein distance for matches (default: 2)
+        limit (int) : Maximum number of records to return (default: 10)
+    Returns:
+        records (list[dict]) : List of RealDictCursor dictionaries fetched with the
+            fetchall() method.
+    """
+    schema_obj = sql.Identifier(schema_name)
+    table_obj = sql.Identifier(table_name)
+    col_obj = sql.Identifier(column_name)
+
+    query = sql.SQL(
+        """
+        SELECT {col}, LEVENSHTEIN({col}, %s) AS distance
+        FROM {schema}.{table}
+        WHERE LEVENSHTEIN({col}, %s) <= %s
+        ORDER BY distance
+        LIMIT %s
+    """
+    ).format(
+        schema=schema_obj,
+        table=table_obj,
+        col=col_obj,
+    )
+
+    try:
+        cursor.execute(query, (search_pattern, search_pattern, max_distance, limit))
+        records = cursor.fetchall()
+        return records
+    except Exception as e:
+        raise e
+
+
+@init_psql_con_cursor
+def similarity_search_records(
+    cursor,
+    connection,
+    database: str,
+    schema_name: str,
+    table_name: str,
+    column_name: str,
+    search_pattern: str,
+    limit: int = 10,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> list[dict]:
+    """
+    Run a similarity search on a PostgreSQL table using the pg_trgm extension.
+    Requires the `pg_trgm` extension to be enabled on the database.
+    Args:
+        cursor (object) : psycopg2 cursor object, uses provided. (injected by decorator, uses RealDictCursor)
+        connection (object) : psycopg2 connection object, uses provided. (injected by decorator)
+        database (str) : Required, name of database to be queried
+        schema_name (str) : Required, name of schema to be queried
+        table_name (str) : Required, name of table to be queried
+        column_name (str) : Required, column name to query by
+        search_pattern (str) : Required, pattern to search for
+        limit (int) : Maximum number of records to return (default: 10)
+    Returns:
+        records (list[dict]) : List of RealDictCursor dictionaries fetched with the
+            fetchall() method.
+    """
+    schema_obj = sql.Identifier(schema_name)
+    table_obj = sql.Identifier(table_name)
+    col_obj = sql.Identifier(column_name)
+
+    query = sql.SQL(
+        """
+        SELECT {col}, SIMILARITY({col}, %s) AS similar
+        FROM {schema}.{table}
+        WHERE {col} % %s
+        ORDER BY similar DESC
+        LIMIT %s
+    """
+    ).format(
+        schema=schema_obj,
+        table=table_obj,
+        col=col_obj,
+    )
+
+    try:
+        cursor.execute(query, (search_pattern, search_pattern, limit))
+        records = cursor.fetchall()
+        return records
+    except Exception as e:
+        raise e
+
 
 @init_psql_con_cursor
 def get_all_records(
@@ -285,44 +521,6 @@ def fetch_top(
     except Exception as e:
         # eventually ill add an in-module logger
         raise e
-
-@init_psql_con_cursor
-def search_records(
-    cursor,
-    connection,
-    database: str,
-    schema: str,
-    table: str,
-    column: str,
-    value: str,
-    host: str = sql_ip,
-    port: int = sql_port,
-    user: str = sql_user,
-    password: str = sql_pass,
-) -> list:
-    """
-    Query a postgreSQL table for a list of records matching the given value.
-    Args:
-        database (str) : Required, name of database to be queried
-        schema (str) : Required, name of schema to be queried
-        table (str) : Required, name of table to be queried
-        column (str) : Required, column name to query by
-        value (str) : Required, value to query by
-    Returns:
-        records (list) : List of RealDictCursor dictionaries fetched with the
-            fetchall() method.
-    """
-    schema_str = sql.Identifier(schema)
-    table_str = sql.Identifier(table)
-    column_str = sql.Identifier(column)
-    query = sql.SQL("SELECT * FROM {schema}.{table} WHERE {column} = %s").format(
-        schema=schema_str, table=table_str, column=column_str
-    )
-
-    cursor.execute(query, (value,))
-    records = cursor.fetchall()
-    return records
-
 
 @init_psql_con_cursor
 def update_existing_record(
@@ -574,6 +772,11 @@ def delete_record(
         connection.rollback()
         raise e
 
+################################################
+# ==========# Schema/Table Functions #==========#
+################################################
+
+
 @init_psql_con_cursor
 def get_tables(
     cursor,
@@ -760,7 +963,7 @@ def add_column_to_table(
     """
     schema_name_obj = sql.Identifier(schema_name)
     table_name_obj = sql.Identifier(table_name)
-    
+
     col_name_obj = sql.Identifier(column_name)
     col_type_obj = sql.SQL(column_type)
     col_default_obj = sql.SQL(default_value if default_value is not None else "NULL")
@@ -788,6 +991,126 @@ def add_column_to_table(
         log.error(f"Error adding column {column_name} to table {schema_name}.{table_name}: {e}")
         connection.rollback()
         return False
+
+
+@init_psql_con_cursor
+def get_column_data_type(
+    cursor, connection, database: str, schema: str, table: str, column: str
+) -> str | None:
+    """
+    Get the data type of a specific column in a table.
+    Args:
+        cursor (object): Database cursor object.
+        connection (object): Database connection object.
+        database (str): Name of the database.
+        schema (str): Name of the schema.
+        table (str): Name of the table.
+        column (str): Name of the column.
+    Returns:
+        (str | None): The data type of the column, or None if not found.
+    """
+    query = f"""
+    SELECT data_type FROM information_schema.columns
+    WHERE table_schema = %s
+    AND table_name = %s
+    AND column_name = %s
+    """
+    try:
+        cursor.execute(query, (schema, table, column))
+        result = cursor.fetchone()
+        return result["data_type"] if result else None
+    except Exception as e:
+        return None
+
+
+@init_psql_con_cursor
+def get_column_comments(
+    cursor,
+    connection,
+    database,
+    schema_name,
+    table_name,
+) -> dict:
+    """
+    Get column comments for a given table.
+    Args:
+        database (str): The name of the database.
+        schema_name (str): The name of the schema.
+        table_name (str): The name of the table.
+    Returns:
+        dict: Dictionary with column names as keys and comments as values.
+    """
+
+    query = """
+    SELECT 
+        column_name,
+        col_description(pgc.oid, ordinal_position) as comment
+    FROM information_schema.columns c
+    JOIN pg_class pgc ON pgc.relname = c.table_name
+    JOIN pg_namespace pgn ON pgn.oid = pgc.relnamespace AND pgn.nspname = c.table_schema
+    WHERE table_schema = %s
+    AND table_name = %s
+    ORDER BY ordinal_position;
+    """
+
+    try:
+        cursor.execute(query, (schema_name, table_name))
+        results = cursor.fetchall()
+
+        comments = {}
+        for row in results:
+            comments[row["column_name"]] = row["comment"] or ""
+
+        return comments
+    except Exception as e:
+        print(f"Error in get_column_comments: {e}")
+        print(f"Schema: {schema_name}, Table: {table_name}")
+        return {}
+
+
+@init_psql_con_cursor
+def get_primary_key_info(
+    cursor,
+    connection,
+    database: str,
+    schema: str,
+    table: str,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> dict | None:
+    """Return primary key constraint name and ordered columns for a table.
+
+    Args:
+        database (str): Database name.
+        schema (str): Schema name.
+        table (str): Table name.
+    Returns:
+        dict | None: { 'constraint_name': str, 'columns': [str, ...] } or None if no PK.
+    """
+    query = """
+        SELECT
+            tc.constraint_name,
+            kcu.column_name,
+            kcu.ordinal_position
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+         AND tc.table_schema = kcu.table_schema
+         AND tc.table_name = kcu.table_name
+        WHERE tc.table_schema = %s
+          AND tc.table_name = %s
+          AND tc.constraint_type = 'PRIMARY KEY'
+        ORDER BY kcu.ordinal_position;
+    """
+    cursor.execute(query, (schema, table))
+    rows = cursor.fetchall()
+    if not rows:
+        return None
+    constraint_name = rows[0]["constraint_name"]
+    columns = [r["column_name"] for r in rows]
+    return {"constraint_name": constraint_name, "columns": columns}
 
 @init_psql_con_cursor
 def add_pk_constraint(
@@ -849,7 +1172,11 @@ def add_pk_constraint(
         print(Fore.RED + f"Error adding primary key constraint to {schema_name}.{table_name}: {e}" + Fore.RESET)
         connection.rollback()
         return False
-    
+
+
+###########################################
+# ==========# Utility Functions #==========#
+###########################################
 
 def guess_column_type(value) -> str:
     """
@@ -874,48 +1201,3 @@ def guess_column_type(value) -> str:
             return f"{guess_column_type(value[0])}[]"
         return "TEXT[]"  # empty list fallback
     return "TEXT"
-
-
-@init_psql_con_cursor
-def get_primary_key_info(
-    cursor,
-    connection,
-    database: str,
-    schema: str,
-    table: str,
-    host: str = sql_ip,
-    port: int = sql_port,
-    user: str = sql_user,
-    password: str = sql_pass,
-) -> dict | None:
-    """Return primary key constraint name and ordered columns for a table.
-
-    Args:
-        database (str): Database name.
-        schema (str): Schema name.
-        table (str): Table name.
-    Returns:
-        dict | None: { 'constraint_name': str, 'columns': [str, ...] } or None if no PK.
-    """
-    query = """
-        SELECT
-            tc.constraint_name,
-            kcu.column_name,
-            kcu.ordinal_position
-        FROM information_schema.table_constraints tc
-        JOIN information_schema.key_column_usage kcu
-          ON tc.constraint_name = kcu.constraint_name
-         AND tc.table_schema = kcu.table_schema
-         AND tc.table_name = kcu.table_name
-        WHERE tc.table_schema = %s
-          AND tc.table_name = %s
-          AND tc.constraint_type = 'PRIMARY KEY'
-        ORDER BY kcu.ordinal_position;
-    """
-    cursor.execute(query, (schema, table))
-    rows = cursor.fetchall()
-    if not rows:
-        return None
-    constraint_name = rows[0]["constraint_name"]
-    columns = [r["column_name"] for r in rows]
-    return {"constraint_name": constraint_name, "columns": columns}
