@@ -25,34 +25,167 @@ canvas {
 
 .index_content {
     margin: auto;
-    padding: 2rem;
+    padding: 0;
     text-align: center;
-    color: white;
-    
+    color: #000000;
+
     z-index: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
+
+    /* Windows 98 styling */
+    background-color: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    font-family: "MS Sans Serif", sans-serif;
+    font-size: 11px;
+
+    /* Classic window appearance */
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    outline: none;
+    box-shadow:
+        inset 1px 1px 0px #ffffff,
+        inset 2px 2px 0px #dfdfdf,
+        inset -1px -1px 0px #808080,
+        inset -2px -2px 0px #808080;
+
+    min-width: 300px;
+    max-width: 400px;
+}
+
+/* Windows 98 title bar style */
+.title-bar {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%) !important;
+    color: white !important;
+    padding: 2px 8px;
+    height: 24px;
+    min-height: 24px;
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    outline: none;
+    box-shadow: 
+        inset 1px 1px 0px #ffffff00,
+        inset 2px 2px 0px #dfdfdf00,
+        inset -1px -1px 0px #808080,
+        inset -2px -2px 0px #80808000;
+}
+
+.title-bar h4 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: "MS Sans Serif", sans-serif;
+}
+
+/* Content area with proper padding */
+.index_content > *:not(.title-bar) {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.index_content h1 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    margin-top: 10px;
+    color: #000000;
+    text-align: center;
 }
 
 ul {
     list-style: none;
-    padding: 0;
-    margin: 0 1rem;
+    padding: 0 20px 20px 20px;
+    margin: 0;
 }
 
 ul li {
-    margin: .5rem 0;
+    margin: 8px 0;
 }
 
-ul li a {
-    color: white;
+
+/* Title bar help button */
+#help-me-button {
+    min-width: 20px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.w98-button {
+    font-family: "MS Sans Serif", sans-serif;
+    font-size: 11px;
+    min-width: 80px;
+    text-align: center;
+    padding: .5rem 1rem;
+    color: #000000;
     text-decoration: none;
+    background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    outline: none;
+    box-shadow: 
+        inset 1px 1px 0px #ffffff,
+        inset 2px 2px 0px #dfdfdf,
+        inset -1px -1px 0px #808080,
+        inset -2px -2px 0px #808080;
+    text-shadow: none;
+    cursor: pointer;
+    -webkit-user-select: none; /* Chrome/Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE/Edge legacy */
+    user-select: none;
 }
 
-ul li a:hover {
-    text-decoration: underline;
-    color: #dedede;
+.w98-button:hover {
+    background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+}
+
+.w98-button:active {
+    background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+    border-color: #808080 #dfdfdf #dfdfdf #808080;
+    box-shadow: 
+        inset -1px -1px 0px #ffffff,
+        inset -2px -2px 0px #dfdfdf,
+        inset 1px 1px 0px #808080,
+        inset 2px 2px 0px #808080;
+    transform: translate(1px, 1px);
+}
+
+.w98-button:disabled {
+    background-color: #c0c0c0;
+    color: #808080;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    box-shadow: 
+        inset 1px 1px 0px #ffffff,
+        inset -1px -1px 0px #808080;
+    cursor: not-allowed;
+    text-shadow: 1px 1px 0px #ffffff;
+}
+
+/* Horizontal layout for login/register buttons */
+.log-reg-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Center content in list items */
+ul li {
+    text-align: center;
+}
+
+/* Reset text alignment for log-reg-container */
+.log-reg-container {
+    text-align: initial;
+}
+
+/* Paragraph styling within list items */
+ul li p {
+    margin: 0;
+    padding: 10px;
 }

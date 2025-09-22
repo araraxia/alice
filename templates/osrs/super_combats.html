@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Combat Potions - Cheapest Ingredients</title>
+    <style>
+        body {
+            font-family: "MS Sans Serif", sans-serif;
+            background-color: #c0c0c0;
+            margin: 0;
+            padding: 20px;
+            font-size: 11px;
+        }
+
+        .container {
+            background-color: #c0c0c0;
+            border: 2px outset #c0c0c0;
+            padding: 16px;
+            margin: 0 auto;
+            max-width: 800px;
+            box-shadow:
+                inset 1px 1px 0px #ffffff,
+                inset 2px 2px 0px #dfdfdf,
+                inset -1px -1px 0px #808080,
+                inset -2px -2px 0px #404040;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%);
+            color: white;
+            padding: 4px 8px;
+            margin: -16px -16px 16px -16px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .ingredient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .ingredient-card {
+            background-color: #ffffff;
+            border: 1px inset #c0c0c0;
+            padding: 8px;
+            box-shadow:
+                inset -1px -1px 0px #dfdfdf,
+                inset 1px 1px 0px #808080;
+        }
+
+        .ingredient-header {
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-transform: capitalize;
+            color: #000080;
+        }
+
+        .item-info {
+            margin: 4px 0;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #008000;
+        }
+
+        .error {
+            background-color: #ffcccc;
+            border: 1px solid #ff0000;
+            padding: 8px;
+            margin: 16px 0;
+            color: #cc0000;
+        }
+
+        .back-link {
+            margin-bottom: 16px;
+        }
+
+        .w98-button {
+            font-family: "MS Sans Serif", sans-serif;
+            font-size: 11px;
+            padding: 4px 12px;
+            color: #000000;
+            text-decoration: none;
+            background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .w98-button:hover {
+            background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+        }
+
+        .refresh-info {
+            font-style: italic;
+            margin: 16px 0;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border: 1px inset #c0c0c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-bar">
+            Super Combat Potions - Cheapest Ingredients
+        </div>
+
+        <div class="back-link">
+            <a href="{{ url_for('osrs.index') }}" class="w98-button">← Back to OSRS Tools</a>
+        </div>
+
+        {% if error %}
+            <div class="error">
+                Error: {{ error }}
+            </div>
+        {% else %}
+            <div class="refresh-info">
+                Data shows the most cost-effective ingredients for making Super Combat potions based on current OSRS Grand Exchange prices and volume.
+            </div>
+
+            <div class="ingredient-grid">
+                {% for ingredient_type, ingredient_data in data.items() %}
+                <div class="ingredient-card">
+                    <div class="ingredient-header">
+                        {{ ingredient_type.replace('_', ' ') }}
+                    </div>
+
+                    {% if ingredient_data.item %}
+                        <div class="item-info">
+                            <strong>Item:</strong> {{ ingredient_data.item.item_name }}
+                        </div>
+
+                        <div class="item-info">
+                            <strong>Item ID:</strong> {{ ingredient_data.item.item_id }}
+                        </div>
+
+                        <div class="item-info price">
+                            <strong>Price per unit:</strong> {{ ingredient_data.min_buy_price }} gp
+                        </div>
+
+                        {% if ingredient_data.quantity and ingredient_data.quantity > 1 %}
+                        <div class="item-info">
+                            <strong>Doses:</strong> {{ ingredient_data.quantity }}
+                        </div>
+                        {% endif %}
+
+                        {% if ingredient_data.item.latest_price_5min_low %}
+                        <div class="item-info">
+                            <strong>5min Low:</strong> {{ ingredient_data.item.latest_price_5min_low }} gp
+                        </div>
+                        {% endif %}
+
+                        {% if ingredient_data.item.latest_price_1h_low %}
+                        <div class="item-info">
+                            <strong>1h Low:</strong> {{ ingredient_data.item.latest_price_1h_low }} gp
+                        </div>
+                        {% endif %}
+
+                        {% if ingredient_data.item.latest_5min_volume_low %}
+                        <div class="item-info">
+                            <strong>Volume (5min):</strong> {{ ingredient_data.item.latest_5min_volume_low }}
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="item-info">No data available</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="refresh-info">
+                <strong>Note:</strong> Prices account for Barbarian Herblore goggles (11.11% chance to save secondary ingredients).
+                Volume thresholds: 5min ≥ 500, 1h ≥ 2000 to ensure liquidity.
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

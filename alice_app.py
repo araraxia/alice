@@ -15,10 +15,12 @@ from flask_limiter.util import get_remote_address
 
 from src.website.site_router import fort_route
 from src.website.wiki_router import wiki_route
+from src.website.osrs_router import osrs_route
 from src.discord.discord_router import discord_route
 ROUTE_LIST = [
     fort_route,
     wiki_route,
+    osrs_route,
     discord_route,
 ]
 
@@ -43,6 +45,10 @@ __name__,
         self.init_limiter()
         CSRFProtect(self.app)
         self.init_login_manager()
+
+        self.app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+        self.app.config['TEMPLATES_AUTO_RELOAD'] = True
+        self.app.jinja_env.cache = {}
 
         # Blueprint registration
         for route in ROUTE_LIST:

@@ -19,10 +19,24 @@
     <canvas id="background"></canvas>
     <div id="index_container" class="index_container">
         <div class="index_content">
-            <h1>Welcome to Araxia.xyz</h1>
+            <div class="title-bar">
+                <h4>Araxia.xyz</h4>
+                <button id="help-me-button" class="w98-button">?</button>
+            </div>
+            <h1>Welcome!</h1>
             <ul>
-                <li><a href="{{ url_for('fort.login') }}">Login</a></li>
-                <li><a href="{{ url_for('fort.register') }}">Register</a></li>
+                <li>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                </li>
+                <li>
+                    <a href="{{ url_for('osrs.index') }}"><button class="w98-button">OSRS Tools</button></a>
+                </li>
+                <li>
+                    <div class="log-reg-container">
+                        <a href="{{ url_for('fort.login') }}"><button class="w98-button" disabled>Login</button></a>
+                        <a href="{{ url_for('fort.register') }}"><button class="w98-button" disabled>Register</button></a>
+                    </div>
+                </li>
             </ul>
         </div>
     </div>
