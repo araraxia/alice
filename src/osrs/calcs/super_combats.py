@@ -1,4 +1,5 @@
 from math import inf
+from flask import render_template
 import os
 from pathlib import Path
 
@@ -114,8 +115,6 @@ class SuperCombats:
             "torstol": cheapest_template.copy(),
         }
 
-        print(f"\n📊 Analyzing {len(self.recipe)} ingredient categories...")
-
         for ingredient, item_data in self.recipe.items():
             print(f"\n🧪 Processing {ingredient} ({len(item_data)} options):")
 
@@ -125,7 +124,6 @@ class SuperCombats:
                 # Debug volume data
                 vol_5m = getattr(item, "latest_5min_volume_low", None)
                 vol_1h = getattr(item, "latest_1h_volume_low", None)
-                print(f"    📈 Volume - 5m: {vol_5m}, 1h: {vol_1h}")
 
                 # Skip items that don't meet volume requirements
                 if vol_5m is None and vol_1h is None:
@@ -135,7 +133,6 @@ class SuperCombats:
                 # Item needs good volume in either 5m OR 1h timeframe
                 vol_5m_ok = vol_5m is not None and vol_5m >= vol_min_5m
                 vol_1h_ok = vol_1h is not None and vol_1h >= vol_min_1h
-                
                 if not vol_5m_ok and not vol_1h_ok:
                     print(f"    ❌ Skipped: 5m vol {vol_5m} < {vol_min_5m} AND 1h vol {vol_1h} < {vol_min_1h}")
                     continue
@@ -143,40 +140,27 @@ class SuperCombats:
                 # Debug price data
                 price_5m_raw = getattr(item, "latest_5min_price_low", None)
                 price_1h_raw = getattr(item, "latest_1h_price_low", None)
-                print(f"    💰 Raw prices - 5m: {price_5m_raw}, 1h: {price_1h_raw}")
 
                 # Handle zero prices by setting them to None instead of inf
-                if price_5m_raw == 0:
-                    price_5m_raw = None
-                    print(f"    ⚠️ 5m price was 0, set to None")
-                if price_1h_raw == 0:
-                    price_1h_raw = None
-                    print(f"    ⚠️ 1h price was 0, set to None")
+                prices_5m_raw = price_5m_raw if price_5m_raw not in (0, None) else None
+                prices_1h_raw = price_1h_raw if price_1h_raw not in (0, None) else None
 
                 # Determine dosage based on item dosage
                 dosage = 0
                 for dose_name, dose_data in self.dosages.items():
                     if item in dose_data["items"]:
                         dosage = dose_data["dosage"]
-                        print(f"    🧬 Found dosage: {dosage} ({dose_name})")
                         break
 
                 if not dosage:  # Torstol case
-                    print(f"    🌿 Torstol processing (item_id: {item.item_id})")
                     # Calculate the price per herb w/ save chance
                     quantity = (
                         1 - self.reduced_secondaries if self.goggles_equipped else 1
                     )
                     dosage = quantity
-                    print(
-                        f"    🥽 Quantity multiplier: {quantity} (goggles: {self.goggles_equipped})"
-                    )
 
                     # Clean grimy torstol has a fixed NPC price for cleaning
                     if item.item_id == 219:
-                        print(
-                            f"    🧹 Grimy torstol - adding cleaning cost: {self.zahur_clean_price}"
-                        )
                         price_5min = ((price_5m_raw or 0) + self.zahur_clean_price) / quantity if price_5m_raw else None
                         price_1h = ((price_1h_raw or 0) + self.zahur_clean_price) / quantity if price_1h_raw else None
                     else:
@@ -184,11 +168,8 @@ class SuperCombats:
                         price_1h = price_1h_raw / quantity if price_1h_raw else None
 
                 else:  # Potion case
-                    print(f"    🧪 Potion processing - dosage: {dosage}")
-                    # Calculate the price per dose
                     price_5min = price_5m_raw / dosage if price_5m_raw else None
                     price_1h = price_1h_raw / dosage if price_1h_raw else None
-                    print(f"    💊 Price per dose - 5m: {price_5min}, 1h: {price_1h}")
 
                 # Choose the best available price (prefer 5min if available and stable)
                 if price_5min is not None and price_1h is not None:
@@ -247,6 +228,18 @@ class SuperCombats:
         print(f"🎉 All ingredients found!")
         return cheapest
 
+    def display(self):
+        try:
+            data = self.find_cheapest_ingredients()
+
+            if not data:
+                return render_template('osrs/super_combats.html', error="No data available")
+
+            return render_template('osrs/super_combats.html', data=data)
+        except Exception as e:
+            self.log.error(f"Error in super_combats route: {e}")
+            return render_template('osrs/super_combats.html', error=str(e))
+        
 
 if __name__ == "__main__":
     sc = SuperCombats()
