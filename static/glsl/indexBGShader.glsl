@@ -8,12 +8,12 @@ float scale = 2.5; // Scale factor for the background
 
 vec2 SPR_SIZE = vec2(6.0, 8.0);
 
-// Grayscale tones - Fixed hex values
-vec2 c_a = vec2(0.25, 0.25);  // 0x404040 normalized
-vec2 c_b = vec2(0.5, 0.5);    // 0x808080 normalized
-vec2 c_c = vec2(0.69, 0.69);  // 0xB0B0B0 normalized
-vec2 c_d = vec2(0.94, 0.94);  // 0xF0F0F0 normalized
-vec2 c_spc = vec2(0.0, 0.0);  // Fixed invalid hex value
+// Purple and Gold tones
+vec2 c_a = vec2(0x404040, 0x404040);   
+vec2 c_b = vec2(0x808080, 0x808080);   
+vec2 c_c = vec2(0x808080, 0x808080);   
+vec2 c_d = vec2(0xF0F0F0, 0xF0F0F0);   
+vec2 c_spc = vec2(0x000000, 0x00003543534500); 
 
 const int NUM_TONES = 12;
 vec2 tones[12];
@@ -21,13 +21,24 @@ vec2 tones[12];
 float ch(vec2 ch, vec2 uv)
 {
     uv = floor(uv);
-    vec2 b = vec2((SPR_SIZE.x - uv.x - 1.0) + uv.y * SPR_SIZE.x) - vec2(24.0, 0.0);
-    vec2 p = mod(floor(ch / exp2(clamp(b, -1.0, 25.0))), 2.0);
     
-    // Fixed boolean logic
+    // Calculate bit position within sprite
+    float bitX = SPR_SIZE.x - uv.x - 1.0;
+    float bitY = uv.y * SPR_SIZE.x;
+    vec2 bitPosition = vec2(bitX + bitY) - vec2(24.0, 0.0);
+    
+    // Extract bits from sprite data
+    vec2 powerOf2 = exp2(clamp(bitPosition, -1.0, 25.0));
+    vec2 extractedBits = mod(floor(ch / powerOf2), 2.0);
+    
+    // Check if pixel is within sprite bounds
     bool inBounds = all(greaterThanEqual(uv, vec2(0.0))) && all(lessThan(uv, SPR_SIZE));
-    float o = dot(p, vec2(1.0)) * (inBounds ? 1.0 : 0.0);
-    return o;
+    
+    // Combine bits and apply bounds check
+    float pixelValue = dot(extractedBits, vec2(1.0));
+    float result = pixelValue * (inBounds ? 1.0 : 0.0);
+    
+    return result;
 }
 
 void init_arrays()
@@ -62,28 +73,126 @@ vec2 tone(float b)
 void main() 
 {
     init_arrays();
-    vec2 fitres = floor(resolution / (SPR_SIZE * scale)) * (SPR_SIZE * scale);    
-    vec2 res = floor(resolution.xy / SPR_SIZE) / scale;    
+    
+    // === COORDINATE SETUP ===
+    // Calculate fitted resolution that aligns with sprite grid
+    vec2 spriteGridSize = SPR_SIZE * scale;
+    vec2 fitres = floor(resolution / spriteGridSize) * spriteGridSize;
+    
+    // Calculate resolution in sprite units
+    vec2 res = floor(resolution.xy / SPR_SIZE) / scale;
+    
+    // Get pixel coordinates and secondary UV for effects
     vec2 uv = floor(gl_FragCoord.xy / scale);
-    vec2 uv2 = uv * 0.357;
-    uv -= (resolution - fitres) / (2.0 * scale);
+    vec2 uv2 = uv * 0.357;  // Secondary UV for additional texture effects
     
-    vec2 tasp = res / min(res.x, res.y);
-    vec2 tuv = floor(uv / SPR_SIZE) / min(res.x, res.y);
-    tuv.y += sin(time * 0.4 + tuv.x * 7.0) * 0.15;
+    // Center the pattern on screen
+    vec2 screenOffset = (resolution - fitres) / (2.0 * scale);
+    uv -= screenOffset;
     
-    float plm = sin(tuv.x * 6.0 + sin(tuv.x + tuv.y * 5.0 + time * 0.3) + time * 0.4) + cos(tuv.y * 13.0 + cos(tuv.x - tuv.y * 9.0 + time * 0.1));
-    plm = sin(plm * 2.0 - 5.0 * (-0.1 * time + sin(time * 0.25) * 2.0));
-    plm = (plm / 2.0 + 0.4);
+    // === WAVE PATTERN GENERATION ===
+    // Calculate aspect-corrected coordinates
+    float minResolution = min(res.x, res.y);
+    vec2 aspectRatio = res / minResolution;
+    vec2 tileUV = floor(uv / SPR_SIZE) / minResolution;
     
-    vec2 c = tone(plm);
+    // Add vertical wave motion
+    float verticalWaveFreq = 3.5;
+    float verticalWaveSpeed = 0.05;
+    float verticalWaveAmount = 0.2;
+    tileUV.y += sin(time * verticalWaveSpeed + tileUV.x * verticalWaveFreq) * verticalWaveAmount;
     
-    float pix = ch(c, mod(uv, SPR_SIZE));
-    pix = abs(pix) + 0.4;
+    // === COMPLEX PATTERN CALCULATION ===
+    // Primary wave components
+    float wave1Freq = 1.0;
+    float wave1Speed = 0.005;
+    float innerWave1 = sin(tileUV.x + tileUV.y * 7.0 + time * 0.3);
+    float wave1 = sin(tileUV.x * wave1Freq + innerWave1 + time * wave1Speed);
     
-    // Fixed boolean logic
-    bool inRange = all(greaterThan(uv, vec2(0.0))) && all(lessThan(uv, fitres / scale));
-    pix *= inRange ? 1.0 : 0.0;
+    float wave2Freq = 3.0;
+    float wave2Speed = 0.005;
+    float innerWave2 = cos(tileUV.x - tileUV.y * 9.0 + time * wave2Speed);
+    float wave2 = cos(tileUV.y * wave2Freq + innerWave2);
     
-    gl_FragColor = vec4(vec3(pix * 0.5 * sin(uv.y * 0.005 + time + length(uv2 * 0.015)), pix * 0.1, pix * 0.5), 1.0);
+    // Combine primary waves
+    float combinedWaves = wave1 + wave2;
+    
+    // Apply secondary modulation
+    float timeOffset = -0.1 * time;
+    float slowOscillation = sin(time * 0.25) * 2.0;
+    float modulation = -5.0 * (timeOffset + slowOscillation);
+    float finalPattern = sin(combinedWaves * 2.0 + modulation);
+    
+    // Normalize pattern to [0, 1] range
+    float plm = (finalPattern / 2.0 + 0.4);
+    
+    // === SPRITE RENDERING ===
+    // Get sprite data based on pattern intensity
+    vec2 spriteData = tone(plm);
+    
+    // Render sprite pixel at current position
+    vec2 spritePixelPos = mod(uv, SPR_SIZE);
+    float pixelValue = ch(spriteData, spritePixelPos);
+    
+    // Ensure pixel value is positive and add base brightness
+    float baseBrightness = 0.4;
+    pixelValue = abs(pixelValue) + baseBrightness;
+    
+    // === BOUNDARY MASKING ===
+    // Only render pixels within the fitted screen area
+    vec2 screenBounds = fitres / scale;
+    bool inRange = all(greaterThan(uv, vec2(0.0))) && all(lessThan(uv, screenBounds));
+    pixelValue *= inRange ? 1.0 : 0.0;
+    
+    // === COLOR WAVE CONTROLS ===
+    float waveSpeed = 0.5;        // Controls animation speed
+    float waveScale = 0.005;      // Controls wave frequency/size
+    float waveAmplitude = 0.8;    // Controls wave intensity (0.0-1.0)
+    float baseIntensity = 0.15;    // Minimum brightness to prevent black
+    float separation = 0.2;       // Controls color separation (higher = less overlap)
+    
+    // === WAVE PATTERN GENERATION ===
+    // Purple wave - vertical bias with texture influence
+    float purplePhase = uv.y * waveScale + time * waveSpeed;
+    float purpleTexture = length(uv2 * 0.015);
+    float purpleWaveRaw = sin(purplePhase + purpleTexture);
+    float purpleWave = (purpleWaveRaw * 0.5 + 0.5);  // Convert to [0,1]
+    
+    // Gold wave - horizontal bias with phase offset
+    float goldPhase = uv.x * waveScale * 1.3 + time * waveSpeed * 0.7;
+    float phaseOffset = 3.14159;  // π radians = 180° phase shift
+    float goldWaveRaw = cos(goldPhase + phaseOffset);
+    float goldWave = (goldWaveRaw * 0.5 + 0.5);  // Convert to [0,1]
+    
+    // === COLOR SEPARATION LOGIC ===
+    // Create thresholds to reduce color overlap
+    float purpleThreshold = smoothstep(separation, 1.0, purpleWave);
+    float goldThreshold = smoothstep(separation, 1.0, goldWave);
+    
+    // Calculate base intensities
+    float purpleBase = baseIntensity + purpleThreshold * waveAmplitude;
+    float goldBase = baseIntensity + goldThreshold * waveAmplitude;
+    
+    // Apply mutual suppression to reduce overlap
+    float purpleSuppression = 1.0 - goldThreshold * 0.7;
+    float goldSuppression = 1.0 - purpleThreshold * 0.7;
+    
+    // Final intensity calculations
+    float purpleIntensity = pixelValue * purpleBase * purpleSuppression;
+    float goldIntensity = pixelValue * goldBase * goldSuppression;
+    
+    // === FINAL COLOR MIXING ===
+    // Define color palettes
+    vec3 purpleColor = vec3(0.5, 0.15, 0.5);  // RGB purple
+    vec3 goldColor = vec3(1.0, 0.87, 0.11);    // More saturated gold (reduced green, removed blue)
+    
+    // Apply intensities to colors
+    vec3 purple = purpleColor * purpleIntensity;
+    vec3 gold = goldColor * goldIntensity;
+    
+    // Combine colors with gold slightly dimmed
+    float goldMixAmount = 0.5;
+    vec3 finalColor = purple + gold * goldMixAmount;
+    
+    gl_FragColor = vec4(finalColor, 1.0);
 }
