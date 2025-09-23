@@ -46,21 +46,38 @@ class osrsItemProperties:
         self.highalch: int = None
         self.lowalch: int = None
 
-        self.latest_price: int = None
         self.latest_price_high: int = None
         self.latest_price_low: int = None
+        self.latest_price_average: float = None
+        self.latest_3x_price_high: float = None
+        self.latest_3x_price_low: float = None
+        self.latest_3x_price_average: float = None
 
-        self.latest_5min_price: int = None
         self.latest_5min_price_high: int = None
-        self.latest_5min_volume_high: int = None
         self.latest_5min_price_low: int = None
+        self.latest_5min_price_average: float = None
+        self.latest_5min_volume_high: int = None
         self.latest_5min_volume_low: int = None
+        self.latest_5min_volume_average: float = None
+        self.latest_15min_price_high: float = None
+        self.latest_15min_price_low: float = None
+        self.latest_15min_price_average: float = None
+        self.latest_15min_volume_high: float = None
+        self.latest_15min_volume_low: float = None
+        self.latest_15min_volume_average: float = None
 
-        self.latest_1h_price: int = None
         self.latest_1h_price_high: int = None
-        self.latest_1h_volume_high: int = None
         self.latest_1h_price_low: int = None
+        self.latest_1h_price_average: float = None
+        self.latest_1h_volume_high: int = None
         self.latest_1h_volume_low: int = None
+        self.latest_1h_volume_average: float = None
+        self.latest_3h_price_high: float = None
+        self.latest_3h_price_low: float = None
+        self.latest_3h_price_average: float = None
+        self.latest_3h_volume_high: float = None
+        self.latest_3h_volume_low: float = None
+        self.latest_3h_volume_average: float = None
 
         self.load_stored_data()
         print(f"✅ Finished initializing {getattr(self, 'name', f'item_{item_id}')}")
@@ -133,7 +150,7 @@ class osrsItemProperties:
                 schema_name=PRICE_SCHEMA,
                 table_name=table_name,
                 sort_col=PRICE_PK,
-                limit=1,
+                limit=3,
             )
             print(f"✅ Latest price query successful, records: {len(latest_price)}")
         except UndefinedTable:
@@ -147,28 +164,36 @@ class osrsItemProperties:
 
         if latest_price:
             recent_record = latest_price[0]
+
             print(f"📊 Latest price record: {dict(recent_record)}")
+
             self.latest_price_high = recent_record.get("high") or 0
             self.latest_price_low = recent_record.get("low") or 0
-            # Eliminate large variations if only one price is available
-            if self.latest_price_high and self.latest_price_low:
-                self.latest_price = (
-                    self.latest_price_high + self.latest_price_low
-                ) // 2
-            elif self.latest_price_high:
-                self.latest_price = self.latest_price_high
-            elif self.latest_price_low:
-                self.latest_price = self.latest_price_low
-            else:
-                self.latest_price = 0
+            self.latest_price_average = self.average_price(
+                [self.latest_price_high, self.latest_price_low]
+            )
+
+            self.latest_3x_price_high = self.average_price(
+                prices=[r.get("high") or 0 for r in latest_price]
+            )
+            self.latest_3x_price_low = self.average_price(
+                prices=[r.get("low") or 0 for r in latest_price]
+            )
+            self.latest_3x_price_average = self.average_price(
+                [self.latest_3x_price_high, self.latest_3x_price_low]
+            )
+
             print(
-                f"💰 Set latest prices - high: {self.latest_price_high}, low: {self.latest_price_low}, avg: {self.latest_price}"
+                f"💰 Set latest prices - high: {self.latest_price_high}, low: {self.latest_price_low}, avg: {self.latest_price_average}"
             )
         else:
             print(f"❌ No latest price data found")
-            self.latest_price = 0
+            self.latest_price_average = 0
             self.latest_price_high = 0
             self.latest_price_low = 0
+            self.latest_3x_price_high = 0
+            self.latest_3x_price_low = 0
+            self.latest_3x_price_average = 0
 
     @manage_conn_cursor
     def get_latest_5min_price(self):
@@ -183,7 +208,7 @@ class osrsItemProperties:
                 schema_name=PRICE_SCHEMA,
                 table_name=table_name,
                 sort_col=PRICE_PK,
-                limit=1,
+                limit=3,
             )
             print(f"✅ 5min price query successful, records: {len(prices_5min)}")
         except UndefinedTable:
@@ -197,32 +222,56 @@ class osrsItemProperties:
 
         if prices_5min:
             recent_record = prices_5min[0]
+
             print(f"📊 5min price record: {dict(recent_record)}")
+
             self.latest_5min_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_5min_price_low = recent_record.get("avgLowPrice") or 0
+            self.latest_5min_price_average = self.average_price(
+                [self.latest_5min_price_high, self.latest_5min_price_low]
+            )
             self.latest_5min_volume_high = recent_record.get("highPriceVolume") or 0
             self.latest_5min_volume_low = recent_record.get("lowPriceVolume") or 0
-            # Eliminate large variations if only one price is available
-            if self.latest_5min_price_high and self.latest_5min_price_low:
-                self.latest_5min_price = (
-                    self.latest_5min_price_high + self.latest_5min_price_low
-                ) // 2
-            elif self.latest_5min_price_high:
-                self.latest_5min_price = self.latest_5min_price_high
-            elif self.latest_5min_price_low:
-                self.latest_5min_price = self.latest_5min_price_low
-            else:
-                self.latest_5min_price = 0
+            self.latest_5min_volume_average = self.average_price(
+                [self.latest_5min_volume_high, self.latest_5min_volume_low]
+            )
+
+            self.latest_15min_price_high = self.average_price(
+                prices=[r.get("avgHighPrice") or 0 for r in prices_5min]
+            )
+            self.latest_15min_price_low = self.average_price(
+                prices=[r.get("avgLowPrice") or 0 for r in prices_5min]
+            )
+            self.latest_15min_price_average = self.average_price(
+                [self.latest_15min_price_high, self.latest_15min_price_low]
+            )
+            self.latest_15min_volume_high = self.average_price(
+                prices=[r.get("highPriceVolume") or 0 for r in prices_5min]
+            )
+            self.latest_15min_volume_low = self.average_price(
+                prices=[r.get("lowPriceVolume") or 0 for r in prices_5min]
+            )
+            self.latest_15min_volume_average = self.average_price(
+                [self.latest_15min_volume_high, self.latest_15min_volume_low]
+            )
+
             print(
                 f"⏱️ Set 5min data - price_low: {self.latest_5min_price_low}, vol_low: {self.latest_5min_volume_low}"
             )
         else:
             print(f"❌ No 5min price data found")
-            self.latest_5min_price = 0
+            self.latest_5min_price_average = 0
             self.latest_5min_price_high = 0
             self.latest_5min_price_low = 0
+            self.latest_5min_volume_average = 0
             self.latest_5min_volume_high = 0
             self.latest_5min_volume_low = 0
+            self.latest_15min_price_high = 0
+            self.latest_15min_price_low = 0
+            self.latest_15min_price_average = 0
+            self.latest_15min_volume_high = 0
+            self.latest_15min_volume_low = 0
+            self.latest_15min_volume_average = 0
 
     @manage_conn_cursor
     def get_latest_1h_price(self):
@@ -237,7 +286,7 @@ class osrsItemProperties:
                 schema_name=PRICE_SCHEMA,
                 table_name=table_name,
                 sort_col=PRICE_PK,
-                limit=1,
+                limit=3,
             )
             print(f"✅ 1h price query successful, records: {len(prices_1h)}")
         except UndefinedTable:
@@ -251,29 +300,59 @@ class osrsItemProperties:
 
         if prices_1h:
             recent_record = prices_1h[0]
+
             print(f"📊 1h price record: {dict(recent_record)}")
+
             self.latest_1h_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_1h_price_low = recent_record.get("avgLowPrice") or 0
+            self.latest_1h_price_average = self.average_price(
+                [self.latest_1h_price_high, self.latest_1h_price_low]
+            )
             self.latest_1h_volume_high = recent_record.get("highPriceVolume") or 0
             self.latest_1h_volume_low = recent_record.get("lowPriceVolume") or 0
-            # Eliminate large variations if only one price is available
-            if self.latest_1h_price_high and self.latest_1h_price_low:
-                self.latest_1h_price = (
-                    self.latest_1h_price_high + self.latest_1h_price_low
-                ) // 2
-            elif self.latest_1h_price_high:
-                self.latest_1h_price = self.latest_1h_price_high
-            elif self.latest_1h_price_low:
-                self.latest_1h_price = self.latest_1h_price_low
-            else:
-                self.latest_1h_price = 0
-            print(
-                f"🕐 Set 1h data - price_low: {self.latest_1h_price_low}, vol_low: {self.latest_1h_volume_low}"
+            self.latest_1h_volume_average = self.average_price(
+                [self.latest_1h_price_high, self.latest_1h_price_low]
             )
+
+            self.latest_3h_price_high = self.average_price(
+                prices=[r.get("avgHighPrice") or 0 for r in prices_1h]
+            )
+            self.latest_3h_price_low = self.average_price(
+                prices=[r.get("avgLowPrice") or 0 for r in prices_1h]
+            )
+            self.latest_3h_price_average = self.average_price(
+                [self.latest_3h_price_high, self.latest_3h_price_low]
+            )
+            self.latest_3h_volume_high = self.average_price(
+                prices=[r.get("highPriceVolume") or 0 for r in prices_1h]
+            )
+            self.latest_3h_volume_low = self.average_price(
+                prices=[r.get("lowPriceVolume") or 0 for r in prices_1h]
+            )
+            self.latest_3h_volume_average = self.average_price(
+                [self.latest_3h_volume_high, self.latest_3h_volume_low]
+            )
+
         else:
             print(f"❌ No 1h price data found")
-            self.latest_1h_price = 0
+            self.latest_1h_price_average = 0
             self.latest_1h_price_high = 0
             self.latest_1h_price_low = 0
+            self.latest_1h_volume_average = 0
             self.latest_1h_volume_high = 0
             self.latest_1h_volume_low = 0
+            self.latest_3h_price_high = 0
+            self.latest_3h_price_low = 0
+            self.latest_3h_price_average = 0
+            self.latest_3h_volume_high = 0
+            self.latest_3h_volume_low = 0
+            self.latest_3h_volume_average = 0
+
+    def average_price(self, prices: list[int]) -> float:
+        n = 0
+        sum = 0
+        for price in prices:
+            if price:
+                n += 1
+                sum += price
+        return sum / n if n > 0 else 0

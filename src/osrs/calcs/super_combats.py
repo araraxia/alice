@@ -13,6 +13,7 @@ from src.osrs.item_properties import osrsItemProperties
 class SuperCombats:
     def __init__(self):
         # Item properties initialization
+        self.super_combat4 = osrsItemProperties(item_id=12695)
         self.sc4_item = osrsItemProperties(item_id=12695)
         self.ss1_item = osrsItemProperties(item_id=161)
         self.ss2_item = osrsItemProperties(item_id=159)
@@ -84,8 +85,8 @@ class SuperCombats:
 
     def find_cheapest_ingredients(
         self,
-        vol_min_5m: int = 100,
-        vol_min_1h: int = 500,
+        vol_min_15m: int = 100,
+        vol_min_3h: int = 500,
         goggles: bool = True,
     ):
         """
@@ -97,7 +98,7 @@ class SuperCombats:
         when making potions.
         """
         print(
-            f"🔍 Starting ingredient search with volume thresholds: 5m={vol_min_5m}, 1h={vol_min_1h}"
+            f"🔍 Starting ingredient search with volume thresholds: 5m={vol_min_15m}, 1h={vol_min_3h}"
         )
         print(f"⚗️ Goggles equipped: {goggles}")
 
@@ -119,34 +120,44 @@ class SuperCombats:
             print(f"\n🧪 Processing {ingredient} ({len(item_data)} options):")
 
             for item in item_data:
-                print(f"  📦 Item {item.item_id} ({getattr(item, 'name', 'Unknown')}):")
+                item_name = getattr(item, "name", "Unknown")
+                print(f"  📦 Item {item.item_id} ({item_name}):")
 
                 # Debug volume data
-                vol_5m = getattr(item, "latest_5min_volume_low", None)
-                vol_1h = getattr(item, "latest_1h_volume_low", None)
+                vol_15m = getattr(item, "latest_15min_volume_average", None)
+                vol_3h = getattr(item, "latest_3h_volume_average", None)
 
                 # Skip items that don't meet volume requirements
-                if vol_5m is None and vol_1h is None:
+                if vol_15m is None and vol_3h is None:
                     print(f"    ❌ Skipped: No volume data for item {item.item_id}")
                     continue
-                
+
                 # Item needs good volume in either 5m OR 1h timeframe
-                vol_5m_ok = vol_5m is not None and vol_5m >= vol_min_5m
-                vol_1h_ok = vol_1h is not None and vol_1h >= vol_min_1h
+                vol_5m_ok = vol_15m is not None and vol_15m >= vol_min_15m
+                vol_1h_ok = vol_3h is not None and vol_3h >= vol_min_3h
                 if not vol_5m_ok and not vol_1h_ok:
-                    print(f"    ❌ Skipped: 5m vol {vol_5m} < {vol_min_5m} AND 1h vol {vol_1h} < {vol_min_1h}")
+                    print(
+                        f"    ❌ Skipped: 5m vol {vol_15m} < {vol_min_15m} AND 1h vol {vol_3h} < {vol_min_3h}"
+                    )
                     continue
 
                 # Debug price data
-                price_5m_raw = getattr(item, "latest_5min_price_low", None)
-                price_1h_raw = getattr(item, "latest_1h_price_low", None)
+                price_15m_raw = getattr(item, "latest_15min_price_average", None)
+                price_1h_raw = getattr(item, "latest_3h_price_average", None)
+                print(f"    💰 Raw prices - 15m: {price_15m_raw}, 3h: {price_1h_raw}")
 
                 # Handle zero prices by setting them to None instead of inf
-                prices_5m_raw = price_5m_raw if price_5m_raw not in (0, None) else None
-                prices_1h_raw = price_1h_raw if price_1h_raw not in (0, None) else None
+                if price_15m_raw == 0:
+                    price_15m_raw = None
+                    print(f"    ⚠️ 5m price was 0, set to None")
+                if price_1h_raw == 0:
+                    price_1h_raw = None
+                    print(f"    ⚠️ 1h price was 0, set to None")
 
                 # Determine dosage based on item dosage
                 dosage = 0
+                average_quant = 1  # Default quantity for potions
+
                 for dose_name, dose_data in self.dosages.items():
                     if item in dose_data["items"]:
                         dosage = dose_data["dosage"]
@@ -154,39 +165,55 @@ class SuperCombats:
 
                 if not dosage:  # Torstol case
                     # Calculate the price per herb w/ save chance
-                    quantity = (
+                    average_quant = (
                         1 - self.reduced_secondaries if self.goggles_equipped else 1
                     )
-                    dosage = quantity
+                    dosage = average_quant
 
                     # Clean grimy torstol has a fixed NPC price for cleaning
                     if item.item_id == 219:
-                        price_5min = ((price_5m_raw or 0) + self.zahur_clean_price) / quantity if price_5m_raw else None
-                        price_1h = ((price_1h_raw or 0) + self.zahur_clean_price) / quantity if price_1h_raw else None
+                        price_15min = (
+                            ((price_15m_raw or 0) + self.zahur_clean_price)
+                            / average_quant
+                            if price_15m_raw
+                            else None
+                        )
+                        price_3h = (
+                            ((price_1h_raw or 0) + self.zahur_clean_price)
+                            / average_quant
+                            if price_1h_raw
+                            else None
+                        )
                     else:
-                        price_5min = price_5m_raw / quantity if price_5m_raw else None
-                        price_1h = price_1h_raw / quantity if price_1h_raw else None
+                        price_15min = (
+                            price_15m_raw / average_quant if price_15m_raw else None
+                        )
+                        price_3h = (
+                            price_1h_raw / average_quant if price_1h_raw else None
+                        )
 
                 else:  # Potion case
-                    price_5min = price_5m_raw / dosage if price_5m_raw else None
-                    price_1h = price_1h_raw / dosage if price_1h_raw else None
+                    price_15min = price_15m_raw / dosage if price_15m_raw else None
+                    price_3h = price_1h_raw / dosage if price_1h_raw else None
 
                 # Choose the best available price (prefer 5min if available and stable)
-                if price_5min is not None and price_1h is not None:
+                if price_15min is not None and price_3h is not None:
                     # Both prices available - check for stability
-                    diff_5m_1h = abs(price_5min - price_1h)
-                    if diff_5m_1h / price_1h > 0.10:
-                        calculation_price = price_1h
-                        print(f"    📊 Using 1h price {price_1h} (large swing: {diff_5m_1h/price_1h:.1%})")
+                    diff_15m_3h = abs(price_15min - price_3h)
+                    if diff_15m_3h / price_3h > 0.10:
+                        calculation_price = price_3h
+                        print(
+                            f"    📊 Using 1h price {price_3h} (large swing: {diff_15m_3h/price_3h:.1%})"
+                        )
                     else:
-                        calculation_price = price_5min
-                        print(f"    📊 Using 5m price {price_5min} (stable)")
-                elif price_5min is not None:
-                    calculation_price = price_5min
-                    print(f"    📊 Using 5m price {price_5min} (only option)")
-                elif price_1h is not None:
-                    calculation_price = price_1h
-                    print(f"    📊 Using 1h price {price_1h} (only option)")
+                        calculation_price = price_15min
+                        print(f"    📊 Using 5m price {price_15min} (stable)")
+                elif price_15min is not None:
+                    calculation_price = price_15min
+                    print(f"    📊 Using 5m price {price_15min} (only option)")
+                elif price_3h is not None:
+                    calculation_price = price_3h
+                    print(f"    📊 Using 1h price {price_3h} (only option)")
                 else:
                     print(f"    ❌ No valid prices available")
                     continue
@@ -200,8 +227,9 @@ class SuperCombats:
                 if not cheapest[ingredient]["item"] or calculation_price < current_best:
                     cheapest[ingredient] = {
                         "item": item,
+                        "item_cost": calculation_price * dosage,
                         "min_ppd": calculation_price,
-                        "quantity": dosage,
+                        "quantity": average_quant,
                     }
                     print(
                         f"    ✅ NEW BEST for {ingredient}! Price: {calculation_price}"
@@ -216,8 +244,12 @@ class SuperCombats:
                 missing_ingredients.append(ingredient)
                 print(f"  ❌ Missing: {ingredient}")
             else:
-                item_name = getattr(data["item"], "name", "Unknown")
-                print(f"  ✅ {ingredient}: {item_name} @ {data['min_ppd']} price per dose")
+                item_name = getattr(
+                    data["item"], "item_name", f"Item {data['item'].item_id}"
+                )
+                print(
+                    f"  ✅ {ingredient}: {item_name} @ {data['min_ppd']} price per dose"
+                )
 
         if missing_ingredients:
             print(
@@ -226,23 +258,291 @@ class SuperCombats:
             return {}
 
         print(f"🎉 All ingredients found!")
+
         return cheapest
+
+    def get_production_cost(self, cheapest_ingredients):
+        """
+        Calculate production costs for super combat potions using 15-minute and 3-hour
+        price data (high, low, average) from the cheapest ingredients.
+
+        Returns a dictionary with cost breakdowns for different timeframes and price types.
+        """
+        if not cheapest_ingredients:
+            return {
+                "15min": {"high": 0, "low": 0, "average": 0},
+                "3hour": {"high": 0, "low": 0, "average": 0},
+                "error": "No ingredient data available",
+            }
+
+        print(f"\n💰 Calculating production costs...")
+
+        costs = {
+            "15min": {"high": 0, "low": 0, "average": 0},
+            "3hour": {"high": 0, "low": 0, "average": 0},
+        }
+
+        for ingredient_type, ingredient_data in cheapest_ingredients.items():
+            if not ingredient_data.get("item"):
+                print(f"  ❌ Missing item data for {ingredient_type}")
+                continue
+
+            item = ingredient_data["item"]
+            quantity = ingredient_data.get("quantity", 1)
+
+            print(f"  🧪 Processing {ingredient_type} (quantity: {quantity}):")
+
+            # Get 15-minute prices
+            price_15min_high = getattr(item, "latest_15min_price_high", None) or 0
+            price_15min_low = getattr(item, "latest_15min_price_low", None) or 0
+            price_15min_avg = getattr(item, "latest_15min_price_average", None) or 0
+
+            # Get 3-hour prices
+            price_3h_high = getattr(item, "latest_3h_price_high", None) or 0
+            price_3h_low = getattr(item, "latest_3h_price_low", None) or 0
+            price_3h_avg = getattr(item, "latest_3h_price_average", None) or 0
+
+            # Apply quantity adjustments (for goggles effect on secondaries)
+            cost_15min_high = price_15min_high * quantity
+            cost_15min_low = price_15min_low * quantity
+            cost_15min_avg = price_15min_avg * quantity
+
+            cost_3h_high = price_3h_high * quantity
+            cost_3h_low = price_3h_low * quantity
+            cost_3h_avg = price_3h_avg * quantity
+
+            # Handle special cases for torstol (add cleaning cost for grimy)
+            if ingredient_type == "torstol" and item.item_id == 219:  # Grimy torstol
+                cleaning_cost = self.zahur_clean_price * quantity
+                cost_15min_high += cleaning_cost
+                cost_15min_low += cleaning_cost
+                cost_15min_avg += cleaning_cost
+                cost_3h_high += cleaning_cost
+                cost_3h_low += cleaning_cost
+                cost_3h_avg += cleaning_cost
+                print(f"    💸 Added cleaning cost: {cleaning_cost}")
+
+            # Add to totals
+            costs["15min"]["high"] += cost_15min_high
+            costs["15min"]["low"] += cost_15min_low
+            costs["15min"]["average"] += cost_15min_avg
+
+            costs["3hour"]["high"] += cost_3h_high
+            costs["3hour"]["low"] += cost_3h_low
+            costs["3hour"]["average"] += cost_3h_avg
+
+            print(
+                f"    📊 15min costs - H:{cost_15min_high}, L:{cost_15min_low}, A:{cost_15min_avg}"
+            )
+            print(
+                f"    📊 3h costs - H:{cost_3h_high}, L:{cost_3h_low}, A:{cost_3h_avg}"
+            )
+
+        # Round all values to 2 decimal places
+        for timeframe in costs:
+            for price_type in costs[timeframe]:
+                costs[timeframe][price_type] = round(costs[timeframe][price_type], 2)
+
+        print(f"\n💰 Total production costs:")
+        print(
+            f"  15min - High: {costs['15min']['high']}, Low: {costs['15min']['low']}, Avg: {costs['15min']['average']}"
+        )
+        print(
+            f"  3hour - High: {costs['3hour']['high']}, Low: {costs['3hour']['low']}, Avg: {costs['3hour']['average']}"
+        )
+
+        return costs
+
+    def calculate_slow_buy_cost(self, cheapest_ingredients):
+        """
+        Calculate production costs using the LOW prices of ingredients for a "slow buy" strategy.
+        This represents buying ingredients cheaply over time when prices are favorable.
+
+        Returns costs using low prices for both 15min and 3hour timeframes.
+        """
+        if not cheapest_ingredients:
+            return {
+                "15min": {"low": 0},
+                "3hour": {"low": 0},
+                "error": "No ingredient data available",
+            }
+
+        print(f"\n💰 Calculating slow buy costs (low ingredient prices)...")
+
+        costs = {"15min": {"low": 0}, "3hour": {"low": 0}}
+
+        for ingredient_type, ingredient_data in cheapest_ingredients.items():
+            if not ingredient_data.get("item"):
+                print(f"  ❌ Missing item data for {ingredient_type}")
+                continue
+
+            item = ingredient_data["item"]
+            quantity = ingredient_data.get("quantity", 1)
+
+            print(f"  🧪 Processing {ingredient_type} (quantity: {quantity}):")
+
+            # Get LOW prices for slow buy strategy
+            price_15min_low = getattr(item, "latest_15min_price_low", None) or 0
+            price_3h_low = getattr(item, "latest_3h_price_low", None) or 0
+
+            # Apply quantity adjustments
+            cost_15min_low = price_15min_low * quantity
+            cost_3h_low = price_3h_low * quantity
+
+            # Handle special cases for torstol (add cleaning cost for grimy)
+            if ingredient_type == "torstol" and item.item_id == 219:  # Grimy torstol
+                cleaning_cost = self.zahur_clean_price * quantity
+                cost_15min_low += cleaning_cost
+                cost_3h_low += cleaning_cost
+                print(f"    💸 Added cleaning cost: {cleaning_cost}")
+
+            # Add to totals
+            costs["15min"]["low"] += cost_15min_low
+            costs["3hour"]["low"] += cost_3h_low
+
+            print(f"    📊 Slow buy costs - 15min: {cost_15min_low}, 3h: {cost_3h_low}")
+
+        # Round all values to 2 decimal places
+        for timeframe in costs:
+            for price_type in costs[timeframe]:
+                costs[timeframe][price_type] = round(costs[timeframe][price_type], 2)
+
+        print(f"\n💰 Total slow buy costs:")
+        print(f"  15min low: {costs['15min']['low']}")
+        print(f"  3hour low: {costs['3hour']['low']}")
+
+        return costs
+
+    def calculate_profit(self, production_costs, slow_buy_costs=None):
+        """
+        Calculate profit margins for super combat potions by comparing production costs
+        with selling prices across different timeframes (15min, 3hour) and price types (high, low, average).
+        Also calculates "slow buy" profits if slow_buy_costs are provided.
+
+        Returns a dictionary with profit data for each timeframe and price category.
+        """
+        if not production_costs or production_costs.get("error"):
+            return {
+                "15min": {"high": 0, "low": 0, "average": 0},
+                "3hour": {"high": 0, "low": 0, "average": 0},
+                "slow_buy": {"15min": 0, "3hour": 0},
+                "error": "No production cost data available",
+            }
+
+        print(f"\n💰 Calculating profit margins...")
+
+        # Get Super Combat potion (4) selling prices
+        selling_prices = {
+            "15min": {
+                "high": getattr(self.sc4_item, "latest_15min_price_high", None) or 0,
+                "low": getattr(self.sc4_item, "latest_15min_price_low", None) or 0,
+                "average": getattr(self.sc4_item, "latest_15min_price_average", None)
+                or 0,
+            },
+            "3hour": {
+                "high": getattr(self.sc4_item, "latest_3h_price_high", None) or 0,
+                "low": getattr(self.sc4_item, "latest_3h_price_low", None) or 0,
+                "average": getattr(self.sc4_item, "latest_3h_price_average", None) or 0,
+            },
+        }
+
+        profits = {
+            "15min": {"high": 0, "low": 0, "average": 0},
+            "3hour": {"high": 0, "low": 0, "average": 0},
+            "slow_buy": {"15min": 0, "3hour": 0},
+        }
+
+        # Calculate regular profits for each timeframe and price type
+        for timeframe in ["15min", "3hour"]:
+            for price_type in ["high", "low", "average"]:
+                selling_price = selling_prices[timeframe][price_type]
+                production_cost = production_costs[timeframe][price_type]
+                profit = selling_price - production_cost
+                profits[timeframe][price_type] = round(profit, 2)
+
+                print(
+                    f"  📊 {timeframe} {price_type}: Sell {selling_price} - Cost {production_cost} = Profit {profit}"
+                )
+
+        # Calculate slow buy profits (low ingredient costs vs high selling prices)
+        if slow_buy_costs and not slow_buy_costs.get("error"):
+            print(
+                f"\n💰 Calculating slow buy profits (low costs vs high sell prices)..."
+            )
+            for timeframe in ["15min", "3hour"]:
+                selling_high = selling_prices[timeframe]["high"]
+                cost_low = slow_buy_costs[timeframe]["low"]
+                slow_buy_profit = selling_high - cost_low
+                profits["slow_buy"][timeframe] = round(slow_buy_profit, 2)
+
+                print(
+                    f"  📊 Slow buy {timeframe}: Sell high {selling_high} - Cost low {cost_low} = Profit {slow_buy_profit}"
+                )
+
+        print(f"\n💰 Total profit margins:")
+        print(
+            f"  15min - High: {profits['15min']['high']}, Low: {profits['15min']['low']}, Avg: {profits['15min']['average']}"
+        )
+        print(
+            f"  3hour - High: {profits['3hour']['high']}, Low: {profits['3hour']['low']}, Avg: {profits['3hour']['average']}"
+        )
+        print(
+            f"  Slow buy - 15min: {profits['slow_buy']['15min']}, 3hour: {profits['slow_buy']['3hour']}"
+        )
+
+        return profits
 
     def display(self):
         try:
             data = self.find_cheapest_ingredients()
+            production_costs = self.get_production_cost(data)
+            slow_buy_costs = self.calculate_slow_buy_cost(data)
+            profit_data = self.calculate_profit(production_costs, slow_buy_costs)
+
+            sc_data = {
+                "item": self.sc4_item,
+                "name": getattr(self.sc4_item, "item_name", "Super combat potion (4)"),
+                "id": self.sc4_item.item_id,
+            }
 
             if not data:
-                return render_template('osrs/super_combats.html', error="No data available")
+                return render_template(
+                    "osrs/super_combats.html", error="No data available"
+                )
 
-            return render_template('osrs/super_combats.html', data=data)
+            return render_template(
+                "osrs/super_combats.html",
+                data=data,
+                sc_data=sc_data,
+                production_costs=production_costs,
+                slow_buy_costs=slow_buy_costs,
+                profit_data=profit_data,
+            )
         except Exception as e:
-            self.log.error(f"Error in super_combats route: {e}")
-            return render_template('osrs/super_combats.html', error=str(e))
-        
+            print(f"Error in super_combats route: {e}")
+            return render_template("osrs/super_combats.html", error=str(e))
+
 
 if __name__ == "__main__":
     sc = SuperCombats()
     import json
 
-    print(json.dumps(sc.find_cheapest_ingredients(), indent=4, default=str))
+    cheapest_data = sc.find_cheapest_ingredients()
+    print("\n" + "=" * 50)
+    print("CHEAPEST INGREDIENTS:")
+    print(json.dumps(cheapest_data, indent=4, default=str))
+
+    print("\n" + "=" * 50)
+    print("PRODUCTION COSTS:")
+    production_costs = sc.get_production_cost(cheapest_data)
+    print(json.dumps(production_costs, indent=4, default=str))
+
+    print("\n" + "=" * 50)
+    print("SLOW BUY COSTS:")
+    slow_buy_costs = sc.calculate_slow_buy_cost(cheapest_data)
+    print(json.dumps(slow_buy_costs, indent=4, default=str))
+
+    print("\n" + "=" * 50)
+    print("PROFIT CALCULATIONS:")
+    profit_data = sc.calculate_profit(production_costs, slow_buy_costs)
+    print(json.dumps(profit_data, indent=4, default=str))
