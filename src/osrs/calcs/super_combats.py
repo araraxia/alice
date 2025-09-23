@@ -105,7 +105,7 @@ class SuperCombats:
         self.goggles_equipped = goggles
         cheapest_template = {
             "item": None,
-            "min_ppd": inf,
+            "cost_per_4_doses": inf,
             "quantity": None,
         }
 
@@ -164,37 +164,62 @@ class SuperCombats:
                         break
 
                 if not dosage:  # Torstol case
-                    # Calculate the price per herb w/ save chance
-                    average_quant = (
-                        1 - self.reduced_secondaries if self.goggles_equipped else 1
+                    # Torstol: 1 per 4-dose potion
+                    # With goggles: 11.11% save chance on secondaries
+                    goggles_save_chance = (
+                        self.reduced_secondaries if self.goggles_equipped else 0
                     )
-                    dosage = average_quant
+
+                    # Calculate effective torstol needed per 4-dose potion
+                    # Base: 0.9 torstol per potion (due to 10% save)
+                    # With goggles: further reduction by goggles_save_chance
+                    effective_torstol_per_potion = 1 - goggles_save_chance
+                    
+
+                    print(
+                        f"    📊 Torstol calculation: base save 10%, goggles save {goggles_save_chance:.1%}"
+                    )
+                    print(
+                        f"    📊 Effective torstol needed per 4-dose potion: {effective_torstol_per_potion:.4f}"
+                    )
 
                     # Clean grimy torstol has a fixed NPC price for cleaning
                     if item.item_id == 219:
-                        price_15min = (
-                            ((price_15m_raw or 0) + self.zahur_clean_price)
-                            / average_quant
+                        base_15min = (
+                            (price_15m_raw + self.zahur_clean_price)
                             if price_15m_raw
                             else None
                         )
-                        price_3h = (
-                            ((price_1h_raw or 0) + self.zahur_clean_price)
-                            / average_quant
+                        base_3h = (
+                            (price_1h_raw + self.zahur_clean_price)
                             if price_1h_raw
                             else None
                         )
                     else:
-                        price_15min = (
-                            price_15m_raw / average_quant if price_15m_raw else None
-                        )
-                        price_3h = (
-                            price_1h_raw / average_quant if price_1h_raw else None
-                        )
+                        base_15min = price_15m_raw
+                        base_3h = price_1h_raw
+
+                    # Calculate cost per 4-dose potion accounting for save chances
+                    price_15min = (
+                        (base_15min * effective_torstol_per_potion)
+                        if base_15min
+                        else None
+                    )
+                    price_3h = (
+                        (base_3h * effective_torstol_per_potion) if base_3h else None
+                    )
 
                 else:  # Potion case
-                    price_15min = price_15m_raw / dosage if price_15m_raw else None
-                    price_3h = price_1h_raw / dosage if price_1h_raw else None
+                    # Calculate how many of this potion we need to equal 4 doses
+                    potions_needed = 4.0 / dosage
+                    price_15min = (
+                        (price_15m_raw * potions_needed) if price_15m_raw else None
+                    )
+                    price_3h = (price_1h_raw * potions_needed) if price_1h_raw else None
+
+                    print(
+                        f"    📊 Need {potions_needed} x {dosage}-dose potions to equal 4 doses"
+                    )
 
                 # Choose the best available price (prefer 5min if available and stable)
                 if price_15min is not None and price_3h is not None:
@@ -219,20 +244,33 @@ class SuperCombats:
                     continue
 
                 # Compare with current best
-                current_best = cheapest[ingredient]["min_ppd"]
+                current_best = cheapest[ingredient].get(
+                    "cost_per_4_doses", float("inf")
+                )
                 print(
                     f"    🏆 Comparing {calculation_price} vs current best {current_best}"
                 )
 
                 if not cheapest[ingredient]["item"] or calculation_price < current_best:
-                    cheapest[ingredient] = {
-                        "item": item,
-                        "item_cost": calculation_price * dosage,
-                        "min_ppd": calculation_price,
-                        "quantity": average_quant,
-                    }
+                    # For potions, calculation_price is already the total cost for 4-dose equivalent
+                    # For torstol, calculation_price is the effective cost per 4-dose potion
+                    if dosage and dosage <= 4:  # This is a potion
+                        potions_needed = 4.0 / dosage
+                        cheapest[ingredient] = {
+                            "item": item,
+                            "item_cost": calculation_price,
+                            "cost_per_4_doses": calculation_price,
+                            "quantity": potions_needed,
+                        }
+                    else:  # This is torstol
+                        cheapest[ingredient] = {
+                            "item": item,
+                            "item_cost": calculation_price,
+                            "cost_per_4_doses": calculation_price,
+                            "quantity": effective_torstol_per_potion,
+                        }
                     print(
-                        f"    ✅ NEW BEST for {ingredient}! Price: {calculation_price}"
+                        f"    ✅ NEW BEST for {ingredient}! Cost for 4-dose equivalent: {calculation_price}"
                     )
                 else:
                     print(f"    ❌ Not better than current best")
@@ -248,7 +286,7 @@ class SuperCombats:
                     data["item"], "item_name", f"Item {data['item'].item_id}"
                 )
                 print(
-                    f"  ✅ {ingredient}: {item_name} @ {data['min_ppd']} price per dose"
+                    f"  ✅ {ingredient}: {item_name} @ {data['cost_per_4_doses']} cost per 4-dose equivalent"
                 )
 
         if missing_ingredients:
@@ -302,9 +340,15 @@ class SuperCombats:
             price_3h_low = getattr(item, "latest_3h_price_low", None) or 0
             price_3h_avg = getattr(item, "latest_3h_price_average", None) or 0
 
-            # Apply quantity adjustments (for goggles effect on secondaries)
+            # For potions, quantity represents how many potions needed for 4-dose equivalent
+            # For torstol, quantity represents the goggles save chance factor
             cost_15min_high = price_15min_high * quantity
             cost_15min_low = price_15min_low * quantity
+            cost_15min_avg = price_15min_avg * quantity
+
+            cost_3h_high = price_3h_high * quantity
+            cost_3h_low = price_3h_low * quantity
+            cost_3h_avg = price_3h_avg * quantity
             cost_15min_avg = price_15min_avg * quantity
 
             cost_3h_high = price_3h_high * quantity
