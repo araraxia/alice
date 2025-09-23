@@ -170,30 +170,6 @@
                         </div>
                         {% endif %}
 
-                        {% if ingredient_data.item.latest_15min_price_low %}
-                        <div class="item-info">
-                            <strong>15min Low:</strong> {{ ingredient_data.item.latest_15min_price_low }} gp
-                        </div>
-                        {% endif %}
-
-                        {% if ingredient_data.item.latest_15min_price_high %}
-                        <div class="item-info">
-                            <strong>15min High:</strong> {{ ingredient_data.item.latest_15min_price_high }} gp
-                        </div>
-                        {% endif %}
-
-                        {% if ingredient_data.item.latest_15min_price_average %}
-                        <div class="item-info">
-                            <strong>15min Average:</strong> {{ ingredient_data.item.latest_15min_price_average }} gp
-                        </div>
-                        {% endif %}
-
-                        {% if ingredient_data.item.latest_price_1h_low %}
-                        <div class="item-info">
-                            <strong>1h Low:</strong> {{ ingredient_data.item.latest_price_1h_low }} gp
-                        </div>
-                        {% endif %}
-
                         {% if ingredient_data.item.latest_15min_volume_low %}
                         <div class="item-info">
                             <strong>Volume (15min Low):</strong> {{ ingredient_data.item.latest_15min_volume_low }}
@@ -369,7 +345,7 @@
             {% endif %}
 
             <div class="refresh-info">
-                <strong>Note:</strong> Prices account for prescription goggles (11.11% chance to save secondary ingredients).
+                <strong>Note:</strong> Prices account for prescription goggles (10% chance to save secondary ingredients, resulting in using ~11.11% less secondaries).
                 Volume thresholds: 15min ≥ 500, 1h ≥ 2000 to ensure liquidity.
             </div>
         {% endif %}

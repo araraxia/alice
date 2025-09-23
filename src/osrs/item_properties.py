@@ -34,7 +34,7 @@ def manage_conn_cursor(func):
 class osrsItemProperties:
     @manage_conn_cursor
     def __init__(self, item_id: int):
-        print(f"🏗️ Initializing osrsItemProperties for item_id: {item_id}")
+        print(f"Initializing osrsItemProperties for item_id: {item_id}")
         self.item_id = item_id
 
         self.name: str = None
@@ -80,20 +80,12 @@ class osrsItemProperties:
         self.latest_3h_volume_average: float = None
 
         self.load_stored_data()
-        print(f"✅ Finished initializing {getattr(self, 'name', f'item_{item_id}')}")
-        print(
-            f"📊 Final data - 5m vol: {self.latest_5min_volume_low}, 1h vol: {self.latest_1h_volume_low}"
-        )
-        print(
-            f"💰 Final prices - 5m: {self.latest_5min_price_low}, 1h: {self.latest_1h_price_low}"
-        )
+        self.interize_attributes()
 
-    """
-    To-Do:
-
-    Pulling all rows then max-ing is wasteful. Prefer server-side:
-    SELECT ... FROM schema.table ORDER BY timestamp DESC LIMIT 1 Or add a helper get_latest_record(...).
-    """
+    def interize_attributes(self):
+        for attr, value in self.__dict__.items():
+            if isinstance(value, float):
+                setattr(self, attr, int(value))
 
     def init_conn_cursor(self):
         self.conn = init_psql_connection(db=DB_NAME)
@@ -107,13 +99,10 @@ class osrsItemProperties:
 
     @manage_conn_cursor
     def load_stored_data(self):
-        print(f"🔍 Loading stored data for item {self.item_id}")
 
         if not self.item_id:
-            print(f"❌ No item_id provided, skipping data load")
             return None
 
-        print(f"📋 Fetching item map from {MAP_SCHEMA}.{MAP_TABLE}")
         item_map = get_record(
             cursor=self.cursor,
             connection=self.conn,
@@ -125,14 +114,11 @@ class osrsItemProperties:
         )
 
         if not item_map:
-            print(f"❌ No item map found for item_id {self.item_id}")
             return None
 
-        print(f"✅ Found item map: {dict(item_map)}")
         for key, value in item_map.items():
             setattr(self, key, value)
 
-        print(f"📈 Loading price data...")
         self.get_latest_latest_price()
         self.get_latest_5min_price()
         self.get_latest_1h_price()
@@ -140,7 +126,6 @@ class osrsItemProperties:
     @manage_conn_cursor
     def get_latest_latest_price(self):
         table_name = f"{str(self.item_id)}_latest"
-        print(f"💰 Fetching latest price from {PRICE_SCHEMA}.{table_name}")
 
         try:
             latest_price = fetch_top(
@@ -152,20 +137,16 @@ class osrsItemProperties:
                 sort_col=PRICE_PK,
                 limit=3,
             )
-            print(f"✅ Latest price query successful, records: {len(latest_price)}")
         except UndefinedTable:
-            print(f"⚠️ Table {PRICE_SCHEMA}.{table_name} does not exist")
             self.conn.rollback()
             latest_price = []
         except Exception as e:
-            print(f"❌ Error fetching latest price: {e}")
             self.conn.rollback()
             latest_price = []
 
         if latest_price:
             recent_record = latest_price[0]
 
-            print(f"📊 Latest price record: {dict(recent_record)}")
 
             self.latest_price_high = recent_record.get("high") or 0
             self.latest_price_low = recent_record.get("low") or 0
@@ -183,11 +164,7 @@ class osrsItemProperties:
                 [self.latest_3x_price_high, self.latest_3x_price_low]
             )
 
-            print(
-                f"💰 Set latest prices - high: {self.latest_price_high}, low: {self.latest_price_low}, avg: {self.latest_price_average}"
-            )
         else:
-            print(f"❌ No latest price data found")
             self.latest_price_average = 0
             self.latest_price_high = 0
             self.latest_price_low = 0
@@ -198,7 +175,6 @@ class osrsItemProperties:
     @manage_conn_cursor
     def get_latest_5min_price(self):
         table_name = f"{str(self.item_id)}_5min"
-        print(f"⏱️ Fetching 5min price from {PRICE_SCHEMA}.{table_name}")
 
         try:
             prices_5min = fetch_top(
@@ -210,20 +186,16 @@ class osrsItemProperties:
                 sort_col=PRICE_PK,
                 limit=3,
             )
-            print(f"✅ 5min price query successful, records: {len(prices_5min)}")
         except UndefinedTable:
-            print(f"⚠️ Table {PRICE_SCHEMA}.{table_name} does not exist")
             self.conn.rollback()
             prices_5min = []
         except Exception as e:
-            print(f"❌ Error fetching 5min price: {e}")
             self.conn.rollback()
             prices_5min = []
 
         if prices_5min:
             recent_record = prices_5min[0]
 
-            print(f"📊 5min price record: {dict(recent_record)}")
 
             self.latest_5min_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_5min_price_low = recent_record.get("avgLowPrice") or 0
@@ -255,11 +227,7 @@ class osrsItemProperties:
                 [self.latest_15min_volume_high, self.latest_15min_volume_low]
             )
 
-            print(
-                f"⏱️ Set 5min data - price_low: {self.latest_5min_price_low}, vol_low: {self.latest_5min_volume_low}"
-            )
         else:
-            print(f"❌ No 5min price data found")
             self.latest_5min_price_average = 0
             self.latest_5min_price_high = 0
             self.latest_5min_price_low = 0
@@ -276,7 +244,6 @@ class osrsItemProperties:
     @manage_conn_cursor
     def get_latest_1h_price(self):
         table_name = f"{str(self.item_id)}_1h"
-        print(f"🕐 Fetching 1h price from {PRICE_SCHEMA}.{table_name}")
 
         try:
             prices_1h = fetch_top(
@@ -288,20 +255,16 @@ class osrsItemProperties:
                 sort_col=PRICE_PK,
                 limit=3,
             )
-            print(f"✅ 1h price query successful, records: {len(prices_1h)}")
         except UndefinedTable:
-            print(f"⚠️ Table {PRICE_SCHEMA}.{table_name} does not exist")
             self.conn.rollback()
             prices_1h = []
         except Exception as e:
-            print(f"❌ Error fetching 1h price: {e}")
             self.conn.rollback()
             prices_1h = []
 
         if prices_1h:
             recent_record = prices_1h[0]
 
-            print(f"📊 1h price record: {dict(recent_record)}")
 
             self.latest_1h_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_1h_price_low = recent_record.get("avgLowPrice") or 0
@@ -334,7 +297,6 @@ class osrsItemProperties:
             )
 
         else:
-            print(f"❌ No 1h price data found")
             self.latest_1h_price_average = 0
             self.latest_1h_price_high = 0
             self.latest_1h_price_low = 0
