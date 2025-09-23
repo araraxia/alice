@@ -2,20 +2,30 @@ html {
     background: #e1e1e1;
 }
 
+html body {
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: "MS Sans Serif", sans-serif;
     background-color: #c0c0c0;
     margin: 0;
     padding: 20px;
     font-size: 12px;
+    min-height: 100vh;
 }
 
 .w98-window {
+    margin: auto;
+    padding: 0;
+    text-align: center;
+    color: #000000;
+
     background-color: #c0c0c0;
     font-family: "MS Sans Serif", sans-serif;
     font-size: 11px;
-    padding: 16px;
-    margin: 0 auto;
+
     border-color: #dfdfdf #404040 #404040 #dfdfdf;
     outline: none;
     box-shadow:
@@ -23,18 +33,24 @@ body {
         inset 2px 2px 0px #dfdfdf,
         inset -1px -1px 0px #808080,
         inset -2px -2px 0px #707070;
+
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .title-bar {
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
     align-items: center;
     background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%);
     color: white;
-    padding: 3px;
+    padding: 0px 3px;
+    margin: 3px;
     height: 24px;
     min-height: 24px;
-    border-bottom: 1px #eee solid;
+    border-bottom: 1px #c0c0c0 solid;
 }
 
 .title-bar h4 {
@@ -56,7 +72,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
-    margin: 16px 0;
+    margin: 0px 8px 8px 8px;
 }
 
 .menu-grid a {
@@ -77,7 +93,7 @@ body {
 }
 
 .back-link {
-    margin-bottom: 16px;
+    margin: 0px auto 1rem 2rem;
 }
 
 .w98-button {
@@ -89,7 +105,7 @@ body {
     color: #000000;
     text-decoration: none;
     background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
-    border: 2px solid;
+    border: 1px solid;
     border-color: #dfdfdf #707070 #606060 #dfdfdf;
     outline: none;
     box-shadow: 
