@@ -117,7 +117,7 @@ ul li {
     color: #000000;
     text-decoration: none;
     background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
-    border: 2px solid;
+    border: 1px solid;
     border-color: #dfdfdf #707070 #606060 #dfdfdf;
     outline: none;
     box-shadow: 
