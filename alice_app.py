@@ -24,7 +24,7 @@ ROUTE_LIST = [
     discord_route,
 ]
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os, pickle
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -50,6 +50,9 @@ __name__,
         self.app.config['TEMPLATES_AUTO_RELOAD'] = True
         self.app.jinja_env.cache = {}
 
+        # Add custom template filters
+        self.init_template_filters()
+
         # Blueprint registration
         for route in ROUTE_LIST:
             self.app.register_blueprint(route)
@@ -70,7 +73,38 @@ __name__,
         self.static_dir = STATIC_DIR
         self.template_dir = TEMPLATE_DIR
         self.favicon_path = os.path.join(STATIC_DIR, "favicon.png")
-        
+
+    def init_template_filters(self):
+        @self.app.template_filter('timestamp')
+        def format_timestamp(timestamp):
+            """Format timestamp to YYYY-MM-DD HH:MM:SS"""
+            if not timestamp:
+                return "N/A"
+            try:
+                # Handle different timestamp types
+                if isinstance(timestamp, datetime):
+                    # Already a datetime object
+                    return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                elif isinstance(timestamp, (int, float)):
+                    # Unix timestamp (assume milliseconds if > 1e10, otherwise seconds)
+                    if timestamp > 1e10:  # Milliseconds
+                        timestamp_seconds = timestamp / 1000
+                    else:  # Seconds
+                        timestamp_seconds = timestamp
+                    dt = datetime.fromtimestamp(timestamp_seconds)
+                    return dt.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    # Try to convert to float first
+                    timestamp_num = float(timestamp)
+                    if timestamp_num > 1e10:  # Milliseconds
+                        timestamp_seconds = timestamp_num / 1000
+                    else:  # Seconds
+                        timestamp_seconds = timestamp_num
+                    dt = datetime.fromtimestamp(timestamp_seconds)
+                    return dt.strftime('%Y-%m-%d %H:%M:%S')
+            except (ValueError, OSError, TypeError) as e:
+                return f"Invalid timestamp: {timestamp}"
+
     
     def init_login_manager(self):
         login_manager = LoginManager()

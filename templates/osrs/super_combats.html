@@ -140,93 +140,122 @@
                             <strong>Item ID:</strong> {{ ingredient_data.item.item_id }}
                         </div>
 
-                        <div class="item-info price">
-                            <strong>15 Minute Average:</strong> {{ ingredient_data.item.latest_15min_price_average }} gp
-                        </div>
-
-                        <div class="item-info price">
-                            <strong>15 Minute Low:</strong> {{ ingredient_data.item.latest_15min_price_low }} gp
-                        </div>
-
-                        <div class="item-info price">
-                            <strong>15 Minute High:</strong> {{ ingredient_data.item.latest_15min_price_high }} gp
-                        </div>
-
-                        <div class="item-info price">
-                            <strong>3 Hour Average:</strong> {{ ingredient_data.item.latest_3h_price_average }} gp
-                        </div>
-
-                        <div class="item-info price">
-                            <strong>3 Hour Low:</strong> {{ ingredient_data.item.latest_3h_price_low }} gp
-                        </div>
-
-                        <div class="item-info price">
-                            <strong>3 Hour High:</strong> {{ ingredient_data.item.latest_3h_price_high }} gp
-                        </div>
-
                         {% if ingredient_data.quantity and ingredient_data.quantity > 1 %}
                         <div class="item-info">
                             <strong>Doses:</strong> {{ ingredient_data.quantity }}
                         </div>
                         {% endif %}
 
-                        {% if ingredient_data.item.latest_15min_price_low %}
-                        <div class="item-info">
-                            <strong>15min Low:</strong> {{ ingredient_data.item.latest_15min_price_low }} gp
-                        </div>
-                        {% endif %}
+                        <!-- 15-Minute Data Group -->
+                        <div style="margin-top: 12px; padding: 6px; background-color: #f5f5f5; border: 1px solid #ddd;">
+                            <div style="font-weight: bold; margin-bottom: 4px; color: #0000ff;">15-Minute Data:</div>
 
-                        {% if ingredient_data.item.latest_15min_price_high %}
-                        <div class="item-info">
-                            <strong>15min High:</strong> {{ ingredient_data.item.latest_15min_price_high }} gp
-                        </div>
-                        {% endif %}
+                            {% if ingredient_data.item.latest_15min_price_high %}
+                            <div class="item-info price">
+                                <strong>Price High:</strong> {{ ingredient_data.item.latest_15min_price_high }} gp
+                            </div>
+                            {% endif %}
 
-                        {% if ingredient_data.item.latest_15min_price_average %}
-                        <div class="item-info">
-                            <strong>15min Average:</strong> {{ ingredient_data.item.latest_15min_price_average }} gp
-                        </div>
-                        {% endif %}
+                            {% if ingredient_data.item.latest_15min_price_low %}
+                            <div class="item-info price">
+                                <strong>Price Low:</strong> {{ ingredient_data.item.latest_15min_price_low }} gp
+                            </div>
+                            {% endif %}
 
-                        {% if ingredient_data.item.latest_price_1h_low %}
-                        <div class="item-info">
-                            <strong>1h Low:</strong> {{ ingredient_data.item.latest_price_1h_low }} gp
-                        </div>
-                        {% endif %}
+                            {% if ingredient_data.item.latest_15min_price_average %}
+                            <div class="item-info price">
+                                <strong>Price Average:</strong> {{ ingredient_data.item.latest_15min_price_average }} gp
+                            </div>
+                            {% endif %}
 
-                        {% if ingredient_data.item.latest_15min_volume_low %}
-                        <div class="item-info">
-                            <strong>Volume (15min Low):</strong> {{ ingredient_data.item.latest_15min_volume_low }}
-                        </div>
-                        {% endif %}
+                            {% if ingredient_data.item.latest_15min_volume_high %}
+                            <div class="item-info">
+                                <strong>Volume High:</strong> {{ ingredient_data.item.latest_15min_volume_high }}
+                            </div>
+                            {% endif %}
 
-                        {% if ingredient_data.item.latest_15min_volume_high %}
-                        <div class="item-info">
-                            <strong>Volume (15min High):</strong> {{ ingredient_data.item.latest_15min_volume_high }}
-                        </div>
-                        {% endif %}
+                            {% if ingredient_data.item.latest_15min_volume_low %}
+                            <div class="item-info">
+                                <strong>Volume Low:</strong> {{ ingredient_data.item.latest_15min_volume_low }}
+                            </div>
+                            {% endif %}
 
-                        {% if ingredient_data.item.latest_15min_volume_average %}
-                        <div class="item-info">
-                            <strong>Volume (15min Avg):</strong> {{ ingredient_data.item.latest_15min_volume_average }}
-                        </div>
-                        {% endif %}
+                            {% if ingredient_data.item.latest_15min_volume_average %}
+                            <div class="item-info">
+                                <strong>Volume Average:</strong> {{ ingredient_data.item.latest_15min_volume_average }}
+                            </div>
+                            {% endif %}
 
-                        {% if ingredient_data.item.latest_3h_volume_low %}
-                        <div class="item-info">
-                            <strong>Volume (3h Low):</strong> {{ ingredient_data.item.latest_3h_volume_low }}
+                            {% if ingredient_data.item.latest_15min_timestamp %}
+                            <div class="item-info">
+                                <strong>Data Timestamp:</strong> {{ ingredient_data.item.latest_15min_timestamp | timestamp }}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
 
-                        {% if ingredient_data.item.latest_3h_volume_high %}
-                        <div class="item-info">
-                            <strong>Volume (3h High):</strong> {{ ingredient_data.item.latest_3h_volume_high }}
+                        <!-- 3-Hour Data Group -->
+                        <div style="margin-top: 8px; padding: 6px; background-color: #f5f5f5; border: 1px solid #ddd;">
+                            <div style="font-weight: bold; margin-bottom: 4px; color: #008000;">3-Hour Data:</div>
+
+                            {% if ingredient_data.item.latest_3h_price_high %}
+                            <div class="item-info price">
+                                <strong>Price High:</strong> {{ ingredient_data.item.latest_3h_price_high }} gp
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_3h_price_low %}
+                            <div class="item-info price">
+                                <strong>Price Low:</strong> {{ ingredient_data.item.latest_3h_price_low }} gp
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_3h_price_average %}
+                            <div class="item-info price">
+                                <strong>Price Average:</strong> {{ ingredient_data.item.latest_3h_price_average }} gp
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_3h_volume_high %}
+                            <div class="item-info">
+                                <strong>Volume High:</strong> {{ ingredient_data.item.latest_3h_volume_high }}
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_3h_volume_low %}
+                            <div class="item-info">
+                                <strong>Volume Low:</strong> {{ ingredient_data.item.latest_3h_volume_low }}
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_3h_volume_average %}
+                            <div class="item-info">
+                                <strong>Volume Average:</strong> {{ ingredient_data.item.latest_3h_volume_average }}
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_3h_timestamp %}
+                            <div class="item-info">
+                                <strong>Data Timestamp:</strong> {{ ingredient_data.item.latest_3h_timestamp | timestamp }}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
 
-                        {% if ingredient_data.item.latest_3h_volume_average %}
-                        <div class="item-info">
-                            <strong>Volume (3h Avg):</strong> {{ ingredient_data.item.latest_3h_volume_average }}
+                        <!-- Latest Price Data (if different from above) -->
+                        {% if ingredient_data.item.latest_timestamp_high or ingredient_data.item.latest_timestamp_low %}
+                        <div style="margin-top: 8px; padding: 6px; background-color: #fff5f5; border: 1px solid #ddd;">
+                            <div style="font-weight: bold; margin-bottom: 4px; color: #800080;">Latest Price Data:</div>
+
+                            {% if ingredient_data.item.latest_timestamp_high %}
+                            <div class="item-info">
+                                <strong>High Price Timestamp:</strong> {{ ingredient_data.item.latest_timestamp_high | timestamp }}
+                            </div>
+                            {% endif %}
+
+                            {% if ingredient_data.item.latest_timestamp_low %}
+                            <div class="item-info">
+                                <strong>Low Price Timestamp:</strong> {{ ingredient_data.item.latest_timestamp_low | timestamp }}
+                            </div>
+                            {% endif %}
                         </div>
                         {% endif %}
                     {% else %}

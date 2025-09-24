@@ -47,11 +47,16 @@ class osrsItemProperties:
         self.lowalch: int = None
 
         self.latest_price_high: int = None
+        self.latest_timestamp_high: int = None
         self.latest_price_low: int = None
+        self.latest_timestamp_low: int = None
         self.latest_price_average: float = None
         self.latest_3x_price_high: float = None
+        self.latest_3x_timestamp_high: float = None
         self.latest_3x_price_low: float = None
+        self.latest_3x_timestamp_low: float = None
         self.latest_3x_price_average: float = None
+        
 
         self.latest_5min_price_high: int = None
         self.latest_5min_price_low: int = None
@@ -59,12 +64,14 @@ class osrsItemProperties:
         self.latest_5min_volume_high: int = None
         self.latest_5min_volume_low: int = None
         self.latest_5min_volume_average: float = None
+        self.latest_5min_timestamp: float = None
         self.latest_15min_price_high: float = None
         self.latest_15min_price_low: float = None
         self.latest_15min_price_average: float = None
         self.latest_15min_volume_high: float = None
         self.latest_15min_volume_low: float = None
         self.latest_15min_volume_average: float = None
+        self.latest_15min_timestamp: float = None
 
         self.latest_1h_price_high: int = None
         self.latest_1h_price_low: int = None
@@ -72,12 +79,14 @@ class osrsItemProperties:
         self.latest_1h_volume_high: int = None
         self.latest_1h_volume_low: int = None
         self.latest_1h_volume_average: float = None
+        self.latest_1h_timestamp: float = None
         self.latest_3h_price_high: float = None
         self.latest_3h_price_low: float = None
         self.latest_3h_price_average: float = None
         self.latest_3h_volume_high: float = None
         self.latest_3h_volume_low: float = None
         self.latest_3h_volume_average: float = None
+        self.latest_3h_timestamp: float = None
 
         self.load_stored_data()
         print(f"✅ Finished initializing {getattr(self, 'name', f'item_{item_id}')}")
@@ -169,6 +178,8 @@ class osrsItemProperties:
 
             self.latest_price_high = recent_record.get("high") or 0
             self.latest_price_low = recent_record.get("low") or 0
+            self.latest_timestamp_high = recent_record.get("highTime", 0) # Unix timestamp in ms
+            self.latest_timestamp_low = recent_record.get("lowTime", 0) # Unix timestamp
             self.latest_price_average = self.average_price(
                 [self.latest_price_high, self.latest_price_low]
             )
@@ -176,9 +187,11 @@ class osrsItemProperties:
             self.latest_3x_price_high = self.average_price(
                 prices=[r.get("high") or 0 for r in latest_price]
             )
+            self.latest_3x_timestamp_high = max(r.get("highTime", 0) for r in latest_price) # Unix timestamp in ms
             self.latest_3x_price_low = self.average_price(
                 prices=[r.get("low") or 0 for r in latest_price]
             )
+            self.latest_3x_timestamp_low = min(r.get("lowTime", 0) for r in latest_price) # Unix timestamp
             self.latest_3x_price_average = self.average_price(
                 [self.latest_3x_price_high, self.latest_3x_price_low]
             )
@@ -235,6 +248,7 @@ class osrsItemProperties:
             self.latest_5min_volume_average = self.average_price(
                 [self.latest_5min_volume_high, self.latest_5min_volume_low]
             )
+            self.latest_5min_timestamp = recent_record.get("timestamp", 0) # Unix timestamp in ms
 
             self.latest_15min_price_high = self.average_price(
                 prices=[r.get("avgHighPrice") or 0 for r in prices_5min]
@@ -254,6 +268,7 @@ class osrsItemProperties:
             self.latest_15min_volume_average = self.average_price(
                 [self.latest_15min_volume_high, self.latest_15min_volume_low]
             )
+            self.latest_15min_timestamp = max(r.get("timestamp", 0) for r in prices_5min) # Unix timestamp in ms
 
             print(
                 f"⏱️ Set 5min data - price_low: {self.latest_5min_price_low}, vol_low: {self.latest_5min_volume_low}"
@@ -313,6 +328,7 @@ class osrsItemProperties:
             self.latest_1h_volume_average = self.average_price(
                 [self.latest_1h_price_high, self.latest_1h_price_low]
             )
+            self.latest_1h_timestamp = recent_record.get("timestamp", 0) # Unix timestamp in ms
 
             self.latest_3h_price_high = self.average_price(
                 prices=[r.get("avgHighPrice") or 0 for r in prices_1h]
@@ -332,6 +348,7 @@ class osrsItemProperties:
             self.latest_3h_volume_average = self.average_price(
                 [self.latest_3h_volume_high, self.latest_3h_volume_low]
             )
+            self.latest_3h_timestamp = max(r.get("timestamp", 0) for r in prices_1h) # Unix timestamp in ms
 
         else:
             print(f"❌ No 1h price data found")
