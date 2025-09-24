@@ -97,11 +97,6 @@ class SuperCombats:
         the "Goggles of the Eye" which provides a chance to save secondary ingredients
         when making potions.
         """
-        print(
-            f"🔍 Starting ingredient search with volume thresholds: 5m={vol_min_15m}, 1h={vol_min_3h}"
-        )
-        print(f"⚗️ Goggles equipped: {goggles}")
-
         self.goggles_equipped = goggles
         cheapest_template = {
             "item": None,
@@ -117,11 +112,8 @@ class SuperCombats:
         }
 
         for ingredient, item_data in self.recipe.items():
-            print(f"\n🧪 Processing {ingredient} ({len(item_data)} options):")
-
             for item in item_data:
                 item_name = getattr(item, "name", "Unknown")
-                print(f"  📦 Item {item.item_id} ({item_name}):")
 
                 # Debug volume data
                 vol_15m = getattr(item, "latest_15min_volume_average", None)
@@ -129,30 +121,23 @@ class SuperCombats:
 
                 # Skip items that don't meet volume requirements
                 if vol_15m is None and vol_3h is None:
-                    print(f"    ❌ Skipped: No volume data for item {item.item_id}")
                     continue
 
                 # Item needs good volume in either 5m OR 1h timeframe
                 vol_5m_ok = vol_15m is not None and vol_15m >= vol_min_15m
                 vol_1h_ok = vol_3h is not None and vol_3h >= vol_min_3h
                 if not vol_5m_ok and not vol_1h_ok:
-                    print(
-                        f"    ❌ Skipped: 5m vol {vol_15m} < {vol_min_15m} AND 1h vol {vol_3h} < {vol_min_3h}"
-                    )
                     continue
 
                 # Debug price data
                 price_15m_raw = getattr(item, "latest_15min_price_average", None)
                 price_1h_raw = getattr(item, "latest_3h_price_average", None)
-                print(f"    💰 Raw prices - 15m: {price_15m_raw}, 3h: {price_1h_raw}")
 
                 # Handle zero prices by setting them to None instead of inf
                 if price_15m_raw == 0:
                     price_15m_raw = None
-                    print(f"    ⚠️ 5m price was 0, set to None")
                 if price_1h_raw == 0:
                     price_1h_raw = None
-                    print(f"    ⚠️ 1h price was 0, set to None")
 
                 # Determine dosage based on item dosage
                 dosage = 0
@@ -175,14 +160,6 @@ class SuperCombats:
                     # With goggles: further reduction by goggles_save_chance
                     effective_torstol_per_potion = 1 - goggles_save_chance
                     
-
-                    print(
-                        f"    📊 Torstol calculation: base save 10%, goggles save {goggles_save_chance:.1%}"
-                    )
-                    print(
-                        f"    📊 Effective torstol needed per 4-dose potion: {effective_torstol_per_potion:.4f}"
-                    )
-
                     # Clean grimy torstol has a fixed NPC price for cleaning
                     if item.item_id == 219:
                         base_15min = (
@@ -217,38 +194,24 @@ class SuperCombats:
                     )
                     price_3h = (price_1h_raw * potions_needed) if price_1h_raw else None
 
-                    print(
-                        f"    📊 Need {potions_needed} x {dosage}-dose potions to equal 4 doses"
-                    )
-
                 # Choose the best available price (prefer 5min if available and stable)
                 if price_15min is not None and price_3h is not None:
                     # Both prices available - check for stability
                     diff_15m_3h = abs(price_15min - price_3h)
                     if diff_15m_3h / price_3h > 0.10:
                         calculation_price = price_3h
-                        print(
-                            f"    📊 Using 1h price {price_3h} (large swing: {diff_15m_3h/price_3h:.1%})"
-                        )
                     else:
                         calculation_price = price_15min
-                        print(f"    📊 Using 5m price {price_15min} (stable)")
                 elif price_15min is not None:
                     calculation_price = price_15min
-                    print(f"    📊 Using 5m price {price_15min} (only option)")
                 elif price_3h is not None:
                     calculation_price = price_3h
-                    print(f"    📊 Using 1h price {price_3h} (only option)")
                 else:
-                    print(f"    ❌ No valid prices available")
                     continue
 
                 # Compare with current best
                 current_best = cheapest[ingredient].get(
                     "cost_per_4_doses", float("inf")
-                )
-                print(
-                    f"    🏆 Comparing {calculation_price} vs current best {current_best}"
                 )
 
                 if not cheapest[ingredient]["item"] or calculation_price < current_best:
@@ -269,33 +232,26 @@ class SuperCombats:
                             "cost_per_4_doses": calculation_price,
                             "quantity": effective_torstol_per_potion,
                         }
-                    print(
-                        f"    ✅ NEW BEST for {ingredient}! Cost for 4-dose equivalent: {calculation_price}"
-                    )
                 else:
-                    print(f"    ❌ Not better than current best")
+                    continue
 
-        print(f"\n🔍 Final results check:")
         missing_ingredients = []
         for ingredient, data in cheapest.items():
             if not data["item"]:
                 missing_ingredients.append(ingredient)
-                print(f"  ❌ Missing: {ingredient}")
             else:
                 item_name = getattr(
                     data["item"], "item_name", f"Item {data['item'].item_id}"
                 )
                 print(
-                    f"  ✅ {ingredient}: {item_name} @ {data['cost_per_4_doses']} cost per 4-dose equivalent"
+                    f"  - {ingredient}: {item_name} @ {data['cost_per_4_doses']} cost per 4-dose equivalent"
                 )
 
         if missing_ingredients:
             print(
-                f"🚫 Returning empty dict - missing ingredients: {missing_ingredients}"
+                f"Returning empty dict - missing ingredients: {missing_ingredients}"
             )
             return {}
-
-        print(f"🎉 All ingredients found!")
 
         return cheapest
 
@@ -312,8 +268,6 @@ class SuperCombats:
                 "3hour": {"high": 0, "low": 0, "average": 0},
                 "error": "No ingredient data available",
             }
-
-        print(f"\n💰 Calculating production costs...")
 
         costs = {
             "15min": {"high": 0, "low": 0, "average": 0},
@@ -423,8 +377,6 @@ class SuperCombats:
             item = ingredient_data["item"]
             quantity = ingredient_data.get("quantity", 1)
 
-            print(f"  🧪 Processing {ingredient_type} (quantity: {quantity}):")
-
             # Get LOW prices for slow buy strategy
             price_15min_low = getattr(item, "latest_15min_price_low", None) or 0
             price_3h_low = getattr(item, "latest_3h_price_low", None) or 0
@@ -443,8 +395,6 @@ class SuperCombats:
             # Add to totals
             costs["15min"]["low"] += cost_15min_low
             costs["3hour"]["low"] += cost_3h_low
-
-            print(f"    📊 Slow buy costs - 15min: {cost_15min_low}, 3h: {cost_3h_low}")
 
         # Round all values to 2 decimal places
         for timeframe in costs:
@@ -563,7 +513,6 @@ class SuperCombats:
                 profit_data=profit_data,
             )
         except Exception as e:
-            print(f"Error in super_combats route: {e}")
             return render_template("osrs/super_combats.html", error=str(e))
 
 

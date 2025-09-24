@@ -36,19 +36,18 @@ canvas {
 
     /* Windows 98 styling */
     background-color: #c0c0c0;
-    border: 2px outset #c0c0c0;
     font-family: "MS Sans Serif", sans-serif;
     font-size: 11px;
 
     /* Classic window appearance */
     border: 2px solid;
-    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    border-color: #dfdfdf #404040 #404040 #dfdfdf;
     outline: none;
     box-shadow:
         inset 1px 1px 0px #ffffff,
         inset 2px 2px 0px #dfdfdf,
         inset -1px -1px 0px #808080,
-        inset -2px -2px 0px #808080;
+        inset -2px -2px 0px #707070;
 
     min-width: 300px;
     max-width: 400px;
@@ -61,17 +60,11 @@ canvas {
     align-items: center;
     background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%) !important;
     color: white !important;
-    padding: 2px 8px;
+    padding: 0px 3px;
+    margin: 3px;
     height: 24px;
     min-height: 24px;
-    border: 2px solid;
-    border-color: #dfdfdf #808080 #808080 #dfdfdf;
-    outline: none;
-    box-shadow: 
-        inset 1px 1px 0px #ffffff00,
-        inset 2px 2px 0px #dfdfdf00,
-        inset -1px -1px 0px #808080,
-        inset -2px -2px 0px #80808000;
+    border-bottom: 1px #c0c0c0 solid;
 }
 
 .title-bar h4 {
@@ -124,14 +117,14 @@ ul li {
     color: #000000;
     text-decoration: none;
     background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
-    border: 2px solid;
-    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    border: 1px solid;
+    border-color: #dfdfdf #707070 #606060 #dfdfdf;
     outline: none;
     box-shadow: 
         inset 1px 1px 0px #ffffff,
         inset 2px 2px 0px #dfdfdf,
         inset -1px -1px 0px #808080,
-        inset -2px -2px 0px #808080;
+        inset -2px -2px 0px #707070;
     text-shadow: none;
     cursor: pointer;
     -webkit-user-select: none; /* Chrome/Safari */
