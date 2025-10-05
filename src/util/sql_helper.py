@@ -1,6 +1,64 @@
 #!/usr/bin/env python3
 # Aria Corona 2025/06/09
 
+"""
+SQL Helper Module Summary
+========================
+
+Purpose: PostgreSQL database helper functions and utilities
+Total Lines: 1,204 lines
+Dependencies: psycopg2, json, colorama, pathlib, rapidfuzz
+
+Configuration:
+- Loads PostgreSQL credentials from conf/cred/psql.json
+- Default connection parameters: sql_ip, sql_port, sql_user, sql_pass
+
+Functions & Methods Inventory:
+
+🔌 CONNECTION FUNCTIONS
+- init_psql_connection(): PostgreSQL connection factory with auto-retry
+- init_psql_con_cursor(): Decorator that injects connection/cursor, handles cleanup
+- create_cursor(): Creates new cursor for given connection
+
+📊 RECORD QUERY FUNCTIONS
+- get_record(): Query single record by unique key
+- get_records(): Query multiple records matching list of values
+- search_records(): Query records matching single value
+- fuzzy_search_records(): Text pattern search using LIKE/ILIKE/regex
+- edit_distance_search_records(): Levenshtein distance fuzzy search (requires fuzzystrmatch)
+- similarity_search_records(): Trigram similarity search (requires pg_trgm)
+- get_all_records(): Fetch all records from table
+- fetch_top(): Fetch top N records with sorting and pagination
+
+✏️ RECORD MODIFICATION FUNCTIONS
+- update_existing_record(): Update existing record by WHERE condition
+- add_join_records(): Add records to join tables with conflict handling
+- add_update_record(): Upsert operation (INSERT or UPDATE)
+- update_record(): Alias for add_update_record()
+- delete_record(): Delete records matching criteria
+
+🏗️ SCHEMA/TABLE MANAGEMENT FUNCTIONS
+- get_tables(): List all tables in schema
+- ensure_table_exists(): Create table if not exists, ensure columns exist
+- find_table_name(): Fuzzy table name matching with multi-stage resolution
+- add_column_to_table(): Add column to existing table
+- get_column_data_type(): Get data type of specific column
+- get_column_comments(): Retrieve column comments from table
+- get_primary_key_info(): Get primary key constraint details
+- add_pk_constraint(): Add primary key constraint to table
+
+🛠️ UTILITY FUNCTIONS
+- guess_column_type(): Infer SQL column type from Python value
+
+Key Features:
+- Decorator Pattern: Auto connection/cursor injection and cleanup
+- Security: Parameterized queries, SQL identifier escaping
+- Error Handling: Comprehensive exception handling, transaction rollback
+- Advanced Search: Pattern matching, regex, fuzzy matching, trigram similarity
+- Schema Management: Dynamic table/column creation, constraint handling
+- Performance: Batch operations, connection reuse, pagination support
+"""
+
 import psycopg2, json
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor, execute_values
@@ -8,7 +66,7 @@ from functools import wraps
 from colorama import Fore
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent # alice/
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent  # alice/
 # Access psql defaults
 with open(ROOT_DIR / "conf" / "cred" / "psql.json", "r") as f:
     psql_cred = json.load(f)
@@ -193,6 +251,7 @@ def get_records(
     cursor.execute(query, values)
     records = cursor.fetchall()
     return records
+
 
 @init_psql_con_cursor
 def search_records(
@@ -457,6 +516,7 @@ def get_all_records(
     records = cursor.fetchall()
     return records
 
+
 @init_psql_con_cursor
 def fetch_top(
     cursor,
@@ -465,10 +525,10 @@ def fetch_top(
     schema_name: str,
     table_name: str,
     sort_col: str,
-    sort_desc: bool=True,
-    limit: int=1,
-    offset: int=0,
-    nulls_last: bool=True,
+    sort_desc: bool = True,
+    limit: int = 1,
+    offset: int = 0,
+    nulls_last: bool = True,
     host: str = sql_ip,
     port: int = sql_port,
     user: str = sql_user,
@@ -491,28 +551,30 @@ def fetch_top(
         records (list) : List of RealDictCursor dictionaries fetched with the
             fetchall() method.
     """
-    
+
     if limit < 1:
         raise ValueError(f"Limit must be at least 1, got {limit}")
     if offset < 0:
         raise ValueError(f"Offset cannot be negative, got {offset}")
-    
+
     direction = sql.SQL("DESC") if sort_desc else sql.SQL("ASC")
     nulls_order = sql.SQL("NULLS LAST") if nulls_last else sql.SQL("NULLS FIRST")
     schema_obj = sql.Identifier(schema_name)
     table_obj = sql.Identifier(table_name)
     col_obj = sql.Identifier(sort_col)
-    
-    query = sql.SQL(""" 
+
+    query = sql.SQL(
+        """ 
         SELECT * FROM {schema}.{table}
         ORDER BY {col} {direction} {nulls_order}
         LIMIT %s OFFSET %s                
-    """).format(
+    """
+    ).format(
         schema=schema_obj,
         table=table_obj,
         col=col_obj,
         direction=direction,
-        nulls_order=nulls_order
+        nulls_order=nulls_order,
     )
     try:
         cursor.execute(query, (limit, offset))
@@ -521,6 +583,7 @@ def fetch_top(
     except Exception as e:
         # eventually ill add an in-module logger
         raise e
+
 
 @init_psql_con_cursor
 def update_existing_record(
@@ -772,6 +835,7 @@ def delete_record(
         connection.rollback()
         raise e
 
+
 ################################################
 # ==========# Schema/Table Functions #==========#
 ################################################
@@ -847,16 +911,16 @@ def ensure_table_exists(
         col_name_obj = sql.Identifier(col_name)
         col_type = col.get("type", "TEXT")
         col_type_obj = sql.SQL(col_type)
-        column_defs.append(
-            sql.SQL("{} {}").format(col_name_obj, col_type_obj)
-        )
+        column_defs.append(sql.SQL("{} {}").format(col_name_obj, col_type_obj))
 
-    query = sql.SQL("""
+    query = sql.SQL(
+        """
         CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} ({column_defs})
-        """).format(
+        """
+    ).format(
         schema_name=schema_name_obj,
         table_name=table_name_obj,
-        column_defs=sql.SQL(", ").join(column_defs)
+        column_defs=sql.SQL(", ").join(column_defs),
     )
 
     try:
@@ -888,6 +952,7 @@ def ensure_table_exists(
 
     log.debug(f"Table {table_name} ensured in schema {schema_name}")
     return True
+
 
 def find_table_name(key: str, tables: list) -> str | None:
     """
@@ -981,14 +1046,16 @@ def add_column_to_table(
         col_name=col_name_obj,
         col_type=col_type_obj,
         col_default=col_default_obj,
-        not_null=sql.SQL("NOT NULL") if col_not_null else sql.SQL("")
+        not_null=sql.SQL("NOT NULL") if col_not_null else sql.SQL(""),
     )
     try:
         cursor.execute(alter_query)
         connection.commit()
         return True
     except Exception as e:
-        log.error(f"Error adding column {column_name} to table {schema_name}.{table_name}: {e}")
+        log.error(
+            f"Error adding column {column_name} to table {schema_name}.{table_name}: {e}"
+        )
         connection.rollback()
         return False
 
@@ -1112,6 +1179,7 @@ def get_primary_key_info(
     columns = [r["column_name"] for r in rows]
     return {"constraint_name": constraint_name, "columns": columns}
 
+
 @init_psql_con_cursor
 def add_pk_constraint(
     cursor,
@@ -1152,7 +1220,7 @@ def add_pk_constraint(
     )
     if primary_key:
         return True
-    
+
     alter_query = sql.SQL(
         """
         ALTER TABLE {schema_name}.{table_name}
@@ -1169,7 +1237,11 @@ def add_pk_constraint(
         connection.commit()
         return True
     except Exception as e:
-        print(Fore.RED + f"Error adding primary key constraint to {schema_name}.{table_name}: {e}" + Fore.RESET)
+        print(
+            Fore.RED
+            + f"Error adding primary key constraint to {schema_name}.{table_name}: {e}"
+            + Fore.RESET
+        )
         connection.rollback()
         return False
 
@@ -1177,6 +1249,7 @@ def add_pk_constraint(
 ###########################################
 # ==========# Utility Functions #==========#
 ###########################################
+
 
 def guess_column_type(value) -> str:
     """
