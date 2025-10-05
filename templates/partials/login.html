@@ -1,0 +1,32 @@
+<div class="login-container" id="login-container" style="z-index: 11; position: absolute;">
+    <div class="window-content">
+        <div class="title-bar" id="login-title-bar">
+            <h4>Log In</h4>
+            <button id="close-login-button" class="w98-button title-button">X</button>
+        </div>
+        <div class="login-content" style="padding: 15px;">
+            <h2>Login</h2>
+            <form method="POST" action="{{ url_for('fort.entrance') }}" class="login-form">
+                {{ form.hidden_tag() }}
+                <p>
+                    {{ form.username.label }}
+                    {{ form.username(size=32) }}
+                </p>
+                <p>
+                    {{ form.password.label }}
+                    {{ form.password(size=32) }}
+                </p>
+                <div class="form-radio">
+                    {{ form.remember.label }} {{ form.remember() }}
+                </div>
+                {{ form.submit() }}
+                <a href="{{ url_for('fort.homepage') }}">Forgot your password?</a>
+            </form>
+            {% for field, errors in form.errors.items() %}
+                {% for error in errors %}
+                    <p style="color:red">{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>

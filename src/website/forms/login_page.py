@@ -20,4 +20,4 @@ class LoginForm(FlaskForm):
         default=False,
         render_kw={"class": "remember-me"},
     )
-    submit = SubmitField("Login")
+    submit = SubmitField(label="Login", render_kw={"class": "w98-button"})

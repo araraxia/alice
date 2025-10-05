@@ -12,18 +12,117 @@ canvas {
     z-index: -1;
 }
 
-.index_container {
+/* Universal draggable window styles */
+.draggable-window {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    z-index: 10;
 }
 
-.index_content {
+.draggable-window.dragging {
+    z-index: 1000;
+    transition: none;
+}
+
+.draggable-window.dragging * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+.draggable-window.dragging .window-content {
+    box-shadow:
+        inset 1px 1px 0px #ffffff,
+        inset 2px 2px 0px #dfdfdf,
+        inset -1px -1px 0px #808080,
+        inset -2px -2px 0px #707070,
+        0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Active window styling */
+.draggable-window.active-window .title-bar {
+    background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%) !important;
+    color: white !important;
+}
+
+.draggable-window:not(.active-window) .title-bar {
+    background: linear-gradient(90deg, #808080 0%, #c0c0c0 100%) !important;
+    color: #000000 !important;
+}
+
+/* Window size variants */
+.draggable-window.small-window .window-content {
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.draggable-window.medium-window .window-content {
+    min-width: 300px;
+    max-width: 500px;
+}
+
+.draggable-window.large-window .window-content {
+    min-width: 500px;
+    max-width: 700px;
+}
+
+/* Window state classes */
+.draggable-window.minimized {
+    display: none;
+}
+
+.draggable-window.maximized {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1000;
+}
+
+.draggable-window.maximized .window-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+}
+
+/* Specific positioning for different windows */
+.disable-bg-container {
+    top: 20px;
+    right: 20px;
+    min-width: 200px;
+    display: none; /* Hidden by default */
+}
+
+/* Predefined window positions */
+.draggable-window.top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.draggable-window.top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.draggable-window.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+.draggable-window.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.draggable-window.centered {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.window-content {
     margin: auto;
     padding: 0;
     text-align: center;
@@ -100,13 +199,6 @@ ul li {
 }
 
 
-/* Title bar help button */
-#help-me-button {
-    min-width: 20px;
-    padding: 2px 6px;
-    font-size: 10px;
-    font-weight: bold;
-}
 
 .w98-button {
     font-family: "MS Sans Serif", sans-serif;
@@ -159,6 +251,31 @@ ul li {
     text-shadow: 1px 1px 0px #ffffff;
 }
 
+/* Special styling for buttons with open windows */
+.w98-button.window-open {
+    background: linear-gradient(135deg, #b0b0b0 0%, #a0a0a0 50%, #909090 100%);
+    color: #606060;
+    box-shadow: 
+        inset -1px -1px 0px #ffffff,
+        inset -2px -2px 0px #dfdfdf,
+        inset 1px 1px 0px #808080,
+        inset 2px 2px 0px #707070;
+}
+
+/* Title bar help button */
+.title-button {
+    min-width: 20px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Title bar button container */
+.title-bar > div {
+    display: flex;
+    gap: 2px;
+}
+
 /* Horizontal layout for login/register buttons */
 .log-reg-container {
     display: flex;
@@ -173,6 +290,20 @@ ul li {
 }
 
 /* Reset text alignment for log-reg-container */
+
+/* Draggable window enhancements */
+.title-bar {
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.title-bar:active {
+    cursor: grabbing;
+}
+
 .log-reg-container {
     text-align: initial;
 }

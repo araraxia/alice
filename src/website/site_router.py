@@ -45,8 +45,21 @@ def register():
     form = RegistrationForm()
     return render_template("register.html", form=form, title="Register")
 
+@fort_route.route('/login-modal', methods=['GET'])
+def login_modal():
+    form = LoginForm()
+    window_html = render_template("partials/login.html", form=form, title="Login")
+    
+    # Check if it's an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Return plain HTML for OpenWindow compatibility
+        return window_html
+    else:
+        # Return JSON for other use cases
+        return jsonify({"html": window_html})
+
 @fort_route.route('/entrance', methods=['POST'])
-def login():
+def entrance():
     current_app.logger.debug(f"Entrance route accessed {current_user}")
     
     if current_user.is_authenticated:

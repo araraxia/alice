@@ -5,6 +5,8 @@ class BackgroundWave {
         this.canvas = document.getElementById("background");
         this.body = document.body;
         this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+        this.isEnabled = true;
+        this.animationId = null;
         this.vertexShaderSource = `
             attribute vec4 a_position;
             void main() {
@@ -23,7 +25,7 @@ class BackgroundWave {
 
         console.log("Initialization complete, starting render loop");
         this.body.style.visibility = "visible";
-        requestAnimationFrame(this.render.bind(this));
+        this.animationId = requestAnimationFrame(this.render.bind(this));
     }
 
     async fetchShader() {
@@ -90,6 +92,10 @@ class BackgroundWave {
     }
 
     render(timestamp) {
+        if (!this.isEnabled) {
+            return;
+        }
+        
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
 
@@ -100,10 +106,32 @@ class BackgroundWave {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-        requestAnimationFrame(this.render.bind(this));
+        this.animationId = requestAnimationFrame(this.render.bind(this));
+    }
+
+    toggle() {
+        this.isEnabled = !this.isEnabled;
+        if (this.isEnabled) {
+            this.canvas.style.display = 'block';
+            this.animationId = requestAnimationFrame(this.render.bind(this));
+        } else {
+            this.canvas.style.display = 'none';
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
+        }
+        return this.isEnabled;
+    }
+
+    isBackgroundEnabled() {
+        return this.isEnabled;
     }
 }
 
+// Global instance for toggle functionality
+let backgroundWave;
+
 document.addEventListener("DOMContentLoaded", () => {
-    new BackgroundWave();
+    backgroundWave = new BackgroundWave();
 });
