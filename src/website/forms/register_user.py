@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo
 from flask_limiter.util import get_remote_address
 from flask_limiter import RateLimitExceeded
 from src.util.sql_helper import get_record, add_update_record, init_psql_connection
-from src.util.user_auth import UserAuth
+from src.user_auth import UserAuth
 from src.util.helpers import generate_password, validate_input
 from src.util.form_helper import clear_form_errors
 from src.automated_emails import AutomatedEmails

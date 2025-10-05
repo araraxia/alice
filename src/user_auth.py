@@ -215,9 +215,7 @@ class UserAuth(UserMixin):
             return True
         return False
 
-    def check_password(
-        self: object,
-    ):
+    def check_password(self,):
         """
         Checks if the provided password matches the stored password hash for the user.
         #### Returns:
@@ -230,8 +228,8 @@ class UserAuth(UserMixin):
             raise ValueError("Password is required to check password.")
 
         # Hash the password to compare with the stored hash
-        self.password_hash = hashlib.sha256(self.password.encode()).hexdigest()
-        self.log.debug(f"Password hash for {self.username}: {self.password_hash}")
+        password_hash = hashlib.sha256(self.password.encode()).hexdigest()
+        self.log.debug(f"Password hash for {self.username}: {password_hash}")
 
         # Build the SQL query to check the password
         record = get_record(
@@ -242,9 +240,10 @@ class UserAuth(UserMixin):
             value=self.username,
         )
         stored_password_hash = record.get("password_hash", None)
-        
-        if stored_password_hash == self.password_hash:
+
+        if stored_password_hash == password_hash:
             self.log.info(f"Password for user {self.username} is correct.")
+            self.password_hash = password_hash
             return True
         else:
             self.log.warning(f"Incorrect password for user {self.username}.")

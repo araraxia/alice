@@ -36,9 +36,6 @@ def redirect_home(next_page=None):
 def homepage():
     return jsonify({"message": "Welcome to the lounge!"})
 
-def render_login(form):
-    return render_template("login.html", form=form, title="Login")
-
 @fort_route.route('/register', methods=['GET'])
 def register():
     return {"status": "success"}, 200
@@ -77,7 +74,7 @@ def entrance():
             form.username.errors.append(
                 "Rate limit exceeded. Please try again later."
             )
-            return render_login(form)
+            return
 
         form = clear_form_errors(form)
         
@@ -87,11 +84,12 @@ def entrance():
             form_remember = form.remember.data
         except ValueError as e:
             current_app.logger.warning(f"Validation error for {current_user}: {e}")
-            form.username.errors.append(
+            form.submit.errors.append(
                 "Invalid input: " + str(e)
             )
-            return render_login(form)
-    
+            window_html = render_template("partials/login.html", form=form, title="Login")
+            return jsonify({"status": "error", "message": "Invalid input", "html": window_html})
+
         user = UserAuth(
             log=current_app.logger,
             username=form_user,
@@ -100,13 +98,18 @@ def entrance():
         if user.check_password():
             login_user(user, remember=form_remember)
             session.permanent = True
-            next_page = request.args.get("next", None)
-            return redirect_home(next_page)
+            return jsonify({'status': 'success', 'message': 'Login successful'}), 200
 
-    return render_login(form)
+    form.submit.errors.append("Login failed. Please check your credentials and try again.")
+    window_html = render_template("partials/login.html", form=form, title="Login")
+    return jsonify({'status': 'error', 'message': 'Login failed', 'html': window_html}), 401
 
 @fort_route.route('/logout', methods=['POST'])
 @login_required
 def logout():
-    logout_user()
-    return redirect(url_for('fort.login'))
+    try:
+        logout_user()
+        return jsonify({'status': 'success', 'message': 'Logout successful'}), 200
+    except Exception as e:
+        current_app.logger.error(f"Logout error for {current_user}: {e}")
+        return jsonify({'status': 'error', 'message': 'Logout failed'}), 500

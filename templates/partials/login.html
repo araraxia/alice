@@ -6,7 +6,7 @@
         </div>
         <div class="login-content" style="padding: 15px;">
             <h2>Login</h2>
-            <form method="POST" action="{{ url_for('fort.entrance') }}" class="login-form">
+            <form method="POST" action="{{ url_for('fort.entrance') }}" class="login-form" data-logout-url="{{ url_for('fort.logout') }}">
                 {{ form.hidden_tag() }}
                 <p>
                     {{ form.username.label }}
@@ -30,3 +30,5 @@
         </div>
     </div>
 </div>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+    

@@ -67,23 +67,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Windows are automatically discovered and registered by WindowManager
             
-            // Center the main window initially
             windowManager.centerWindow('index_container');
-            
             // Listen for window activation events
             document.addEventListener('windowActivated', function(e) {
                 console.log(`Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`);
                 console.log('Current window order:', windowManager.getWindowZIndexOrder());
             });
-            
-            // Set up window controls after auto-discovery
             setTimeout(() => {
                 windowManager.setupWindowControls();
-                
-                // Set up button-window associations
                 windowManager.setupWindowButton('#bg-control-button', 'disable-bg-container');
-                
-                // Log initial window order for debugging
                 console.log('Initial window z-index order:', windowManager.getWindowZIndexOrder());
             }, 100);
 
@@ -113,62 +105,67 @@
 
             if (loginButton) {
                 // Set up login button with window manager
-                windowManager.associateButton('login-modal', loginButton);
-                
-                loginButton.addEventListener('click', async function() {
-                    // Prevent opening if already disabled
-                    if (loginButton.disabled) {
-                        return;
-                    }
+                function initLoginButton(loginButton) {
+                    windowManager.associateButton('login-modal', loginButton);
                     
-                    const loginUrl = "{{ url_for('fort.login_modal') }}";
-                    const loginWindow = new OpenWindow(loginUrl, {
-                        onLoad: (container) => {
-                            console.log('Login content loaded', container);
-                            
-                            // Add draggable-window class to the loaded content
-                            container.classList.add('draggable-window');
-                            
-                            // Register the new window with the window manager
-                            const loginWindowId = 'login-modal';
-                            const titleBar = container.querySelector('#login-title-bar');
-                            if (titleBar) {
-                                windowManager.registerWindow(loginWindowId, container, '#login-title-bar');
+                    // Store the login handler so it can be removed later
+                    const loginHandler = async function() {
+                        // Prevent opening if already disabled
+                        if (loginButton.disabled) {
+                            return;
+                        }
+                        
+                        const loginUrl = "{{ url_for('fort.login_modal') }}";
+                        const loginWindow = new OpenWindow(loginUrl, {
+                            onLoad: (container) => {
+                                console.log('Login content loaded', container);
                                 
-                                // Disable the login button
-                                windowManager.disableWindowButtons(loginWindowId);
+                                // Add draggable-window class to the loaded content
+                                container.classList.add('draggable-window');
                                 
-                                // Center the login window
-                                windowManager.centerWindow(loginWindowId);
+                                // Register the new window with the window manager
+                                const loginWindowId = 'login-modal';
+                                const titleBar = container.querySelector('#login-title-bar');
+                                if (titleBar) {
+                                    windowManager.registerWindow(loginWindowId, container, '#login-title-bar');
+                                    windowManager.disableWindowButtons(loginWindowId);
+                                    windowManager.centerWindow(loginWindowId);
+                                    windowManager.bringToFront(loginWindowId);
+                                }
+                                
+                                // Set up close button after content is loaded
+                                const closeBtn = container.querySelector('#close-login-button');
+                                if (closeBtn) {
+                                    closeBtn.addEventListener('click', function() {
+                                        windowManager.enableWindowButtons(loginWindowId);
+                                        loginWindow.close();
+                                    });
+                                }
+
+
+                            },
+                            onClose: () => {
+                                windowManager.enableWindowButtons('login-modal');
                             }
-                            
-                            // Set up close button after content is loaded
-                            const closeBtn = container.querySelector('#close-login-button');
-                            if (closeBtn) {
-                                closeBtn.addEventListener('click', function() {
-                                    console.log('Close button clicked');
-                                    windowManager.enableWindowButtons(loginWindowId);
-                                    loginWindow.close();
-                                });
-                            } else {
-                                console.error("Close button not found! Available elements:", 
-                                    Array.from(container.querySelectorAll('*')).map(el => el.id || el.className));
-                            }
-                        },
-                        onClose: () => {
-                            // Re-enable the login button when window closes
+                        });
+                        window.loginWindow = loginWindow;
+                        window.loginButton = loginButton;
+
+                        try {
+                            await loginWindow.open();
+                        } catch (error) {
+                            console.error('Failed to open login window:', error);
+                            // Re-enable button on error
                             windowManager.enableWindowButtons('login-modal');
                         }
-                    });
+                    };
                     
-                    try {
-                        await loginWindow.open();
-                    } catch (error) {
-                        console.error('Failed to open login window:', error);
-                        // Re-enable button on error
-                        windowManager.enableWindowButtons('login-modal');
-                    }
-                });
+                    // Store the handler so it can be removed later
+                    loginButton._loginHandler = loginHandler;
+                    loginButton.addEventListener('click', loginHandler);
+                }
+                window.initLoginButton = initLoginButton;
+                window.initLoginButton(loginButton);
             }
         });
     </script>
