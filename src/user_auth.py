@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import psycopg2, hashlib, os, sys
+import hashlib, os, sys
 from flask_login import UserMixin
 from src.util.helpers import (
     generate_token,
     generate_password,
 )
 from src.util.sql_helper import (
-    init_psql_con_cursor,
+    add_update_record,
     get_record,
     update_existing_record,
 )
@@ -19,8 +19,8 @@ class UserAuth(UserMixin):
         username: str = "",
         password: str = "",
         email: str = "",
-        user_id: str = None,
-        api_token: str = None,
+        user_id: str = "",
+        api_token: str = "",
         role: str = "",
     ):
         # Class util attr
@@ -37,8 +37,8 @@ class UserAuth(UserMixin):
         self.email = email
         self.role = role
         
-        self.init_user()
         self.user_settings = {}
+        self.init_user()
         log.debug(
             f"UserAuth initialized with username: {self.username}, user_id: {self.user_id}, email: {self.email}"
         )
@@ -47,9 +47,6 @@ class UserAuth(UserMixin):
         """
         Initializes the user by loading existing user data from the database.
         This method checks if the user exists in the database and updates the user attributes accordingly.
-        Will not overwrite provided attributes if they already exist.
-        #### Args:
-        #### Returns:
         """
         if self.user_id:
             psql_user = get_record(
@@ -85,6 +82,8 @@ class UserAuth(UserMixin):
         self.token_hash = psql_user.get("token_hash", self.token_hash)
         self.created_at = psql_user.get("created_at", None)
         self.role = psql_user.get("role", self.role)
+        self.is_active = psql_user.get("is_active", False)
+        self.get_user_settings()
 
         return self
 
@@ -99,40 +98,26 @@ class UserAuth(UserMixin):
         """
         self.log.info(f"Loading user settings for {self.username}")
         self.user_settings = get_record(
-            schema="accounts",
-            table="settings",
+            schema="settings",
+            table="user_settings",
             column="user_id",
             value=self.user_id,
             database=database,
         )
-
+        self.first_name = self.user_settings.get("first_name", "")
+        self.last_name = self.user_settings.get("last_name", "")
         return self.user_settings
 
     #############################################
     ############ UserMixin Overrides ############
     #############################################
 
-    @init_psql_con_cursor
-    def is_active(cursor, connection, self):
-        is_active_query = f"""
-        SELECT is_active FROM {self.schema}.{self.table}
-        WHERE username = %s
+    def is_active(self):
         """
-        if self.user_exists(cursor, connection):
-            try:
-                cursor.execute(is_active_query, (self.username,))
-                result = cursor.fetchone()
-                if result:
-                    return result.get("is_active", False)
-                else:
-                    self.log.warning(f"User {self.username} does not exist.")
-                    return False
-            except psycopg2.Error as e:
-                self.log.error(f"Error checking user activity for {self.username}: {e}")
-                return False
-        else:
-            self.log.warning(f"User {self.username} does not exist.")
-            return False
+        Returns True if the user is active.
+        This method is used by Flask-Login to determine if the user account is active.
+        """
+        return self.is_active
 
     def is_authenticated(self):
         return self.check_password() if self.password else False
@@ -158,36 +143,15 @@ class UserAuth(UserMixin):
 
     # User Management Methods
 
-    @init_psql_con_cursor
-    def add_user_to_sql(
-        cursor,
-        connection,
-        self,
-        database: str = "accounts",
-    ) -> object:
+    def add_user_to_sql(self,) -> object:
         """
-        Adds a new customer to the database. If the customer already exists, it updates the existing record.
-        #### Args:
-            - database: str: name of the database to connect to
-        #### Kwargs:
-            - cursor: psycopg2 cursor object
-            - connection: psycopg2 connection object
+        Adds a new user to the database.
         #### Returns:
             - self: UserAuth object
         #### Raises:
             - psycopg2.Error: if there is an error executing the SQL query
         """
-
-        insert_query = f"""
-        INSERT INTO {self.schema}.{self.table} (user_id, username, email, password_hash, token_hash)
-        VALUES (%s, %s, %s, %s, %s)
-        ON CONFLICT (username) DO UPDATE SET
-        user_id = EXCLUDED.user_id,
-        email = EXCLUDED.email,
-        password_hash = EXCLUDED.password_hash,
-        token_hash = EXCLUDED.token_hash
-        """
-
+        
         if not self.token_hash:
             self.secret_key = generate_token()
             self.token_hash = hashlib.sha256(self.secret_key.encode()).hexdigest()
@@ -198,119 +162,67 @@ class UserAuth(UserMixin):
         if not self.password_hash:
             self.password_hash = hashlib.sha256(self.password.encode()).hexdigest()
 
-        values = (
-            self.user_id,
-            self.username,
-            self.email,
-            self.password_hash,
-            self.token_hash,
+        add_update_record(
+            database=self.db_name,
+            schema=self.schema,
+            table=self.table,
+            columns=["user_id", "username", "email", "password_hash", "token_hash"],
+            values=[self.user_id, self.username, self.email, self.password_hash, self.token_hash],
+            conflict_target="username",
+            on_conflict="DO NOTHING",
         )
 
-        try:
-            cursor.execute(insert_query, values)
-            connection.commit()
-            self.log.info(f"Customer {self.username} added to database.")
-        except psycopg2.Error as e:
-            self.log.error(f"Error adding customer {self.username} to database: {e}")
-            connection.rollback()
-            raise e
+        self.log.info(f"User {self.username} added to database.")
 
         return self
 
-    @init_psql_con_cursor
-    def add_user_to_holding(
-        cursor,
-        connection,
-        self,
-        database: str = "accounts",
-        role: str = "customer-role",
-    ) -> object:
+    def activate_user(self):
         """
-        Adds a new customer to the database. If the customer already exists, it updates the existing record.
-        #### Args:
-            - database: str: name of the database to connect to
-        #### Kwargs:
-            - cursor: psycopg2 cursor object
-            - connection: psycopg2 connection object
+        Activates a user in the database by setting the is_active flag to True.
         #### Returns:
-            - self: UserAuth object
-        #### Raises:
-            - psycopg2.Error: if there is an error executing the SQL query
+            - bool: True if the user was activated successfully, False otherwise
         """
+        self.log.info(f"Activating user {self.username}")
+        if not self.user_exists():
+            self.log.warning(f"User {self.username} does not exist. Cannot activate.")
+            return False
 
-        insert_query = f"""
-        INSERT INTO {self.schema}.{self.table}_holding (user_id, username, email, password_hash, token_hash, role)
-        VALUES (%s, %s, %s, %s, %s, %s)
-        ON CONFLICT (username) DO UPDATE SET
-        user_id = EXCLUDED.user_id,
-        email = EXCLUDED.email,
-        password_hash = EXCLUDED.password_hash,
-        token_hash = EXCLUDED.token_hash,
-        role = EXCLUDED.role
-        """
-
-        if not self.token_hash:
-            self.secret_key = generate_token()
-            self.token_hash = hashlib.sha256(self.secret_key.encode()).hexdigest()
-
-        if not self.password:
-            self.password = generate_password()
-
-        if not self.password_hash:
-            self.password_hash = hashlib.sha256(self.password.encode()).hexdigest()
-
-        values = (
-            self.user_id,
-            self.username,
-            self.email,
-            self.password_hash,
-            self.token_hash,
-            role,
+        update_existing_record(
+            database=self.database,
+            schema=self.schema,
+            table=self.table,
+            update_columns=["is_active"],
+            update_values=[True],
+            where_column="username",
+            where_value=self.username,
         )
+        self.log.info(f"User {self.username} has been activated.")
+        return True
 
-        try:
-            cursor.execute(insert_query, values)
-            connection.commit()
-            self.log.info(f"Customer {self.username} added to database.")
-        except psycopg2.Error as e:
-            self.log.error(f"Error adding customer {self.username} to database: {e}")
-            connection.rollback()
-            raise e
-
-        return self
-
-    def user_exists(self, cursor, connection):
+    def user_exists(self):
         """
         Checks if a user exists in the database.
-        #### Args:
-            - cursor: psycopg2 cursor object
-            - connection: psycopg2 connection object
         #### Returns:
             - bool: True if user exists, False otherwise
         """
-        return get_record(
+        if get_record(
             database=self.db_name,
             schema=self.schema,
             table=self.table,
             column="username",
             value=self.username,
-        )
+        ):
+            return True
+        return False
 
-    @init_psql_con_cursor
     def check_password(
-        cursor,
-        connection,
         self: object,
-        database: str = "accounts",
     ):
         """
         Checks if the provided password matches the stored password hash for the user.
-        #### Args:
-            - database: str: name of the database to connect to
         #### Returns:
             - bool: True if the password matches, False otherwise
         #### Raises:
-            - psycopg2.Error: if there is an error executing the SQL query
             - ValueError: if the password is not provided
         """
         self.log.info(f"Checking password for user {self.username}")
@@ -322,59 +234,30 @@ class UserAuth(UserMixin):
         self.log.debug(f"Password hash for {self.username}: {self.password_hash}")
 
         # Build the SQL query to check the password
-        password_query = f"""
-        SELECT password_hash FROM {self.schema}.{self.table}
-        WHERE username = %s
-        """
-        values = (self.username,)
+        record = get_record(
+            database=self.db_name,
+            schema=self.schema,
+            table=self.table,
+            column="username",
+            value=self.username,
+        )
+        stored_password_hash = record.get("password_hash", None)
+        
+        if stored_password_hash == self.password_hash:
+            self.log.info(f"Password for user {self.username} is correct.")
+            return True
+        else:
+            self.log.warning(f"Incorrect password for user {self.username}.")
+            return False
 
-        # Execute the query and check the result
-        try:
-            cursor.execute(password_query, values)
-            result = cursor.fetchone()
-            if result:
-                stored_password_hash = result.get("password_hash", None)
-                self.log.debug(
-                    f"Database password hash for {self.username}: {stored_password_hash}"
-                )
-                if stored_password_hash == self.password_hash:
-                    self.log.info(f"Password for user {self.username} is correct.")
-                    return True
-                else:
-                    self.log.warning(f"Incorrect password for user {self.username}.")
-                    return False
-            else:
-                self.log.warning(f"User {self.username} does not exist.")
-                return False
-        except psycopg2.Error as e:
-            self.log.error(f"Error checking password for user {self.username}: {e}")
-            raise e
-        except Exception as e:
-            self.log.error(
-                f"Unexpected error checking password for user {self.username}: {e}"
-            )
-            raise e
 
-    @init_psql_con_cursor
-    def reset_user_password(
-        cursor,
-        connection,
-        self: object,
-        database: str = "accounts",
-        new_password: str = None,
-    ):
+    def reset_user_password(self, new_password: str = None,):
         """
         Resets the password for a customer in the database.
         #### Args:
-            - database: str: name of the database to connect to
             - new_password: str: the new password to set for the user. If not provided, a new password will be generated.
-        #### Kwargs:
-            - cursor: psycopg2 cursor object
-            - connection: psycopg2 connection object
         #### Returns:
             - new_password: str: the new password for the customer
-        #### Raises:
-            - psycopg2.Error: if there is an error executing the SQL query
         """
         self.log.info(f"Resetting password for user {self.username}")
         # Generate a new password if not provided
@@ -386,154 +269,117 @@ class UserAuth(UserMixin):
         self.password_hash = password_hash
 
         # Check if the user exists in the database
-        if not self.user_exists(cursor, connection):
+        if not self.user_exists():
             self.log.warning(
                 f"User {self.username} does not exist. Cannot reset password."
             )
             raise ValueError(f"User {self.username} does not exist.")
+        
+        update_existing_record(
+            database=self.database,
+            schema=self.schema,
+            table=self.table,
+            update_columns=["password_hash"],
+            update_values=[self.password_hash],
+            where_column="username",
+            where_value=self.username,
 
-        update_query = f"""
-        UPDATE {self.schema}.{self.table}
-        SET password_hash = %s
-        WHERE username = %s and email = %s
-        """
-        values = (self.password_hash, self.username, self.email)
+        )
+        self.log.info(f"Password for user {self.username} has been reset.")
+        return new_password
 
-        try:
-            cursor.execute(update_query, values)
-            connection.commit()
-            self.log.info(f"Password for customer {self.username} updated.")
-            return new_password
-        except psycopg2.Error as e:
-            self.log.error(
-                f"Error resetting password for customer {self.username}: {e}"
-            )
-            connection.rollback()
-            raise e
-
-    @init_psql_con_cursor
-    def reset_user_token(
-        cursor,
-        connection,
-        self: object,
-        database: str = "accounts",
-    ):
+    def reset_user_token(self):
         """
         Resets the token for a user in the database.
-        #### Args:
-            - database: str: name of the database to connect to
         #### Returns:
             - new_token: str: the new token for the user
-        #### Raises:
-            - psycopg2.Error: if there is an error executing the SQL query
+        
         """
         self.log.info(f"Resetting token for user {self.username}")
         new_token = generate_token()
         self.token_hash = hashlib.sha256(new_token.encode()).hexdigest()
 
         # Check if the user exists before updating the token
-        if not self.user_exists(cursor, connection):
+        if not self.user_exists():
             self.log.warning(
                 f"User {self.username} does not exist. Cannot reset token."
             )
             raise ValueError(f"User {self.username} does not exist.")
 
-        self.log.debug(f"Updating token for user {self.username}")
-        update_query = f"""
-        UPDATE {self.schema}.{self.table}
-        SET token_hash = %s
-        WHERE username = %s
-        """
-        values = (self.token_hash, self.username)
-
-        try:
-            cursor.execute(update_query, values)
-            connection.commit()
-            self.log.info(f"Token for customer {self.username} updated.")
-            return new_token
-        except psycopg2.Error as e:
-            self.log.error(f"Error resetting token for customer {self.username}: {e}")
-            connection.rollback()
-            raise e
-
-    @init_psql_con_cursor
+        update_existing_record(
+            database=self.database,
+            schema=self.schema,
+            table=self.table,
+            update_columns=["token_hash"],
+            update_values=[self.token_hash],
+            where_column="username",
+            where_value=self.username,
+        )
+        self.log.info(f"Token for user {self.username} has been reset.")
+        return new_token
+       
     def update_user_email(
-        cursor,
-        connection,
         self,
-        database: str = "accounts",
-        new_email: str = None,
+        new_email: str,
     ):
         """
         Updates the email for a user in the database.
         #### Args:
-            - database: str: name of the database to connect to
             - new_email: str: the new email to set for the user
         #### Returns:
-            - bool: True if the email was updated successfully, False otherwise
+            - new_email: str: the updated email for the user
+        #### Raises:
+            - ValueError: if new_email is not provided or user does not exist
         """
-        if not new_email:
-            raise ValueError("New email is required to update the user email.")
-        self.log.info(f"Updating email for user {self.username} to {new_email}")
-
-        if not self.user_exists(cursor, connection):
+        if not self.user_exists():
             self.log.warning(
                 f"User {self.username} does not exist. Cannot update email."
             )
             raise ValueError(f"User {self.username} does not exist.")
 
-        self.log.debug(f"Updating email for user {self.username}")
-        update_query = f"""
-        UPDATE {self.schema}.{self.table}
-        SET email = %s
-        WHERE username = %s
-        """
-        values = (new_email, self.username)
+        update_existing_record(
+            database=self.database,
+            schema=self.schema,
+            table=self.table,
+            update_columns=["email"],
+            update_values=[new_email],
+            where_column="username",
+            where_value=self.username,
+        )
+        self.email = new_email
+        self.log.info(f"Email for user {self.username} has been updated to {new_email}")
+        return new_email
 
-        try:
-            cursor.execute(update_query, values)
-            connection.commit()
-            self.log.info(f"Email for user {self.username} updated.")
-            return True
-        except psycopg2.Error as e:
-            self.log.error(f"Error updating email for user {self.username}: {e}")
-            connection.rollback()
-            return False
-
-    @init_psql_con_cursor
-    def update_user_setting(cursor, connection, self, database, request):
+    def update_user_setting(self, setting_key: str, setting_value: str):
         """
         Updates the user settings based on the request data.
         #### Args:
-            - request: Flask request object containing the new user settings
+            - setting_key: str: the key of the setting to update
+            - setting_value: str: the new value for the setting
+            - user_id: str: the ID of the user whose settings are to be updated
         #### Returns:
             - bool: True if the settings were updated successfully, False otherwise
         """
-        setting_key = request.json.get("setting_key", {})
-        setting_value = request.json.get("setting_value", {})
-        user_id = request.json.get("user_id", self.user_id)
-        
-        if not setting_key or not setting_value or not user_id:
-            raise ValueError("Both setting_key and setting_value are required.")
         self.log.info(f"Updating settings for user {self.username}")
                 
-        if not self.user_exists(cursor, connection):
+        if not self.user_exists():
             self.log.warning(
                 f"User {self.username} does not exist. Cannot update settings."
             )
             raise ValueError(f"User {self.username} does not exist.")
 
         update_existing_record(
-            cursor=cursor,
-            connection=connection,
-            database=database,
-            schema="accounts",
-            table="settings",
+            database="accounts",
+            schema="settings",
+            table="user_settings",
             update_columns=[setting_key],
             update_values=[setting_value],
             where_column="user_id",
             where_value=user_id
         )
+        self.get_user_settings()
+        self.log.info(f"Settings for user {self.username} have been updated.")
+        return True
         
 
 if __name__ == "__main__":
