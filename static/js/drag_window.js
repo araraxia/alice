@@ -44,6 +44,26 @@ class DragWindow {
         this.container.style.position = 'absolute';
         this.container.style.cursor = 'default';
         
+        // Clear any conflicting CSS positioning when drag starts
+        const computedStyle = window.getComputedStyle(this.container);
+        if (computedStyle.position === 'absolute') {
+            // If already positioned, preserve current position
+            if (computedStyle.right !== 'auto' && computedStyle.left === 'auto') {
+                // Convert right positioning to left positioning
+                const rightValue = parseInt(computedStyle.right) || 0;
+                const leftValue = window.innerWidth - this.container.offsetWidth - rightValue;
+                this.container.style.left = leftValue + 'px';
+                this.container.style.right = 'auto';
+            }
+            if (computedStyle.bottom !== 'auto' && computedStyle.top === 'auto') {
+                // Convert bottom positioning to top positioning
+                const bottomValue = parseInt(computedStyle.bottom) || 0;
+                const topValue = window.innerHeight - this.container.offsetHeight - bottomValue;
+                this.container.style.top = topValue + 'px';
+                this.container.style.bottom = 'auto';
+            }
+        }
+        
         // Make title bar indicate it's draggable
         this.titleBar.style.cursor = 'move';
         this.titleBar.style.userSelect = 'none';
@@ -60,12 +80,16 @@ class DragWindow {
     handleMouseDown(e) {
         this.isDragging = true;
         
-        // Get the current position of the container
-        const rect = this.container.getBoundingClientRect();
+        // Get the current computed position (not bounding rect)
+        const computedStyle = window.getComputedStyle(this.container);
+        const currentLeft = parseInt(computedStyle.left) || 0;
+        const currentTop = parseInt(computedStyle.top) || 0;
         
-        // Calculate offset from mouse to top-left corner of container
-        this.offsetX = e.clientX - rect.left;
-        this.offsetY = e.clientY - rect.top;
+        // Store the starting mouse position and element position
+        this.startX = e.clientX;
+        this.startY = e.clientY;
+        this.startLeft = currentLeft;
+        this.startTop = currentTop;
         
         // Add dragging class for visual feedback
         this.container.classList.add('dragging');
@@ -78,22 +102,31 @@ class DragWindow {
     handleMouseMove(e) {
         if (!this.isDragging) return;
         
-        // Calculate new position
-        const newX = e.clientX - this.offsetX;
-        const newY = e.clientY - this.offsetY;
+        // Calculate the distance moved from start position
+        const deltaX = e.clientX - this.startX;
+        const deltaY = e.clientY - this.startY;
         
-        // Get viewport dimensions
+        // Calculate new position (1:1 ratio with mouse movement)
+        const newX = this.startLeft + deltaX;
+        const newY = this.startTop + deltaY;
+        
+        // Get viewport dimensions and container dimensions
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        const containerRect = this.container.getBoundingClientRect();
+        const containerWidth = this.container.offsetWidth;
+        const containerHeight = this.container.offsetHeight;
         
-        // Constrain to viewport bounds
-        const constrainedX = Math.max(0, Math.min(newX, viewportWidth - containerRect.width));
-        const constrainedY = Math.max(0, Math.min(newY, viewportHeight - containerRect.height));
+        // Constrain to viewport bounds (allow full left side)
+        const constrainedX = Math.max(0, Math.min(newX, viewportWidth - containerWidth));
+        const constrainedY = Math.max(0, Math.min(newY, viewportHeight - containerHeight));
         
         // Apply new position
         this.container.style.left = constrainedX + 'px';
         this.container.style.top = constrainedY + 'px';
+        
+        // Clear any conflicting CSS positioning
+        this.container.style.right = 'auto';
+        this.container.style.bottom = 'auto';
     }
     
     handleMouseUp(e) {
