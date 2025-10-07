@@ -15,16 +15,19 @@ osrs_route = Blueprint('osrs', __name__, url_prefix='/osrs')
 
 @osrs_route.route('/', methods=['GET'])
 def index():
-    return render_template('osrs/index.html')
+    page_html = render_template('osrs/index.html')
+    return jsonify({'status': 'success', 'html': page_html})
 
 @osrs_route.route('/calc', methods=['GET'])
 def calc():
     from src.osrs.osrs_calcs import OSRSCalcsHandler
     calc_handler = OSRSCalcsHandler(current_app)
-    return calc_handler.render_index()
+    page_html = calc_handler.render_index()
+    return jsonify({'status': 'success', 'html': page_html})
 
 @osrs_route.route('/super-combats', methods=['GET'])
 def super_combats():
     from src.osrs.calcs.super_combats import SuperCombats
     sc = SuperCombats()
-    return sc.display()
+    page_html = sc.display()
+    return jsonify({'status': 'success', 'html': page_html})

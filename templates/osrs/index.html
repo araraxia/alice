@@ -1,38 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSRS Tools</title>
-    <style>
-        .osrs-index-body .w98-window {
-            max-width: 600px;
-            margin: 40px auto;
-        }
-    </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-</head>
-<body class="osrs-index-body">
-    <div class="w98-window">
-        <div class="title-bar">
-            OSRS Tools
-        </div>
-
-        <div class="back-link">
-            <a href="{{ url_for('index') }}" class="w98-button">← Back to Home</a>
-        </div>
-
-        <div class="menu-grid">
-            <a href="{{ url_for('osrs.super_combats') }}" class="w98-button">
-                Super Combat Potions
-                <div class="tool-description">Find cheapest ingredients for super combat potions</div>
-            </a>
-
-            <a href="{{ url_for('osrs.calc') }}" class="w98-button" disabled>
-                Calculators
-                <div class="tool-description">Various OSRS calculators and tools</div>
-            </a>
+<div class="w98-window draggable-window medium-window" id="osrs-index-window">
+    <div class="title-bar" id="osrs-index-title-bar">
+        <h4>OSRS Tools</h4>
+        <div>
+            <button id="close-osrs-index-button" class="w98-button title-button">X</button>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="menu-grid">
+        <a href="{{ url_for('osrs.super_combats') }}" class="w98-button">
+            Super Combat Potions
+            <div class="tool-description">Find cheapest ingredients for super combat potions</div>
+        </a>
+
+        <a href="{{ url_for('osrs.calc') }}" class="w98-button" disabled>
+            Calculators
+            <div class="tool-description">Various OSRS calculators and tools</div>
+        </a>
+    </div>
+</div>

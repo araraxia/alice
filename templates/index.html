@@ -32,7 +32,7 @@
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
                 </li>
                 <li>
-                    <a href="{{ url_for('osrs.index') }}"><button class="w98-button">OSRS Tools</button></a>
+                    <button class="w98-button" id="osrs-index-button">OSRS Tools</button>
                 </li>
                 <li>
                     <div class="log-reg-container">
@@ -56,13 +56,25 @@
         </div>
     </div>
     <script>
+        // Set global constants
         const SHADERURL = "{{ url_for('static', filename='glsl/indexBGShader.glsl') }}";
+        const OSRSENDPOINT = "{{ url_for('osrs.index') }}";
     </script>
     <script src="{{ url_for('static', filename='js/index_background.js') }}"></script>
     <script src="{{ url_for('static', filename='js/drag_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
     <script>
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
+                document.head.appendChild(script);
+            });
+        }
+
         // Initialize modular window system
         document.addEventListener('DOMContentLoaded', function() {
             // Windows are automatically discovered and registered by WindowManager
@@ -85,6 +97,7 @@
             const toggleBgButton = document.getElementById('toggle-bg-button');
             const closeBgButton = document.getElementById('close-disable-bg-button');
             const bgControlButton = document.getElementById('bg-control-button');
+            const osrsButton = document.getElementById('osrs-tools-button');
 
             // Background toggle functionality
             if (toggleBgButton) {
@@ -166,6 +179,25 @@
                 }
                 window.initLoginButton = initLoginButton;
                 window.initLoginButton(loginButton);
+            }
+
+            if (osrsButton) {
+                osrsButton.addEventListener('mouseover', async () => {
+                    console.log('OSRS Tools button hovered, preloading osrs_index.js');
+                    if ('osrsIndex' in window) {
+                        console.log('Preventing multiple loads of osrs_index.js');
+                        return;
+                    }
+                    console.log('Loading osrs_index.js');
+                    await loadScript("{{ url_for('static', filename='js/osrs_index.js') }}");
+                    console.log('osrs_index.js loaded, initializing OSRS tools window');
+                    window.osrsIndex.initOsrs();
+                });
+
+                osrsButton.addEventListener('click', () => {
+                    window.osrsIndex.openWindow();
+                });
+
             }
         });
     </script>
