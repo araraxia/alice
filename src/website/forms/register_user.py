@@ -1,4 +1,5 @@
-from flask import render_template, redirect, url_for, flash
+import uuid
+from flask import jsonify, render_template, redirect, url_for, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, EmailField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
@@ -13,13 +14,13 @@ from time import sleep
 from limiter import limiter
 
 
-class RegisterCustomerForm(FlaskForm):
+class RegisterUserForm(FlaskForm):
     first_name = StringField("First Name", validators=[DataRequired(), Length(max=50)])
     last_name = StringField("Last Name", validators=[DataRequired(), Length(max=50)])
     username = StringField(
-        "Username", validators=[DataRequired(), Length(min=5, max=32)]
+        "Username", validators=[DataRequired(), Length(min=2, max=32)]
     )
-    password1 = PasswordField("Password", validators=[DataRequired(), Length(min=12)])
+    password1 = PasswordField("Password", validators=[DataRequired(), Length(min=12, max=50)])
     password2 = PasswordField(
         "Confirm Password",
         validators=[
@@ -29,40 +30,42 @@ class RegisterCustomerForm(FlaskForm):
         ],
     )
     email = EmailField("Email", validators=[DataRequired(), Email()])
-    company_code = StringField("Company Code", validators=[DataRequired()])
     submit = SubmitField("Register Customer")
 
 
-class ValidateCustomerRegistrationForm(FlaskForm):
+class ValidateRegistration(FlaskForm):
     secret_code = StringField(
         "Secret Code", validators=[DataRequired(), Length(min=6, max=6)]
     )
     submit = SubmitField("Validate Registration")
 
 
-class RegisterCustomer:
+class RegisterUser:
     def __init__(self, app, log):
         self.app = app
         self.log = log
 
-    def render_register_customer_form(self, form=None):
+    def render_registration_form(self, form=None):
         """
-        Render the register customer form.
+        Render the registration form.
         """
-        self.log.debug("Rendering register customer form")
+        self.log.debug("Rendering registration form")
         if not form:
-            form = RegisterCustomerForm()
-        return render_template(
-            "internal_portal/forms/register-customer-form.html",
+            form = RegisterUserForm()
+            
+        reg_window_html = render_template(
+            "partials/register_user.html",
             form=form,
+            title="Register Customer",
         )
+        return jsonify({"status": "success", "html": reg_window_html})
 
-    def process_register_customer(self):
+    def process_registration(self):
         """
-        Process the register customer form submission.
+        Process the registration form submission.
         """
-        self.log.debug("Processing register customer form submission")
-        form = RegisterCustomerForm()
+        self.log.debug("Processing registration form submission")
+        form = RegisterUserForm()
         if form.validate_on_submit():
             self.log.info(f"Registering new customer {form.username.data}")
             form = clear_form_errors(form)  # Clear any previous errors
@@ -73,7 +76,6 @@ class RegisterCustomer:
             email = form.email.data
             first_name = form.first_name.data
             last_name = form.last_name.data
-            company_code = form.company_code.data
 
             ##### Validate all inputs
             for field in [
@@ -83,127 +85,69 @@ class RegisterCustomer:
                 email,
                 first_name,
                 last_name,
-                company_code,
             ]:
                 if field:
                     continue
-                self.log.error(f"{field} is required.")
-                form.username.errors.append(f"{field} is required.")
-                return self.render_register_customer_form(form)
+                self.log.warning(f"{field} is required.")
+                return jsonify({"status": "error", "message": f"{field} is required."})
 
             # Check if passwords match
             if not password1 == password2:
-                self.log.error("Passwords do not match.")
-                form.password2.errors.append("Passwords must match.")
-                return self.render_register_customer_form(form)
+                self.log.warning("Passwords do not match.")
+                return jsonify({"status": "error", "message": "Passwords must match."})
 
             # Validate input values
             try:
                 username = validate_input(username)
                 password = validate_input(password1, "PASSWORD")
             except ValueError as e:
-                self.log.error(f"Input validation failed: {e}")
-                form.username.errors.append(str(e))
-                return self.render_register_customer_form(form)
+                self.log.warning(f"Input validation failed: {e}")
+                return jsonify({"status": "error", "message": str(e)})
 
             # Initialize UserAuth instance
+            user_uuid = str(uuid.uuid4())
             user = UserAuth(
                 log=self.log,
                 username=username,
                 password=password,
                 email=email,
-                user_id=username,
-                role="customer-role",
-                company_code=company_code,
+                user_id=user_uuid,
+                role="user-role",
             )
 
             # Check if user already exists
-            conn = init_psql_connection(db="meno_accounts")
+            conn = init_psql_connection(db="accounts")
             cursor = conn.cursor()
             try:
                 if user.user_exists(cursor, conn):
                     self.log.error(f"User {username} already exists.")
-                    form.username.errors.append("Username already exists.")
-                    return self.render_register_customer_form(form)
+                    return jsonify({"status": "error", "message": "Username already exists."})
             finally:
                 cursor.close()
                 conn.close()
 
-            # Check if company code exists
-            customer_records = get_record(
-                database="meno_db",
-                schema="Meno",
-                table="Customers",
-                column="Customer ID",
-                value=company_code,
-            )
-            if not customer_records:
-                self.log.error(f"Company code {company_code} does not exist.")
-                form.company_code.errors.append("Invalid company code.")
-                return self.render_register_customer_form(form)
-
-            ##### Create a temp user
-            try:
-                self.log.debug("Creating new user in the database")
-                user.add_user_to_holding()
-                columns = [
-                    "user_id",
-                    "first_name",
-                    "last_name",
-                    "company_code",
-                ]
-                values = [
-                    user.user_id,
-                    first_name,
-                    last_name,
-                    company_code,
-                ]
-                add_update_record(
-                    database="meno_accounts",
-                    schema="accounts",
-                    table="settings_holding",
-                    columns=columns,
-                    values=values,
-                    conflict_target=["user_id"],
-                )
-            except Exception as e:
-                self.log.error(f"Error creating user: {e}")
-                form.submit.errors.append(
-                    "Error creating user. Please try again later. If the problem persists, contact support."
-                )
-                return self.render_register_customer_form(form)
-
+            user.first_name = first_name
+            user.last_name = last_name
             # Generate a secret code for verification, store it in the database
             secret_code = generate_password(length=6)
-            try:
-                add_update_record(
-                    database="meno_accounts",
-                    schema="auth",
-                    table="registration_code",
-                    columns=["username", "verification_code"],
-                    values=[username, secret_code],
-                    conflict_target=["username"],
-                )
-            except Exception as e:
-                self.log.error(f"Error creating verification code: {e}")
-                form.submit.errors.append(
-                    "Error updating verification code. Please try again later."
-                )
-                return self.render_register_customer_form(form)
+            user.secret_code = secret_code
+
+            # Add user to sql
+            user.add_user_to_sql()
 
             # Send verification email
             automated_emails = AutomatedEmails()
-            subject = "Meno Portal Customer Registration"
+            subject = "Araxia.xyz Account Registration"
             body = f"""
 Welcome {first_name},
-Thank you for registering as a customer on the Meno Portal.
+Thank you for registering as a user on the Araxia.xyz platform.
 Your verification code is: {secret_code}
 You can validate at the following link:
-{url_for('internal_portal.validate_customer_registration', _external=True)}
+{url_for('fort.validate_registration', _external=True)}
 """
-            automated_emails.email_from_memory(
-                from_name="Meno No-Reply",
-                from_email="no-reply@menoenterprises.com",
+            automated_emails.send_email(
+                from_name="Alice",
+                from_email="alice@araxia.xyz",
                 to_email=[email],
                 subject=subject,
                 body=body,
@@ -211,8 +155,8 @@ You can validate at the following link:
 
             # Log the sending of the verification email
             self.log.info(f"Sent verification email to {email}")
-            return redirect(url_for("internal_portal.validate_customer_registration"))
-        return self.render_register_customer_form(form)
+            return redirect(url_for("fort.validate_registration"))
+        return self.render_registration_form(form)
 
     def render_validate_registration_form(self, form=None):
         """
@@ -220,14 +164,14 @@ You can validate at the following link:
         """
         self.log.debug("Rendering validate registration form")
         if not form:
-            form = ValidateCustomerRegistrationForm()
+            form = ValidateRegistration()
         return render_template(
             "internal_portal/forms/validate-registration-form.html",
             form=form,
         )
 
     def process_validate_registration(self):
-        validation_form = ValidateCustomerRegistrationForm()
+        validation_form = ValidateRegistration()
         if validation_form.validate_on_submit():
             validation_form = clear_form_errors(
                 validation_form
@@ -252,10 +196,10 @@ You can validate at the following link:
 
             # Check if the secret code is valid
             record = get_record(
-                database="meno_accounts",
+                database="accounts",
                 schema="auth",
-                table="registration_code",
-                column="verification_code",
+                table="users",
+                column="secret_code",
                 value=secret_code,
             )
 
@@ -265,6 +209,7 @@ You can validate at the following link:
                 return self.render_validate_registration_form(validation_form)
 
             username = record.get("username")
+            user_id = record.get("user_id")
             if not username:
                 self.log.warning("Username not found for the provided secret code.")
                 validation_form.secret_code.errors.append(
@@ -272,72 +217,41 @@ You can validate at the following link:
                 )
                 return self.render_validate_registration_form(validation_form)
 
-            # Retrieve held records
-            account_record = get_record(
-                database="meno_accounts",
-                schema="accounts",
-                table="settings_holding",
+            user_settings = get_record(
+                database="accounts",
+                schema="settings",
+                table="user_settings",
                 column="user_id",
-                value=username,
-            )
-            auth_record = get_record(
-                database="meno_accounts",
-                schema="auth",
-                table="users_holding",
-                column="username",
-                value=username,
+                value=user_id,
             )
 
-            # Parse records back into lists
-            account_columns, account_values = [], []
-            for column, value in account_record.items():
-                account_columns.append(column)
-                account_values.append(value)
-
-            auth_columns, auth_values = [], []
-            for column, value in auth_record.items():
-                auth_columns.append(column)
-                auth_values.append(value)
-
-            # Update records to active tables
-            try:
-                add_update_record(
-                    database="meno_accounts",
-                    schema="accounts",
-                    table="settings",
-                    columns=account_columns,
-                    values=account_values,
-                    conflict_target=["user_id"],
-                )
-            except Exception as e:
-                self.log.error(f"Error updating account record: {e}")
+            first_name = user_settings.get("first_name") if user_settings else "User"
+            email = record.get("email")
+            if not email:
+                self.log.warning("Email not found for the provided secret code.")
                 validation_form.secret_code.errors.append(
-                    "Error updating account record. Please try again later."
+                    "Email not found for the provided secret code."
                 )
                 return self.render_validate_registration_form(validation_form)
-
-            # Update auth record
-            try:
-                add_update_record(
-                    database="meno_accounts",
-                    schema="auth",
-                    table="users",
-                    columns=auth_columns,
-                    values=auth_values,
-                    conflict_target=["user_id"],
-                )
-            except Exception as e:
-                self.log.error(f"Error updating auth record: {e}")
-                validation_form.secret_code.errors.append(
-                    "Error updating auth record. Please try again later."
-                )
-                return self.render_validate_registration_form(validation_form)
+            
+            # Send verification email
+            automated_emails = AutomatedEmails()
+            subject = "Araxia.xyz Registration Confirmation"
+            body = f"""
+Thank you for validating your account, {first_name},
+Your account has been successfully validated. You can now log in and do something.
+"""
+            automated_emails.send_email(
+                from_name="Alice",
+                from_email="alice@araxia.xyz",
+                to_email=[email],
+                subject=subject,
+                body=body,
+            )
 
             # If everything is successful, log the user validation and redirect to login
             self.log.info(f"User {username} validated successfully.")
-            flash("Success", "success")
-            sleep(5)
-            return redirect(url_for("internal_portal.login"))
+            return redirect(url_for("fort.entrance"))
 
         self.log.warning("Validation failed.")
         validation_form.secret_code.errors.append("Invalid secret code.")

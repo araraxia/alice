@@ -151,6 +151,9 @@ class UserAuth(UserMixin):
         #### Raises:
             - psycopg2.Error: if there is an error executing the SQL query
         """
+        if self.is_active():
+            self.log.warning(f"User {self.username} is already active in the database.")
+            raise ValueError(f"User {self.username} already exists.")
         
         if not self.token_hash:
             self.secret_key = generate_token()
@@ -162,15 +165,42 @@ class UserAuth(UserMixin):
         if not self.password_hash:
             self.password_hash = hashlib.sha256(self.password.encode()).hexdigest()
 
-        add_update_record(
-            database=self.db_name,
-            schema=self.schema,
-            table=self.table,
-            columns=["user_id", "username", "email", "password_hash", "token_hash"],
-            values=[self.user_id, self.username, self.email, self.password_hash, self.token_hash],
-            conflict_target="username",
-            on_conflict="DO NOTHING",
-        )
+        try:
+            add_update_record(
+                database=self.db_name,
+                schema=self.schema,
+                table=self.table,
+                columns=["user_id", "username", "email", "password_hash", "token_hash", "is_active", "secret_code"],
+                values=[self.user_id, self.username, self.email, self.password_hash, self.token_hash, False, self.secret_code],
+                conflict_target="username",
+                on_conflict="DO NOTHING",
+            )
+        except Exception as e:
+            self.log.error(f"Error adding user to database: {e}")
+            raise e
+        
+        try:
+            self.log.debug("Creating new user in the database")
+            columns = [
+                "user_id",
+                "first_name",
+                "last_name",
+            ]
+            values = [
+                self.user_id,
+                self.first_name,
+                self.last_name,
+            ]
+            add_update_record(
+                database=self.db_name,
+                schema="settings",
+                table="user_settings",
+                columns=columns,
+                values=values,
+                conflict_target=["user_id"],
+            )
+        except Exception as e:
+            self.log.error(f"Error creating user settings: {e}")
 
         self.log.info(f"User {self.username} added to database.")
 

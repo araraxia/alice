@@ -341,8 +341,8 @@ def validate_input(input_value, expected_type: str = "USERNAME"):
         input_value = input_value.strip()
         if not isinstance(input_value, str):
             raise ValueError("Username must be a string.")
-        if len(input_value) < 3 or len(input_value) > 50:
-            raise ValueError("Username must be between 3 and 50 characters long.")
+        if len(input_value) < 2 or len(input_value) > 32:
+            raise ValueError("Username must be between 2 and 32 characters long.")
         if not re.match(r"^[a-zA-Z0-9_]+$", input_value):
             raise ValueError(
                 "Username can only contain letters, numbers, and underscores."
@@ -350,9 +350,9 @@ def validate_input(input_value, expected_type: str = "USERNAME"):
     elif expected_type == "PASSWORD":
         if not isinstance(input_value, str):
             raise ValueError("Password must be a string.")
-        if len(input_value) < 8 or len(input_value) > 50:
-            raise ValueError("Password must be between 8 and 50 characters long.")
-        if not re.match(r"^[a-zA-Z0-9!@#$%^&*()_\-+=]+$", input_value):
+        if len(input_value) < 12 or len(input_value) > 50:
+            raise ValueError("Password must be between 12 and 50 characters long.")
+        if not re.match(r"^[a-zA-Z0-9!@#$%^&*_\-]+$", input_value):
             raise ValueError(
                 "Password can only contain letters, numbers, and special characters."
             )
