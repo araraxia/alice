@@ -14,6 +14,7 @@ class OpenWindow {
             ...options
         };
         this.container = null;
+        console.log(`OpenWindow initialized with URL: ${this.url}`);
     }
 
     /**

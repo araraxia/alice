@@ -9,96 +9,53 @@ class OSRSIndex {
         this.endpoint = OSRSENDPOINT;
     }
 
-    async fetchHtml() {
-        console.log('Fetching OSRS tools from ', this.endpoint);
-        const response = await fetch(this.endpoint);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.status === 'success' && data.html) {
-            return data.html;
-        }
-    }
-
-    async initHtml() {
-        if (this.checkIfOpen()) {
-            console.log('OSRS tools window is already open, bringing to front.');
-            this.windowManager.bringToFront(this.windowId);
-        } else {
-            console.log('OSRS tools window is not open, creating new window.');
-            await this.initOsrs();
-        }
-    }
-
-    async initOsrs() {
-        window.osrsWindow = new window.openWindow(this.endpoint, {
+    async openWindow() {
+        const osrsWindow = new window.OpenWindow(this.endpoint, {
             onLoad: (container, html) => {
                 console.log('OSRS tools window loaded successfully.');
                 container.classList.add('draggable-window');
-                container.classList.add('w98-window');
-                container.classList.add('medium-window');
                 container.id = this.windowId;
-                container.style.display = 'none'; // Initially hide the window
+                
+                // Associate the button with the window
+                const button = document.getElementById(this.buttonId);
+                if (button) {
+                    this.windowManager.associateButton(this.windowId, button);
+                }
+                
+                console.log('Opening OSRS tools window.');
+                const titleBar = container.querySelector(`#${this.titleId}`);
+                if (titleBar) {
+                    this.windowManager.registerWindow(this.windowId, container, `#${this.titleId}`);
+                    this.windowManager.disableWindowButtons(this.windowId);
+                    this.windowManager.centerWindow(this.windowId);
+                    this.windowManager.bringToFront(this.windowId);
+                    this.initClose(osrsWindow);
+                } else {
+                    console.warn(`Title bar with ID '${this.titleId}' not found`);
+                }
+            },
+            onClose: () => {
+                this.windowManager.enableWindowButtons(this.windowId);
+                // Note: No unregisterWindow method exists, window manager handles cleanup automatically
             }
         });
-
-        const html = await this.fetchHtml();
-        if (html) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html.trim();
-            const osrsWindow = tempDiv.firstChild;
-            if (osrsWindow, html) {
-                console.log('OSRS tools window created successfully, making draggable.');
-                osrsWindow.classList.add('draggable-window');
-                osrsWindow.classList.add('w98-window');
-                osrsWindow.classList.add('medium-window');
-                osrsWindow.style.display = 'none'; // Initially hide the window
-                osrsWindow.id = this.windowId;
-                document.body.appendChild(osrsWindow);
-                this.registerElements();
-            } else {
-                console.error('Failed to create OSRS tools window: No valid HTML element found.');
-            }
-        } else {
-            console.error('Failed to load OSRS tools HTML content.');
-        }
-
+        
+        // Store the window instance globally for reference
+        window.osrsWindow = osrsWindow;
     }
 
-    openWindow() {
-        this.windowManager.disableWindowButtons(this.windowId);
-        if (this.checkIfOpen()) {
-            console.log('Preventing new window propagation, OSRS tools window already open');
-            this.windowManager.bringToFront(this.windowId);
-            return;
-        } else {
-            console.log('Opening OSRS tools window.');
-            this.windowManager.registerWindow(this.windowId, window.osrsWindow, this.titleId);
-            this.windowManager.centerWindow(this.windowId);
-            this.windowManager.bringToFront(this.windowId);
-            window.osrsWindow.style.display = 'block'; // Show the window
-        }
-    }
-
-    registerElements() {
-        console.log('Registering OSRS tools window with WindowManager.');
-        this.windowManager.associateButton(this.buttonId, this.windowId);
-        this.initClose();
-    }
-
-    initClose() {
+    initClose(osrsWindow) {
         // Set up close button
         console.log('Setting up close button for OSRS tools window.');
-        const closeBtn = document.getElementById('close-osrs-index-button');
+        const closeBtn = document.getElementById(this.closeBtnId);
         if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-                this.windowManager.hideWindow(this.windowId);
-                setTimeout(() => {
-                    window.osrsWindow.remove();
-                    this.windowManager.unregisterWindow(this.windowId);
-                }, 300); // Delay to allow any closing animations
+            closeBtn.addEventListener('click', () => {
+                console.log('Close button clicked for OSRS window');
+                this.windowManager.enableWindowButtons(this.windowId);
+                osrsWindow.close();
             });
+        } else {
+            console.warn(`Close button with ID '${this.closeBtnId}' not found`);
         }
     }
 

@@ -12,7 +12,7 @@
             min-height: 100vh;
         }   
     </style> 
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 <body>
@@ -64,6 +64,7 @@
     <script src="{{ url_for('static', filename='js/drag_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/window_initializer.js') }}"></script>
     <script>
         function loadScript(url) {
             return new Promise((resolve, reject) => {
@@ -97,7 +98,7 @@
             const toggleBgButton = document.getElementById('toggle-bg-button');
             const closeBgButton = document.getElementById('close-disable-bg-button');
             const bgControlButton = document.getElementById('bg-control-button');
-            const osrsButton = document.getElementById('osrs-tools-button');
+            const osrsButton = document.getElementById('osrs-index-button');
 
             // Background toggle functionality
             if (toggleBgButton) {
@@ -118,67 +119,24 @@
 
             if (loginButton) {
                 // Set up login button with window manager
-                function initLoginButton(loginButton) {
-                    windowManager.associateButton('login-modal', loginButton);
-                    
-                    // Store the login handler so it can be removed later
-                    const loginHandler = async function() {
-                        // Prevent opening if already disabled
-                        if (loginButton.disabled) {
-                            return;
-                        }
-                        
-                        const loginUrl = "{{ url_for('fort.login_modal') }}";
-                        const loginWindow = new OpenWindow(loginUrl, {
-                            onLoad: (container) => {
-                                console.log('Login content loaded', container);
-                                
-                                // Add draggable-window class to the loaded content
-                                container.classList.add('draggable-window');
-                                
-                                // Register the new window with the window manager
-                                const loginWindowId = 'login-modal';
-                                const titleBar = container.querySelector('#login-title-bar');
-                                if (titleBar) {
-                                    windowManager.registerWindow(loginWindowId, container, '#login-title-bar');
-                                    windowManager.disableWindowButtons(loginWindowId);
-                                    windowManager.centerWindow(loginWindowId);
-                                    windowManager.bringToFront(loginWindowId);
-                                }
-                                
-                                // Set up close button after content is loaded
-                                const closeBtn = container.querySelector('#close-login-button');
-                                if (closeBtn) {
-                                    closeBtn.addEventListener('click', function() {
-                                        windowManager.enableWindowButtons(loginWindowId);
-                                        loginWindow.close();
-                                    });
-                                }
-
-
-                            },
-                            onClose: () => {
-                                windowManager.enableWindowButtons('login-modal');
-                            }
-                        });
-                        window.loginWindow = loginWindow;
-                        window.loginButton = loginButton;
-
-                        try {
-                            await loginWindow.open();
-                        } catch (error) {
-                            console.error('Failed to open login window:', error);
-                            // Re-enable button on error
-                            windowManager.enableWindowButtons('login-modal');
-                        }
-                    };
-                    
-                    // Store the handler so it can be removed later
-                    loginButton._loginHandler = loginHandler;
-                    loginButton.addEventListener('click', loginHandler);
-                }
-                window.initLoginButton = initLoginButton;
-                window.initLoginButton(loginButton);
+                const loginInstance = new window.WindowInitializer(
+                    windowManager,
+                    "loginContainer",
+                    "login-container",
+                    "index-login-btn",
+                    "login-title-bar",
+                    "close-login-button",
+                    "{{ url_for('fort.login_modal') }}"
+                );
+                window.loginButton = loginButton;
+                loginButton.addEventListener('click', async function() {
+                    try {
+                        await window.loginContainerInstance.open();
+                    } catch (error) {
+                        console.error('Failed to open login window:', error);
+                        alert('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later.')
+                    }   
+                });
             }
 
             if (osrsButton) {
@@ -190,14 +148,16 @@
                     }
                     console.log('Loading osrs_index.js');
                     await loadScript("{{ url_for('static', filename='js/osrs_index.js') }}");
-                    console.log('osrs_index.js loaded, initializing OSRS tools window');
-                    window.osrsIndex.initOsrs();
+                    await window.osrsIndex.openWindow();
+                    osrsButton.addEventListener('click', async () => {
+                        console.log('osrsButton clicked, opening OSRS tools window');
+                        await window.osrsWindow.open();
+                    });
                 });
 
-                osrsButton.addEventListener('click', () => {
-                    window.osrsIndex.openWindow();
-                });
 
+            } else {
+                console.error('OSRS Tools button not found in the DOM.');
             }
         });
     </script>
