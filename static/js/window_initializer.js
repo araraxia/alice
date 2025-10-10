@@ -1,4 +1,18 @@
 
+/**
+ * WindowInitializer class to manage the lifecycle of a window
+ * including opening, closing, and associating with buttons.
+ * Assumes existence of a global window manager and OpenWindow class.
+ * @param {Object} windowManager - The global window manager instance.
+ * @param {string} windowName - The name of the window (used for global reference).
+ * @param {string} windowId - The unique ID for the window container.
+ * @param {string} buttonId - The ID of the button that opens the window.
+ * @param {string} titleBarId - The ID of the title bar element within the window.
+ * @param {string} closeBtnId - The ID of the close button within the window.
+ * @param {string} endpoint - The URL endpoint to load the window content from.
+ * 
+ */
+
 class WindowInitializer {
     constructor(
         windowManager,

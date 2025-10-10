@@ -30,6 +30,7 @@ class OSRSIndex {
                     this.windowManager.centerWindow(this.windowId);
                     this.windowManager.bringToFront(this.windowId);
                     this.initClose(osrsWindow);
+                    this.initSuperCombats();
                 } else {
                     console.warn(`Title bar with ID '${this.titleId}' not found`);
                 }
@@ -56,6 +57,33 @@ class OSRSIndex {
             });
         } else {
             console.warn(`Close button with ID '${this.closeBtnId}' not found`);
+        }
+    }
+
+    initSuperCombats() {
+        console.log("Initializing Super Combats window.");
+        const superCombatsBtn = document.getElementById('super-combats-button');
+        if (superCombatsBtn) {
+            const superCombatsInstance = new window.WindowInitializer(
+                this.windowManager,
+                "superCombats",
+                "super-combats-container",
+                "super-combats-button",
+                "super-combats-title-bar",
+                "close-super-combats-button",
+                SUPERCOMBATSENDPOINT
+            );
+            window.superCombatsBtn = superCombatsBtn;
+            superCombatsBtn.addEventListener('click', async function() {
+                console.log("Super Combats button clicked");
+                try {
+                    await window.superCombatsInstance.open();
+                } catch (error) {
+                    console.error("Error opening Super Combats window:", error);
+                }
+            });
+        } else {
+            console.warn("Super Combats button not found");
         }
     }
 
