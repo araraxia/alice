@@ -62,22 +62,38 @@ class OSRSIndex {
 
     initSuperCombats() {
         console.log("Initializing Super Combats window.");
+        const scWindowId = "super-combats-window";
+        const scContainerId = "super-combats-container";
         const superCombatsBtn = document.getElementById('super-combats-button');
         if (superCombatsBtn) {
-            const superCombatsInstance = new window.WindowInitializer(
+            const superCombatsInitializer = new window.WindowInitializer(
                 this.windowManager,
                 "superCombats",
-                "super-combats-container",
+                scWindowId,
                 "super-combats-button",
                 "super-combats-title-bar",
                 "close-super-combats-button",
                 SUPERCOMBATSENDPOINT
             );
+            
             window.superCombatsBtn = superCombatsBtn;
+            const windowManager = this.windowManager;
+            
             superCombatsBtn.addEventListener('click', async function() {
                 console.log("Super Combats button clicked");
                 try {
                     await window.superCombatsInstance.open();
+                    const scContainer = document.getElementById(scContainerId);
+                    if (scContainer) {
+                        scContainer.style.maxWidth = '1200px';
+                        scContainer.style.padding = `1px`;
+                        // Wait for the DOM to update and CSS to apply
+                        setTimeout(() => {
+                            windowManager.centerWindow(scWindowId);
+                        }, 100);
+                    } else {
+                        console.warn("Super Combats container not found");
+                    }
                 } catch (error) {
                     console.error("Error opening Super Combats window:", error);
                 }
