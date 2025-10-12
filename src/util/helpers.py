@@ -358,3 +358,55 @@ def validate_input(input_value, expected_type: str = "USERNAME"):
             )
 
     return input_value
+
+def format_timestamp(timestamp: str | object, output_format: str="%Y-%m-%d"):
+    from datetime import datetime
+    import dateutil.parser
+    
+    if not timestamp:
+        return ""
+    
+    if isinstance(timestamp, datetime):
+        return timestamp.strftime(output_format)
+    
+    try:
+        parsed_date = dateutil.parser.parse(timestamp)
+        return parsed_date.strftime(output_format)
+    except ValueError as e:
+        return timestamp  # Return original string if parsing fails
+    
+def format_currency(value: str | float | int, currency_symbol: str="$", prefix: bool=True, suffix: bool=False) -> str:
+    """
+    Formats a numeric value as a currency string.
+    Args:
+        value (str | float | int): The numeric value to format.
+        currency_symbol (str): The currency symbol to prepend. Default is "$".
+    Returns:
+        str: The formatted currency string.
+    """
+    if prefix:
+        default = f"{currency_symbol}0.00"
+    else:
+        default = "0.00"
+        
+    if suffix:
+        default += f"{currency_symbol}"
+        
+    try:
+        if isinstance(value, str):
+            cleaned = value.replace(",", "").replace("$", "").strip()
+            if cleaned.lower() in ["", "n/a", "na"]:
+                return default
+            value = float(cleaned)
+        elif not isinstance(value, (float, int)):
+            return default
+    except (ValueError, TypeError):
+        return default
+
+    if prefix:
+        result = f"{currency_symbol}{value:,.2f}"
+    else:
+        result = f"{value:,.2f}"
+    if suffix:
+        result += f"{currency_symbol}"
+    return result
