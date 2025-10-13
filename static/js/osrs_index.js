@@ -29,11 +29,12 @@ class OSRSIndex {
                     this.windowManager.disableWindowButtons(this.windowId);
                     this.windowManager.centerWindow(this.windowId);
                     this.windowManager.bringToFront(this.windowId);
-                    this.initClose(osrsWindow);
-                    this.initSuperCombats();
                 } else {
                     console.warn(`Title bar with ID '${this.titleId}' not found`);
                 }
+                this.initClose(osrsWindow);
+                this.initSuperCombats();
+                this.initGoadingRegens();
             },
             onClose: () => {
                 this.windowManager.enableWindowButtons(this.windowId);
@@ -82,6 +83,8 @@ class OSRSIndex {
             superCombatsBtn.addEventListener('click', async function() {
                 console.log("Super Combats button clicked");
                 try {
+                    windowManager.associateButton(scWindowId, superCombatsBtn);
+                    windowManager.disableWindowButtons(scWindowId);
                     await window.superCombatsInstance.open();
                     const scContainer = document.getElementById(scContainerId);
                     if (scContainer) {
@@ -100,6 +103,51 @@ class OSRSIndex {
             });
         } else {
             console.warn("Super Combats button not found");
+        }
+    }
+
+    initGoadingRegens() {
+        console.log("Initializing Goading Regens window.");
+        const grWindowId = "goading-regens-window";
+        const grContainerId = "goading-regens-container";
+        const goadingRegensBtn = document.getElementById('goading-regens-button');
+        if (goadingRegensBtn) {
+            const goadingRegensInitializer = new window.WindowInitializer(
+                this.windowManager,
+                "goadingRegens",
+                grWindowId,
+                "goading-regens-button",
+                "goading-regens-title-bar",
+                "close-goading-regens-button",
+                GOADINGREGENSENDPOINT
+            );
+            
+            window.goadingRegensBtn = goadingRegensBtn;
+            const windowManager = window.windowManager;
+
+            goadingRegensBtn.addEventListener('click', async function() {
+                console.log("Goading Regens button clicked");
+                try {
+                    windowManager.associateButton(grWindowId, goadingRegensBtn);
+                    windowManager.disableWindowButtons(grWindowId);
+                    await window.goadingRegensInstance.open();
+                    const grContainer = document.getElementById(grContainerId);
+                    if (grContainer) {
+                        grContainer.style.maxWidth = '1200px';
+                        grContainer.style.padding = `1px`;
+                        // Wait for the DOM to update and CSS to apply
+                        setTimeout(() => {
+                            windowManager.centerWindow(grWindowId);
+                        }, 100);
+                    } else {
+                        console.warn("Goading Regens container not found");
+                    }
+                } catch (error) {
+                    console.error("Error opening Goading Regens window:", error);
+                }
+            });
+        } else {
+            console.warn("Goading Regens button not found");
         }
     }
 
