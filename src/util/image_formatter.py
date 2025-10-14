@@ -4,18 +4,19 @@ from urllib.request import urlopen
 from pathlib import Path
 import sys, os, requests
 
-ROOT_PATH = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT_PATH))
-from src.util.independant_logger import Logger
+if __name__ != "__main__":
+    ROOT_PATH = Path(__file__).resolve().parent.parent.parent
+    sys.path.append(str(ROOT_PATH))
+    from src.util.independant_logger import Logger
 
-log = Logger(
-    log_name="image_formatter",
-    log_file="image_formatter.log",
-    log_dir="logs",
-    log_level=20,
-    file_level=20,
-    console_level=10,
-).get_logger()
+    log = Logger(
+        log_name="image_formatter",
+        log_file="image_formatter.log",
+        log_dir="logs",
+        log_level=20,
+        file_level=20,
+        console_level=10,
+    ).get_logger()
 
 
 class ImageManip:
@@ -214,7 +215,7 @@ Width: """
         if value == "height":
             self.img_height = int(input("Height: ").strip())
             sug_width = int(cur_img_size[0] * (self.img_height / cur_img_size[1]))
-            self.image_width = int(input(f"Width ({sug_width}): ").strip())
+            self.img_width = int(input(f"Width ({sug_width}): ").strip())
         else:
             self.img_width = int(value)
             sug_height = int(cur_img_size[1] * (self.img_width / cur_img_size[0]))
@@ -302,6 +303,14 @@ Input: """
                 print(f"Saving image to {self.save_path}...")
                 self.image.save(self.save_path, self.file_format.upper())
                 print(f"Image saved to {self.save_path}")
+            except OSError as e:
+                print(f"Error saving image: {e}. Converting to RGB and retrying...")
+                try:
+                    rgb_image = self.image.convert("RGB")
+                    rgb_image.save(self.save_path, self.file_format.upper())
+                    print(f"Image saved to {self.save_path} after conversion to RGB.")
+                except Exception as e:
+                    print(f"Failed to save image after conversion: {e}", exc_info=True)
             except Exception as e:
                 print(f"Error saving image to {self.save_path}: {e}", exc_info=True)
         else:
