@@ -20,10 +20,12 @@ class OpenWindow {
     /**
      * Fetch HTML partial and inject into page
      */
-    async open() {
+    async open(showLoading = true, disableBtnImmediately = false) {
         try {
             // Show loading state if needed
-            this._showLoading();
+            if (showLoading) {
+                this._showLoading();
+            }
 
             // Make AJAX request
             const response = await fetch(this.url, {

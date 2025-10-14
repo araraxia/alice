@@ -1,5 +1,3 @@
-from email.policy import default
-import sys
 from flask import Flask, render_template, request, jsonify, send_file, current_app
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect

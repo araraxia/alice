@@ -42,16 +42,11 @@ class WindowInitializer {
                 container.id = this.windowId;
 
                 // Associate the button with the window
-                const button = document.getElementById(this.buttonId);
-                if (button) {
-                    this.windowManager.associateButton(this.windowId, button);
-                }
 
                 console.log(`Opening ${this.windowId}.`);
                 const titleBar = container.querySelector(`#${this.titleId}`);
                 if (titleBar) {
                     this.windowManager.registerWindow(this.windowId, container, `#${this.titleId}`);
-                    this.windowManager.disableWindowButtons(this.windowId);
                     this.windowManager.centerWindow(this.windowId);
                     this.windowManager.bringToFront(this.windowId);
                     this.initClose(newWindow);

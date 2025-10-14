@@ -104,16 +104,19 @@ canvas {
 .draggable-window.top-right {
     top: 20px;
     right: 20px;
+    transform: translate(-100%, 0)
 }
 
 .draggable-window.bottom-left {
     bottom: 20px;
     left: 20px;
+    transform: translate(0, -100%);
 }
 
 .draggable-window.bottom-right {
     bottom: 20px;
     right: 20px;
+    transform: translate(-100%, -100%);
 }
 
 .draggable-window.centered {

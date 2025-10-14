@@ -1,0 +1,31 @@
+from random import random
+
+
+SUPER_ENERGY_3_COST = 3100
+SUPER_ENERGY_3_AMYLASE = 3
+AMYLASE_COST = 1150
+
+CHEM_CHANCE = 0.15
+GOGGLE_CHANCE = 0.10
+
+STAMINA_4_PRICE = 8000
+ACTIONS = 4000
+ENERGY_POTS_NEEDED = ACTIONS // 3
+
+SPENT_COST = 0
+DOSES_MADE = 0
+AMYLASE_USED = 0
+
+for i in range(1, ACTIONS + 1):
+    SPENT_COST += SUPER_ENERGY_3_COST // 3
+    if not random() < CHEM_CHANCE:
+        SPENT_COST += AMYLASE_COST
+        AMYLASE_USED += 1
+ 
+    DOSES_MADE += 1
+    if random() < GOGGLE_CHANCE:
+        DOSES_MADE += 1
+        
+REVENUE = (DOSES_MADE / 2) * STAMINA_4_PRICE * 0.98
+print(f"Spent: {SPENT_COST}, Doses: {DOSES_MADE}, Revenue: {REVENUE}, Profit: {REVENUE - SPENT_COST}, Amylase Used: {AMYLASE_USED}, Amylase Cost: {AMYLASE_USED * AMYLASE_COST}")
+print(f"Energy 3s Needed: {ENERGY_POTS_NEEDED}), Amylase Needed: {AMYLASE_USED}")

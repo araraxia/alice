@@ -183,7 +183,11 @@ class WindowManager {
      * @param {string} windowId - Window identifier
      */
     getWindow(windowId) {
-        return this.windows.get(windowId);
+        const window = this.windows.get(windowId);
+        if (!window) {
+            console.warn(`Window '${windowId}' not found`);
+        }
+        return window;
     }
 
     /**
@@ -357,6 +361,7 @@ class WindowManager {
      * @param {string} windowId - Window identifier
      */
     centerWindow(windowId) {
+        console.log(`Centering window '${windowId}'`);
         const window = this.getWindow(windowId);
         if (window && window.dragWindow) {
             window.dragWindow.center();
