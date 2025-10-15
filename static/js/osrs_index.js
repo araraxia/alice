@@ -7,6 +7,8 @@ class OSRSIndex {
         this.titleId = "osrs-index-title-bar";
         this.closeBtnId = "close-osrs-index-button";
         this.endpoint = OSRSENDPOINT;
+        window.superCombatsOpenState = false; 
+        window.goadingRegensOpenState = false;
     }
 
     async openWindow() {
@@ -79,11 +81,16 @@ class OSRSIndex {
             
             window.superCombatsBtn = superCombatsBtn;
             const windowManager = this.windowManager;
+            windowManager.associateButton(scWindowId, superCombatsBtn);
             
             superCombatsBtn.addEventListener('click', async function() {
                 console.log("Super Combats button clicked");
+                if (window.superCombatsOpenState) {
+                    console.log("Super Combats window is already open");
+                    return;
+                }
                 try {
-                    windowManager.associateButton(scWindowId, superCombatsBtn);
+                    window.superCombatsOpenState = true;
                     windowManager.disableWindowButtons(scWindowId);
                     await window.superCombatsInstance.open();
                     const scContainer = document.getElementById(scContainerId);
@@ -99,6 +106,7 @@ class OSRSIndex {
                     }
                 } catch (error) {
                     console.error("Error opening Super Combats window:", error);
+                    window.superCombatsOpenState = false;
                 }
             });
         } else {
@@ -124,11 +132,17 @@ class OSRSIndex {
             
             window.goadingRegensBtn = goadingRegensBtn;
             const windowManager = window.windowManager;
+            windowManager.associateButton(grWindowId, goadingRegensBtn);
 
             goadingRegensBtn.addEventListener('click', async function() {
                 console.log("Goading Regens button clicked");
+                if (window.goadingRegensOpenState) {
+                    console.log("Goading Regens window is already open");
+                    return;
+                }
+
                 try {
-                    windowManager.associateButton(grWindowId, goadingRegensBtn);
+                    window.goadingRegensOpenState = true;
                     windowManager.disableWindowButtons(grWindowId);
                     await window.goadingRegensInstance.open();
                     const grContainer = document.getElementById(grContainerId);
@@ -144,6 +158,7 @@ class OSRSIndex {
                     }
                 } catch (error) {
                     console.error("Error opening Goading Regens window:", error);
+                    window.goadingRegensOpenState = false;
                 }
             });
         } else {
