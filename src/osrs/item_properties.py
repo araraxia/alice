@@ -12,7 +12,7 @@ MAP_PK = "id"
 MAP_SCHEMA = "items"
 MAP_TABLE = "map"
 PRICE_SCHEMA = "prices"
-PRICE_PK = "timestamp"
+PK_COLUMN = "timestamp"
 
 
 def manage_conn_cursor(func):
@@ -134,6 +134,18 @@ class osrsItemProperties:
 
     @manage_conn_cursor
     def get_latest_latest_price(self):
+        """
+        Get the latest price data interactions for the item.
+        
+        Latest price data structure:
+        {
+            "high": int,
+            "highTime": int,  # Unix timestamp in ms
+            "low": int,
+            "lowTime": int,   # Unix timestamp in ms
+            "timestamp": datetime  # Timestamp of when the data was recorded
+        }
+        """
         table_name = f"{str(self.item_id)}_latest"
 
         try:
@@ -143,7 +155,7 @@ class osrsItemProperties:
                 database=DB_NAME,
                 schema_name=PRICE_SCHEMA,
                 table_name=table_name,
-                sort_col=PRICE_PK,
+                sort_col=PK_COLUMN,
                 limit=3,
             )
         except UndefinedTable:
@@ -156,25 +168,29 @@ class osrsItemProperties:
         if latest_price:
             recent_record = latest_price[0]
 
-
             self.latest_price_high = recent_record.get("high") or 0
             self.latest_price_low = recent_record.get("low") or 0
             self.latest_timestamp_high = recent_record.get("highTime", 0) # Unix timestamp in ms
             self.latest_timestamp_low = recent_record.get("lowTime", 0) # Unix timestamp
+            
             self.latest_price_average = self.average_price(
-                [self.latest_price_high, self.latest_price_low]
+                prices=[self.latest_price_high, self.latest_price_low],
+                volumes=[1, 1]  # Volume is unknown, assuming equal volume for average
             )
 
             self.latest_3x_price_high = self.average_price(
-                prices=[r.get("high") or 0 for r in latest_price]
+                prices=[r.get("high") or 0 for r in latest_price],
+                volumes=[1 for r in latest_price]  # Volume is unknown, assuming equal volume for 3x average
             )
             self.latest_3x_timestamp_high = max(r.get("highTime", 0) for r in latest_price) # Unix timestamp in ms
             self.latest_3x_price_low = self.average_price(
-                prices=[r.get("low") or 0 for r in latest_price]
+                prices=[r.get("low") or 0 for r in latest_price],
+                volumes=[1 for r in latest_price]  # Volume is unknown, assuming equal volume for 3x average
             )
-            self.latest_3x_timestamp_low = min(r.get("lowTime", 0) for r in latest_price) # Unix timestamp
+            self.latest_3x_timestamp_low = max(r.get("lowTime", 0) for r in latest_price) # Unix timestamp
             self.latest_3x_price_average = self.average_price(
-                [self.latest_3x_price_high, self.latest_3x_price_low]
+                [self.latest_3x_price_high, self.latest_3x_price_low],
+                [1, 1]  # Volume is unknown, assuming equal volume for 3x average
             )
 
         else:
@@ -187,62 +203,86 @@ class osrsItemProperties:
 
     @manage_conn_cursor
     def get_latest_5min_price(self):
+        """
+        Get the latest 5-minute price data interactions for the item.
+        
+        5-minute price data structure:
+        {
+            "avgHighPrice": int,
+            "avgLowPrice": int,
+            "highPriceVolume": int,
+            "lowPriceVolume": int,
+            "timestamp": datetime  # Timestamp of when the data was recorded
+        }
+        """
         table_name = f"{str(self.item_id)}_5min"
 
         try:
-            prices_5min = fetch_top(
+            latest_5min_records = fetch_top(
                 cursor=self.cursor,
                 connection=self.conn,
                 database=DB_NAME,
                 schema_name=PRICE_SCHEMA,
                 table_name=table_name,
-                sort_col=PRICE_PK,
+                sort_col=PK_COLUMN,
                 limit=3,
             )
         except UndefinedTable:
             self.conn.rollback()
-            prices_5min = []
+            latest_5min_records = []
         except Exception as e:
             self.conn.rollback()
-            prices_5min = []
+            latest_5min_records = []
 
-        if prices_5min:
-            recent_record = prices_5min[0]
+        if latest_5min_records:
+            recent_record = latest_5min_records[0]
 
-
+            # Get 5min data from the most recent record
+            # 5m Volumes
+            self.latest_5min_volume_high = recent_record.get("highPriceVolume") or 0
+            self.latest_5min_volume_low = recent_record.get("lowPriceVolume") or 0
+            # Not the average of volumes, but the total volume of the averaged high/low prices.
+            self.latest_5min_volume_average = self.latest_5min_volume_high + self.latest_5min_volume_low
+            # 5m Prices
             self.latest_5min_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_5min_price_low = recent_record.get("avgLowPrice") or 0
             self.latest_5min_price_average = self.average_price(
-                [self.latest_5min_price_high, self.latest_5min_price_low]
+                prices=[self.latest_5min_price_high, self.latest_5min_price_low],
+                volumes=[self.latest_5min_volume_high, self.latest_5min_volume_low]
             )
-            self.latest_5min_volume_high = recent_record.get("highPriceVolume") or 0
-            self.latest_5min_volume_low = recent_record.get("lowPriceVolume") or 0
-            self.latest_5min_volume_average = self.average_price(
-                [self.latest_5min_volume_high, self.latest_5min_volume_low]
-            )
-            self.latest_5min_timestamp = recent_record.get("timestamp", 0) # Unix timestamp in ms
+            self.latest_5min_timestamp = recent_record.get("timestamp", 0) # psql Timestamp
 
+            # Calculate 15min averages from the last 3 records (15 minutes)
+            # 15m Volumes
+            self.latest_15min_volume_high = sum(
+                r.get("highPriceVolume") or 0 for r in latest_5min_records
+            )
+            self.latest_15min_volume_low = sum(
+                r.get("lowPriceVolume") or 0 for r in latest_5min_records
+            )
+            self.latest_15min_volume_average = self.latest_15min_volume_high + self.latest_15min_volume_low
+            # 15m Prices
             self.latest_15min_price_high = self.average_price(
-                prices=[r.get("avgHighPrice") or 0 for r in prices_5min]
+                prices=[r.get("avgHighPrice") or 0 for r in latest_5min_records],
+                volumes=[r.get("highPriceVolume") or 0 for r in latest_5min_records]
             )
             self.latest_15min_price_low = self.average_price(
-                prices=[r.get("avgLowPrice") or 0 for r in prices_5min]
+                prices=[r.get("avgLowPrice") or 0 for r in latest_5min_records],
+                volumes=[r.get("lowPriceVolume") or 0 for r in latest_5min_records]
             )
+            
+            # 15m Average Price
+            high_price_list = [r.get("avgHighPrice") for r in latest_5min_records]
+            low_price_list = [r.get("avgLowPrice") for r in latest_5min_records]
+            high_volume_list = [r.get("highPriceVolume") for r in latest_5min_records]
+            low_volume_list = [r.get("lowPriceVolume") for r in latest_5min_records]
             self.latest_15min_price_average = self.average_price(
-                [self.latest_15min_price_high, self.latest_15min_price_low]
+                prices=high_price_list + low_price_list,
+                volumes=high_volume_list + low_volume_list
             )
-            self.latest_15min_volume_high = self.average_price(
-                prices=[r.get("highPriceVolume") or 0 for r in prices_5min]
-            )
-            self.latest_15min_volume_low = self.average_price(
-                prices=[r.get("lowPriceVolume") or 0 for r in prices_5min]
-            )
-            self.latest_15min_volume_average = self.average_price(
-                [self.latest_15min_volume_high, self.latest_15min_volume_low]
-            )
-            self.latest_15min_timestamp = max(r.get("timestamp", 0) for r in prices_5min) # Unix timestamp in ms
+            self.latest_15min_timestamp = max(r.get("timestamp", 0) for r in latest_5min_records) # psql Timestamp
 
-        else:
+        else: # No records found
             self.latest_5min_price_average = 0
             self.latest_5min_price_high = 0
             self.latest_5min_price_low = 0
@@ -267,7 +307,7 @@ class osrsItemProperties:
                 database=DB_NAME,
                 schema_name=PRICE_SCHEMA,
                 table_name=table_name,
-                sort_col=PRICE_PK,
+                sort_col=PK_COLUMN,
                 limit=3,
             )
         except UndefinedTable:
@@ -280,38 +320,50 @@ class osrsItemProperties:
         if prices_1h:
             recent_record = prices_1h[0]
 
-
+            # Get 1h data from the most recent record
+            # 1h Volumes
+            self.latest_1h_volume_high = recent_record.get("highPriceVolume") or 0
+            self.latest_1h_volume_low = recent_record.get("lowPriceVolume") or 0
+            # Not the average of volumes, but the total volume of the averaged high/low prices.
+            self.latest_1h_volume_average = self.latest_1h_volume_high + self.latest_1h_volume_low
+            # 1h Prices
             self.latest_1h_price_high = recent_record.get("avgHighPrice") or 0
             self.latest_1h_price_low = recent_record.get("avgLowPrice") or 0
             self.latest_1h_price_average = self.average_price(
-                [self.latest_1h_price_high, self.latest_1h_price_low]
+                prices=[self.latest_1h_price_high, self.latest_1h_price_low],
+                volumes=[self.latest_1h_volume_high, self.latest_1h_volume_low]
             )
-            self.latest_1h_volume_high = recent_record.get("highPriceVolume") or 0
-            self.latest_1h_volume_low = recent_record.get("lowPriceVolume") or 0
-            self.latest_1h_volume_average = self.average_price(
-                [self.latest_1h_price_high, self.latest_1h_price_low]
-            )
-            self.latest_1h_timestamp = recent_record.get("timestamp", 0) # Unix timestamp in ms
+            self.latest_1h_timestamp = recent_record.get("timestamp", 0) # psql Timestamp
 
+            # Calculate 3h averages from the last 3 records (3 hours)
+            # 3h Volumes
+            self.latest_3h_volume_high = sum(
+                r.get("highPriceVolume") or 0 for r in prices_1h
+            )
+            self.latest_3h_volume_low = sum(
+                r.get("lowPriceVolume") or 0 for r in prices_1h
+            )
+            self.latest_3h_volume_average = self.latest_3h_volume_high + self.latest_3h_volume_low
+            # 3h Prices
             self.latest_3h_price_high = self.average_price(
-                prices=[r.get("avgHighPrice") or 0 for r in prices_1h]
+                prices=[r.get("avgHighPrice") or 0 for r in prices_1h],
+                volumes=[r.get("highPriceVolume") or 0 for r in prices_1h]
             )
             self.latest_3h_price_low = self.average_price(
-                prices=[r.get("avgLowPrice") or 0 for r in prices_1h]
+                prices=[r.get("avgLowPrice") or 0 for r in prices_1h],
+                volumes=[r.get("lowPriceVolume") or 0 for r in prices_1h]
             )
+            
+            # 3h Average Price
+            high_price_list = [r.get("avgHighPrice") for r in prices_1h]
+            low_price_list = [r.get("avgLowPrice") for r in prices_1h]
+            high_volume_list = [r.get("highPriceVolume") for r in prices_1h]
+            low_volume_list = [r.get("lowPriceVolume") for r in prices_1h]
             self.latest_3h_price_average = self.average_price(
-                [self.latest_3h_price_high, self.latest_3h_price_low]
+                prices=high_price_list + low_price_list,
+                volumes=high_volume_list + low_volume_list
             )
-            self.latest_3h_volume_high = self.average_price(
-                prices=[r.get("highPriceVolume") or 0 for r in prices_1h]
-            )
-            self.latest_3h_volume_low = self.average_price(
-                prices=[r.get("lowPriceVolume") or 0 for r in prices_1h]
-            )
-            self.latest_3h_volume_average = self.average_price(
-                [self.latest_3h_volume_high, self.latest_3h_volume_low]
-            )
-            self.latest_3h_timestamp = max(r.get("timestamp", 0) for r in prices_1h) # Unix timestamp in ms
+            self.latest_3h_timestamp = max(r.get("timestamp", 0) for r in prices_1h) # psql Timestamp
 
         else:
             self.latest_1h_price_average = 0
@@ -327,11 +379,20 @@ class osrsItemProperties:
             self.latest_3h_volume_low = 0
             self.latest_3h_volume_average = 0
 
-    def average_price(self, prices: list[int]) -> float:
+    def average_price(self, prices: list[int], volumes: list[int]) -> float:
+        """
+        Average price weighted by volume.
+        Args:
+            prices (list[int]): List of prices.
+            volumes (list[int]): List of volumes corresponding to the prices.
+        """
+        if len(prices) != len(volumes):
+            raise ValueError("Prices and volumes lists must have the same length.")
+        
         n = 0
         sum = 0
-        for price in prices:
-            if price:
-                n += 1
-                sum += price
+        for price, volume in zip(prices, volumes):
+            if price and volume:
+                n += volume
+                sum += price * volume
         return sum / n if n > 0 else 0

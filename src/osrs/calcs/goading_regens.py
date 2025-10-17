@@ -2,6 +2,8 @@ from math import inf
 from pathlib import Path
 import sys
 
+from regex import P
+
 ROOT_PATH = Path(__file__).resolve().parent.parent.parent.parent
 
 if str(ROOT_PATH) not in sys.path:
@@ -38,489 +40,275 @@ aoc_item = osrsItemProperties(AOC_ID)
 ZAHUR_FEE = 200
 GOGGLE_CHANCE = 0.1111
 CHEM_CHANCE = 0.15
-aoc_proc_cost_5min = (
-    aoc_item.latest_5min_price_low // 10 if aoc_item.latest_5min_price_low else inf
+GE_TAX = 0.02
+
+def get_aoc_cost(aoc_low, aoc_avg):
+    raw_cost = aoc_low
+    if not raw_cost:
+        raw_cost = aoc_avg
+
+    if not raw_cost:
+        raw_cost = 0
+
+    proc_cost = raw_cost // 10
+
+    return proc_cost
+
+
+aoc_proc_cost_5min = get_aoc_cost(
+    aoc_item.latest_5min_price_low, aoc_item.latest_5min_price_average
 )
-aoc_proc_cost_15min = (
-    aoc_item.latest_15min_price_low // 10 if aoc_item.latest_15min_price_low else inf
+aoc_proc_cost_15min = get_aoc_cost(
+    aoc_item.latest_15min_price_low, aoc_item.latest_15min_price_average
 )
-aoc_proc_cost_1h = (
-    aoc_item.latest_1h_price_low // 10 if aoc_item.latest_1h_price_low else inf
+aoc_proc_cost_1h = get_aoc_cost(
+    aoc_item.latest_1h_price_low, aoc_item.latest_1h_price_average
 )
-aoc_proc_cost_3h = (
-    aoc_item.latest_3h_price_low // 10 if aoc_item.latest_3h_price_low else inf
+aoc_proc_cost_3h = get_aoc_cost(
+    aoc_item.latest_3h_price_low, aoc_item.latest_3h_price_average
 )
 
 
-class TempItem:
+class HerblorePotionCalc:
     def __init__(
         self,
-        latest_5min_price_low=None,
-        latest_15min_price_low=None,
-        latest_1h_price_low=None,
-        latest_3h_price_low=None,
+        goggles: bool = True,
+        alchem: bool = True,
+        potions_per_hour: int = 2500,
+        primary_herb_id: int = None,
+        primary_gherb_id: int = None,
+        primary_unf_id: int = None,
+        secondary_item_id: int = ALDARIUM_ID,
+        product_item_id: int = None,
+        product_item_doses: int = 4,
     ):
-        self.latest_5min_price_low = latest_5min_price_low
-        self.latest_15min_price_low = latest_15min_price_low
-        self.latest_1h_price_low = latest_1h_price_low
-        self.latest_3h_price_low = latest_3h_price_low
+        """Initialize Herb 3-dose Production Calculator"""
+        # Initialize parameters
+        self.goggles = goggles
+        self.alchem = alchem
+        self.potions_per_hour = potions_per_hour
+        self.primary_herb_id = primary_herb_id
+        self.primary_gherb_id = primary_gherb_id
+        self.primary_unf_id = primary_unf_id
+        self.secondary_item_id = secondary_item_id
+        self.product_item_id = product_item_id
+        self.product_item_doses = product_item_doses
 
+        # Fetch item properties
+        self.product_item = osrsItemProperties(self.product_item_id)
+        self.primary_herb = osrsItemProperties(self.primary_herb_id)
+        self.primary_gherb = osrsItemProperties(self.primary_gherb_id)
+        self.primary_unf = osrsItemProperties(self.primary_unf_id)
+        self.secondary_item = osrsItemProperties(self.secondary_item_id)
 
-def calculate_goading_prod_cost(
-    goggles: bool = True, alchem: bool = True, potions_per_hour: int = 2500
-):
-    """
-    Calculate Goading Regens production cost and profit.
-    Args:
-        goggles (bool): Whether to account for the use of goggles.
-        alchem (bool): Whether to account for alchemy usage.
-        potions_per_hour (int): Number of potions made per hour.
-    Returns:
-        dict: Formatted production cost and profit values.
-            - aldarium_cost_15m_fmt
-            - aldarium_cost_1h_fmt
-            - aldarium_cost_3h_fmt
-            - cheapest_15min_primary_cost_fmt
-            - cheapest_1h_primary_cost_fmt
-            - cheapest_3h_primary_cost_fmt
-            - production_cost_15m_fmt
-            - production_cost_1h_fmt
-            - production_cost_3h_fmt
-            - price_per_dose_15m_fmt
-            - price_per_dose_1h_fmt
-            - price_per_dose_3h_fmt
-            - revenue_15m_fmt
-            - revenue_1h_fmt
-            - revenue_3h_fmt
-            - profit_15m_fmt
-            - profit_1h_fmt
-            - profit_3h_fmt
-            - gp_per_hour_15m_fmt
-            - gp_per_hour_1h_fmt
-            - gp_per_hour_3h_fmt
-    """
-    production_cost_5min = 0
-    production_cost_15min = 0
-    production_cost_1h = 0
-    production_cost_3h = 0
+        # Initialize production costs
+        self.production_cost_5min = 0
+        self.production_cost_15min = 0
+        self.production_cost_1h = 0
+        self.production_cost_3h = 0
 
-    # Get Item costs
-    goading_4 = osrsItemProperties(GOADING_4_ID)
-    harralander = osrsItemProperties(HARRALANDER_ID)
-    g_harralander = osrsItemProperties(G_HARRALANDER_ID)
-    harralander_unf = osrsItemProperties(HARRALANDER_UNF_ID)
+        # Initialize cheapest primary herb costs
+        self.cheapest_primary_cost_5min = inf
+        self.cheapest_primary_cost_15min = inf
+        self.cheapest_primary_cost_1h = inf
+        self.cheapest_primary_cost_3h = inf
 
-    # Calculate Primary Herb Cost (Harralander)
-    harralander_cost = TempItem(
-        *get_primary_cost(harralander, make_unf=True, clean_grimy=False)
-    )
-    g_harralander_cost = TempItem(
-        *get_primary_cost(g_harralander, make_unf=True, clean_grimy=True)
-    )
-    harralander_unf_cost = TempItem(
-        *get_primary_cost(harralander_unf, make_unf=False, clean_grimy=False)
-    )
+        # Initialize placeholders for cheapest primary herbs
+        self.cheapest_primary_5min = None
+        self.cheapest_primary_15min = None
+        self.cheapest_primary_1h = None
+        self.cheapest_primary_3h = None
+        
+        # Initialize revenue and profit attributes
+        self.product_price_5min = 0
+        self.product_price_15min = 0
+        self.product_price_1h = 0
+        self.product_price_3h = 0
+        
+        self.product_ppd_5min = 0
+        self.product_ppd_15min = 0
+        self.product_ppd_1h = 0
+        self.product_ppd_3h = 0
+        
+        self.revenue_5min = 0
+        self.revenue_15min = 0
+        self.revenue_1h = 0
+        self.revenue_3h = 0
+        
+        self.profit_5min = 0
+        self.profit_15min = 0
+        self.profit_1h = 0
+        self.profit_3h = 0
+        
+        self.gp_per_hour_5min = 0
+        self.gp_per_hour_15min = 0
+        self.gp_per_hour_1h = 0
+        self.gp_per_hour_3h = 0
 
-    # Find the cheapest primary herb option
-    (
-        cheapest_5min_primary_cost,
-        cheapest_15min_primary_cost,
-        cheapest_1h_primary_cost,
-        cheapest_3h_primary_cost,
-        cheapest_5min_primary_label,
-        cheapest_15min_primary_label,
-        cheapest_1h_primary_label,
-        cheapest_3h_primary_label,
-    ) = get_cheapest_herb(
-        [
-            (harralander_cost, "Harralander"),
-            (g_harralander_cost, "Grimy Harralander"),
-            (harralander_unf_cost, "Unf Harralander"),
-        ]
-    )
+    def calculate_production_cost(self):
+        """Calculate the production cost for the herb potion"""
+        self.calc_cheapest_primary()
+        self.calc_secondary_cost()
+        
+    def calculate_revenue(self):
+        """Calculate the revenue for the herb potion"""
+        prod_5min, prod_15min, prod_1h, prod_3h = self.get_high_price(self.product_item)
+        self.product_price_5min = prod_5min
+        self.product_price_15min = prod_15min
+        self.product_price_1h = prod_1h
+        self.product_price_3h = prod_3h
+        
+        self.product_ppd_5min = prod_5min // self.product_item_doses
+        self.product_ppd_15min = prod_15min // self.product_item_doses
+        self.product_ppd_1h = prod_1h // self.product_item_doses
+        self.product_ppd_3h = prod_3h // self.product_item_doses
 
-    # Calculate Secondary Herb Cost (Aldarium)
-    (aldarium_cost_5min, aldarium_cost_15min, aldarium_cost_1h, aldarium_cost_3h) = (
-        get_secondary_cost(aldarium_item, goggles=goggles)
-    )
+        doses_made = 3.15 if self.alchem else 3.0
 
-    # Total Production Cost
-    production_cost_5min += cheapest_5min_primary_cost + aldarium_cost_5min
-    production_cost_15min += cheapest_15min_primary_cost + aldarium_cost_15min
-    production_cost_1h += cheapest_1h_primary_cost + aldarium_cost_1h
-    production_cost_3h += cheapest_3h_primary_cost + aldarium_cost_3h
-    print(
-        f"""
-Goading 4 production cost (goggles: {goggles}, alchem: {alchem}):
- 5min: {production_cost_5min}, 15min: {production_cost_15min}, 1h: {production_cost_1h}, 3h: {production_cost_3h}
- (Primary: {cheapest_5min_primary_label}, {cheapest_15min_primary_label}, {cheapest_1h_primary_label}, {cheapest_3h_primary_label})
- (Aldarium: {aldarium_cost_5min}, {aldarium_cost_15min}, {aldarium_cost_1h}, {aldarium_cost_3h})
-    """
-    )
+        self.revenue_5min = self.product_ppd_5min * doses_made
+        self.revenue_15min = self.product_ppd_15min * doses_made
+        self.revenue_1h = self.product_ppd_1h * doses_made
+        self.revenue_3h = self.product_ppd_3h * doses_made
 
-    # Calculate price per dosage.
-    dose_price_5min = (
-        goading_4.latest_5min_price_low // 4 if goading_4.latest_5min_price_low else inf
-    )
-    dose_price_15min = (
-        goading_4.latest_15min_price_low // 4
-        if goading_4.latest_15min_price_low
-        else inf
-    )
-    dose_price_1h = (
-        goading_4.latest_1h_price_low // 4 if goading_4.latest_1h_price_low else inf
-    )
-    dose_price_3h = (
-        goading_4.latest_3h_price_low // 4 if goading_4.latest_3h_price_low else inf
-    )
+    def calculate_profit(self):
+        net_mod = 1 - GE_TAX
+        self.profit_5min = (self.revenue_5min * net_mod) - self.production_cost_5min
+        self.profit_15min = (self.revenue_15min * net_mod) - self.production_cost_15min
+        self.profit_1h = (self.revenue_1h * net_mod) - self.production_cost_1h
+        self.profit_3h = (self.revenue_3h * net_mod) - self.production_cost_3h
 
-    # Determine avg. doses made.
-    doses_made = 3.15 if alchem else 3.0
+        self.gp_per_hour_5min = self.profit_5min * self.potions_per_hour
+        self.gp_per_hour_15min = self.profit_15min * self.potions_per_hour
+        self.gp_per_hour_1h = self.profit_1h * self.potions_per_hour
+        self.gp_per_hour_3h = self.profit_3h * self.potions_per_hour
 
-    # Avg. Revenue per action.
-    revenue_5min = dose_price_5min * doses_made
-    revenue_15min = dose_price_15min * doses_made
-    revenue_1h = dose_price_1h * doses_made
-    revenue_3h = dose_price_3h * doses_made
-    print(
-        f"Goading 4 revenue (goggles: {goggles}, alchem: {alchem}):"
-        f" 15min: {revenue_15min}, 1h: {revenue_1h}, 3h: {revenue_3h}"
-    )
+    def get_primary_cost(self, item, make_unf: bool, clean_grimy: bool = True):
+        # Get the low item price in each time bracket, defaulting to high price if low is unavailable
+        price_5min, price_15min, price_1h, price_3h = self.get_low_price(item)
+        
+        for price in [price_5min, price_15min, price_1h, price_3h]:
+            if price is None:
+                price = inf
 
-    # Profit after 2% tax
-    profit_5min = (revenue_5min * 0.98) - production_cost_5min
-    profit_15min = (revenue_15min * 0.98) - production_cost_15min
-    profit_1h = (revenue_1h * 0.98) - production_cost_1h
-    profit_3h = (revenue_3h * 0.98) - production_cost_3h
-    print(
-        f"Goading 4 profit (goggles: {goggles}, alchem: {alchem}):"
-        f"5min: {profit_5min}, 15min: {profit_15min}, 1h: {profit_1h}, 3h: {profit_3h}"
-    )
+        price_5min += ZAHUR_FEE if make_unf else 0
+        price_15min += ZAHUR_FEE if make_unf else 0
+        price_1h += ZAHUR_FEE if make_unf else 0
+        price_3h += ZAHUR_FEE if make_unf else 0
+        price_5min += ZAHUR_FEE if clean_grimy else 0
+        price_15min += ZAHUR_FEE if clean_grimy else 0
+        price_1h += ZAHUR_FEE if clean_grimy else 0
+        price_3h += ZAHUR_FEE if clean_grimy else 0
 
-    # Profit per hour
-    gp_per_hour_5min = profit_5min * potions_per_hour
-    gp_per_hour_15min = profit_15min * potions_per_hour
-    gp_per_hour_1h = profit_1h * potions_per_hour
-    gp_per_hour_3h = profit_3h * potions_per_hour
-    print(
-        f"Goading 4 gp per hour (goggles: {goggles}, alchem: {alchem}):"
-        f" 5min: {gp_per_hour_5min}, 15min: {gp_per_hour_15min}, 1h: {gp_per_hour_1h}, 3h: {gp_per_hour_3h}"
-    )
+        return price_5min, price_15min, price_1h, price_3h
 
-    # Formatted Outputs - using dictionary for efficiency
-    values_to_format = {
-        "goading_4_cost_5m": goading_4.latest_5min_price_high,
-        "goading_4_cost_15m": goading_4.latest_15min_price_high,
-        "goading_4_cost_1h": goading_4.latest_1h_price_high,
-        "goading_4_cost_3h": goading_4.latest_3h_price_high,
-        "aldarium_cost_5m": aldarium_cost_5min,
-        "aldarium_cost_15m": aldarium_cost_15min,
-        "aldarium_cost_1h": aldarium_cost_1h,
-        "aldarium_cost_3h": aldarium_cost_3h,
-        "cheapest_5min_primary_cost": cheapest_5min_primary_cost,
-        "cheapest_15min_primary_cost": cheapest_15min_primary_cost,
-        "cheapest_1h_primary_cost": cheapest_1h_primary_cost,
-        "cheapest_3h_primary_cost": cheapest_3h_primary_cost,
-        "production_cost_5m": production_cost_5min,
-        "production_cost_15m": production_cost_15min,
-        "production_cost_1h": production_cost_1h,
-        "production_cost_3h": production_cost_3h,
-        "price_per_dose_5m": dose_price_5min,
-        "price_per_dose_15m": dose_price_15min,
-        "price_per_dose_1h": dose_price_1h,
-        "price_per_dose_3h": dose_price_3h,
-        "revenue_5m": revenue_5min,
-        "revenue_15m": revenue_15min,
-        "revenue_1h": revenue_1h,
-        "revenue_3h": revenue_3h,
-        "profit_5m": profit_5min,
-        "profit_15m": profit_15min,
-        "profit_1h": profit_1h,
-        "profit_3h": profit_3h,
-        "gp_per_hour_5m": gp_per_hour_5min,
-        "gp_per_hour_15m": gp_per_hour_15min,
-        "gp_per_hour_1h": gp_per_hour_1h,
-        "gp_per_hour_3h": gp_per_hour_3h,
-    }
+    def calc_cheapest_primary(
+        self,
+    ):
+        """
+        Get the cheapest herb prices across different time frames. Updates production cost attributes.
+        """
+        for item, make_unf, clean_grimy in [
+            (self.primary_herb, True, False),
+            (self.primary_gherb, True, True),
+            (self.primary_unf, False, False),
+        ]:
+            (
+                price_5min,
+                price_15min,
+                price_1h,
+                price_3h,
+            ) = self.get_primary_cost(item, make_unf, clean_grimy)
 
-    # Format all values in one go
-    formatted_values = {}
-    for key, value in values_to_format.items():
-        if value is None or value == inf or value == -inf:
-            formatted_values[key + "_fmt"] = "N/A"  # or some other default string
+            if price_5min and price_5min < self.cheapest_primary_cost_5min:
+                self.cheapest_primary_cost_5min = price_5min
+                self.cheapest_primary_5min = item
+
+            if price_15min and price_15min < self.cheapest_primary_cost_15min:
+                self.cheapest_primary_cost_15min = price_15min
+                self.cheapest_primary_15min = make_unf
+
+            if price_1h and price_1h < self.cheapest_primary_cost_1h:
+                self.cheapest_primary_cost_1h = price_1h
+                self.cheapest_primary_1h = make_unf
+
+            if price_3h and price_3h < self.cheapest_primary_cost_3h:
+                self.cheapest_primary_cost_3h = price_3h
+                self.cheapest_primary_3h = make_unf
+
+    def calc_secondary_cost(
+        self,
+    ):
+        """Calculate the secondary herb cost, considering goggles if applicable. Updates production cost attributes."""
+        
+        price_5min, price_15min, price_1h, price_3h = self.get_low_price(self.secondary_item)
+        item_usage = 1 - GOGGLE_CHANCE if self.goggles else 1
+
+        if self.goggles:
+            self.production_cost_5min += GOGGLE_CHANCE * aoc_proc_cost_5min
+            self.production_cost_15min += GOGGLE_CHANCE * aoc_proc_cost_15min
+            self.production_cost_1h += GOGGLE_CHANCE * aoc_proc_cost_1h
+            self.production_cost_3h += GOGGLE_CHANCE * aoc_proc_cost_3h
+
+        self.production_cost_5min += item_usage * price_5min
+        self.production_cost_15min += item_usage * price_15min
+        self.production_cost_1h += item_usage * price_1h
+        self.production_cost_3h += item_usage * price_3h
+
+    def get_low_price(self, item):
+        """
+        Get the low price of an item, defaulting to average if low is unavailable.
+        """
+        return (
+            item.latest_5min_price_low
+            if item.latest_5min_price_low
+            else item.latest_5min_price_average
+        ), (
+            item.latest_15min_price_low
+            if item.latest_15min_price_low
+            else item.latest_15min_price_average
+        ), (
+            item.latest_1h_price_low
+            if item.latest_1h_price_low
+            else item.latest_1h_price_average
+        ), (
+            item.latest_3h_price_low
+            if item.latest_3h_price_low
+            else item.latest_3h_price_average
+        )
+
+    def get_high_price(self, item):
+        """
+        Get the high price of an item, defaulting to average if high is unavailable.
+        """
+        return (
+            item.latest_5min_price_high
+            if item.latest_5min_price_high
+            else item.latest_5min_price_average
+        ), (
+            item.latest_15min_price_high
+            if item.latest_15min_price_high
+            else item.latest_15min_price_average
+        ), (
+            item.latest_1h_price_high
+            if item.latest_1h_price_high
+            else item.latest_1h_price_average
+        ), (
+            item.latest_3h_price_high
+            if item.latest_3h_price_high
+            else item.latest_3h_price_average
+        )
+
+    def format_value(self, value):
+        formatted_value = ""
+        
+        if value is None or value == inf or value == -inf or value == "nan":
+            formatted_value = "N/A"  # or some other default string
         else:
-            formatted_values[key + "_fmt"] = format_currency(
+            formatted_value = format_currency(
                 value, currency_symbol="gp", prefix=False, suffix=True
             )
 
-    formatted_values = {
-        "cheapest_5min_primary_label": cheapest_5min_primary_label,
-        "cheapest_15min_primary_label": cheapest_15min_primary_label,
-        "cheapest_1h_primary_label": cheapest_1h_primary_label,
-        "cheapest_3h_primary_label": cheapest_3h_primary_label,
-        **formatted_values,
-    }
-
-    # Now you can access like: formatted_values['aldarium_cost_15m_fmt']
-    return formatted_values
-
-
-def calculate_p_regen_prod_cost(
-    goggles: bool = True, alchem: bool = True, potions_per_hour: int = 2500
-):
-    production_cost_5min = 0
-    production_cost_15min = 0
-    production_cost_1h = 0
-    production_cost_3h = 0
-
-    # Get Item costs
-    p_regen_4 = osrsItemProperties(P_REGEN_4_ID)
-    huasca = osrsItemProperties(HUASCA_ID)
-    g_huasca = osrsItemProperties(G_HUASCA_ID)
-    huasca_unf = osrsItemProperties(HUASCA_UNF_ID)
-
-    # Calculate Primary Herb Cost (Huasca)
-    huasca_cost = TempItem(*get_primary_cost(huasca, make_unf=True, clean_grimy=False))
-    g_huasca_cost = TempItem(
-        *get_primary_cost(g_huasca, make_unf=True, clean_grimy=True)
-    )
-    huasca_unf_cost = TempItem(
-        *get_primary_cost(huasca_unf, make_unf=False, clean_grimy=False)
-    )
-
-    # Find the cheapest primary herb option
-    (
-        cheapest_5min_primary_cost,
-        cheapest_15min_primary_cost,
-        cheapest_1h_primary_cost,
-        cheapest_3h_primary_cost,
-        cheapest_5min_primary_label,
-        cheapest_15min_primary_label,
-        cheapest_1h_primary_label,
-        cheapest_3h_primary_label,
-    ) = get_cheapest_herb(
-        [
-            (huasca_cost, "Huasca"),
-            (g_huasca_cost, "Grimy Huasca"),
-            (huasca_unf_cost, "Unf Huasca"),
-        ]
-    )
-
-    # Calculate Secondary Herb Cost (Aldarium)
-    (aldarium_cost_5min, aldarium_cost_15min, aldarium_cost_1h, aldarium_cost_3h) = (
-        get_secondary_cost(aldarium_item, goggles=goggles)
-    )
-
-    # Total Production Cost
-    production_cost_5min += cheapest_5min_primary_cost + aldarium_cost_5min
-    production_cost_15min += cheapest_15min_primary_cost + aldarium_cost_15min
-    production_cost_1h += cheapest_1h_primary_cost + aldarium_cost_1h
-    production_cost_3h += cheapest_3h_primary_cost + aldarium_cost_3h
-    print(
-        f"""
-P Regen 4 production cost (goggles: {goggles}, alchem: {alchem}):
- 5min: {production_cost_5min}, 15min: {production_cost_15min}, 1h: {production_cost_1h}, 3h: {production_cost_3h}
- (Primary: {cheapest_5min_primary_label}, {cheapest_15min_primary_label}, {cheapest_1h_primary_label}, {cheapest_3h_primary_label})
- (Aldarium: {aldarium_cost_5min}, {aldarium_cost_15min}, {aldarium_cost_1h}, {aldarium_cost_3h})
-    """
-    )
-
-    # Calculate price per dosage.
-    dose_price_5min = (
-        p_regen_4.latest_5min_price_low // 4 if p_regen_4.latest_5min_price_low else inf
-    )
-    dose_price_15min = (
-        p_regen_4.latest_15min_price_low // 4
-        if p_regen_4.latest_15min_price_low
-        else inf
-    )
-    dose_price_1h = (
-        p_regen_4.latest_1h_price_low // 4 if p_regen_4.latest_1h_price_low else inf
-    )
-    dose_price_3h = (
-        p_regen_4.latest_3h_price_low // 4 if p_regen_4.latest_3h_price_low else inf
-    )
-
-    # Determine avg. doses made.
-    doses_made = 3.15 if alchem else 3.0
-
-    # Avg. Revenue per action.
-    revenue_5min = dose_price_5min * doses_made
-    revenue_15min = dose_price_15min * doses_made
-    revenue_1h = dose_price_1h * doses_made
-    revenue_3h = dose_price_3h * doses_made
-    print(
-        f"P Regen 4 revenue (goggles: {goggles}, alchem: {alchem}):"
-        f" 5min: {revenue_5min}, 15min: {revenue_15min}, 1h: {revenue_1h}, 3h: {revenue_3h}"
-    )
-
-    # Profit after 2% tax
-    profit_5min = (revenue_5min * 0.98) - production_cost_5min
-    profit_15min = (revenue_15min * 0.98) - production_cost_15min
-    profit_1h = (revenue_1h * 0.98) - production_cost_1h
-    profit_3h = (revenue_3h * 0.98) - production_cost_3h
-    print(
-        f"P Regen 4 profit (goggles: {goggles}, alchem: {alchem}):"
-        f" 5min: {profit_5min}, 15min: {profit_15min}, 1h: {profit_1h}, 3h: {profit_3h}"
-    )
-
-    # Profit per hour
-    gp_per_hour_5min = profit_5min * potions_per_hour
-    gp_per_hour_15min = profit_15min * potions_per_hour
-    gp_per_hour_1h = profit_1h * potions_per_hour
-    gp_per_hour_3h = profit_3h * potions_per_hour
-    print(
-        f"P Regen 4 gp per hour (goggles: {goggles}, alchem: {alchem}):"
-        f" 5min: {gp_per_hour_5min}, 15min: {gp_per_hour_15min}, 1h: {gp_per_hour_1h}, 3h: {gp_per_hour_3h}"
-    )
-
-    # Formatted Outputs - using dictionary for efficiency
-    values_to_format = {
-        "pregen4_cost_5m": p_regen_4.latest_5min_price_high,
-        "pregen4_cost_15m": p_regen_4.latest_15min_price_high,
-        "pregen4_cost_1h": p_regen_4.latest_1h_price_high,
-        "pregen4_cost_3h": p_regen_4.latest_3h_price_high,
-        "aldarium_cost_5m": aldarium_cost_5min,
-        "aldarium_cost_15m": aldarium_cost_15min,
-        "aldarium_cost_1h": aldarium_cost_1h,
-        "aldarium_cost_3h": aldarium_cost_3h,
-        "cheapest_5min_primary_cost": cheapest_5min_primary_cost,
-        "cheapest_15min_primary_cost": cheapest_15min_primary_cost,
-        "cheapest_1h_primary_cost": cheapest_1h_primary_cost,
-        "cheapest_3h_primary_cost": cheapest_3h_primary_cost,
-        "production_cost_5m": production_cost_5min,
-        "production_cost_15m": production_cost_15min,
-        "production_cost_1h": production_cost_1h,
-        "production_cost_3h": production_cost_3h,
-        "price_per_dose_5m": dose_price_5min,
-        "price_per_dose_15m": dose_price_15min,
-        "price_per_dose_1h": dose_price_1h,
-        "price_per_dose_3h": dose_price_3h,
-        "revenue_5m": revenue_5min,
-        "revenue_15m": revenue_15min,
-        "revenue_1h": revenue_1h,
-        "revenue_3h": revenue_3h,
-        "profit_5m": profit_5min,
-        "profit_15m": profit_15min,
-        "profit_1h": profit_1h,
-        "profit_3h": profit_3h,
-        "gp_per_hour_5m": gp_per_hour_5min,
-        "gp_per_hour_15m": gp_per_hour_15min,
-        "gp_per_hour_1h": gp_per_hour_1h,
-        "gp_per_hour_3h": gp_per_hour_3h,
-    }
-
-    # Format all values in one go
-    formatted_values = {}
-    for key, value in values_to_format.items():
-        if value is None or value == inf or value == -inf or value == 'nan':
-            formatted_values[key + "_fmt"] = "N/A"  # or some other default string
-        else:
-            formatted_values[key + "_fmt"] = format_currency(
-                value, currency_symbol="gp", prefix=False, suffix=True
-            )
-
-    formatted_values = {
-        "cheapest_5min_primary_label": cheapest_5min_primary_label,
-        "cheapest_15min_primary_label": cheapest_15min_primary_label,
-        "cheapest_1h_primary_label": cheapest_1h_primary_label,
-        "cheapest_3h_primary_label": cheapest_3h_primary_label,
-        **formatted_values,
-    }
-    # Now you can access like: formatted_values['aldarium_cost_15m_fmt']
-    return formatted_values
-
-def get_cheapest_herb(items: list[tuple]):
-    cheapest_5min = inf
-    cheapest_5min_label = ""
-    cheapest_15min = inf
-    cheapest_15min_label = ""
-    cheapest_1h = inf
-    cheapest_1h_label = ""
-    cheapest_3h = inf
-    cheapest_3h_label = ""
-
-    for item, label in items:
-        price_5min = item.latest_5min_price_low if item.latest_5min_price_low else inf
-        price_15min = (
-            item.latest_15min_price_low if item.latest_15min_price_low else inf
-        )
-        price_1h = item.latest_1h_price_low if item.latest_1h_price_low else inf
-        price_3h = item.latest_3h_price_low if item.latest_3h_price_low else inf
-
-        if price_5min < cheapest_5min:
-            cheapest_5min = price_5min
-            cheapest_5min_label = label
-        if price_15min < cheapest_15min:
-            cheapest_15min = price_15min
-            cheapest_15min_label = label
-        if price_1h < cheapest_1h:
-            cheapest_1h = price_1h
-            cheapest_1h_label = label
-        if price_3h < cheapest_3h:
-            cheapest_3h = price_3h
-            cheapest_3h_label = label
-
-    print(
-        f"5min: {cheapest_5min},        15min: {cheapest_15min},        1h: {cheapest_1h},        3h: {cheapest_3h}"
-    )
-    print(
-        f"Labels: {cheapest_5min_label}, {cheapest_15min_label}, {cheapest_1h_label}, {cheapest_3h_label}"
-    )
-    return (
-        cheapest_5min,
-        cheapest_15min,
-        cheapest_1h,
-        cheapest_3h,
-        cheapest_5min_label,
-        cheapest_15min_label,
-        cheapest_1h_label,
-        cheapest_3h_label,
-    )
-
-
-def get_secondary_cost(item, goggles: bool = True):
-    price_5min = item.latest_5min_price_low if item.latest_5min_price_low else inf
-    price_15min = item.latest_15min_price_low if item.latest_15min_price_low else inf
-    price_1h = item.latest_1h_price_low if item.latest_1h_price_low else inf
-    price_3h = item.latest_3h_price_low if item.latest_3h_price_low else inf
-    item_usage = 1 - GOGGLE_CHANCE if goggles else 1
-
-    if goggles:
-        price_5min += (
-            (GOGGLE_CHANCE * aoc_proc_cost_5min) if aoc_proc_cost_5min else inf
-        )
-        price_15min += (
-            (GOGGLE_CHANCE * aoc_proc_cost_15min) if aoc_proc_cost_15min else inf
-        )
-        price_1h += (GOGGLE_CHANCE * aoc_proc_cost_1h) if aoc_proc_cost_1h else inf
-        price_3h += (GOGGLE_CHANCE * aoc_proc_cost_3h) if aoc_proc_cost_3h else inf
-
-    price_5min = item_usage * price_5min
-    price_15min = item_usage * price_15min
-    price_1h = item_usage * price_1h
-    price_3h = item_usage * price_3h
-
-    return price_5min, price_15min, price_1h, price_3h
-
-
-def get_primary_cost(item, make_unf: bool = True, clean_grimy: bool = True):
-    price_5min = item.latest_5min_price_low if item.latest_5min_price_low else inf
-    price_15min = item.latest_15min_price_low if item.latest_15min_price_low else inf
-    price_1h = item.latest_1h_price_low if item.latest_1h_price_low else inf
-    price_3h = item.latest_3h_price_low if item.latest_3h_price_low else inf
-
-    price_5min += ZAHUR_FEE if make_unf else 0
-    price_15min += ZAHUR_FEE if make_unf else 0
-    price_1h += ZAHUR_FEE if make_unf else 0
-    price_3h += ZAHUR_FEE if make_unf else 0
-    price_5min += ZAHUR_FEE if clean_grimy else 0
-    price_15min += ZAHUR_FEE if clean_grimy else 0
-    price_1h += ZAHUR_FEE if clean_grimy else 0
-    price_3h += ZAHUR_FEE if clean_grimy else 0
-
-    return price_5min, price_15min, price_1h, price_3h
-
+        return formatted_value
 
 class GoadingRegens:
     def __init__(self):
@@ -533,13 +321,33 @@ class GoadingRegens:
         """Display the goading regens calculation results"""
         try:
             # Calculate both goading and p_regen data
-            goading_data = calculate_goading_prod_cost(
-                goggles=True, alchem=True, potions_per_hour=2500
+            goading_calc = HerblorePotionCalc(
+                goggles=True,
+                alchem=True,
+                potions_per_hour=2500,
+                primary_herb_id=HARRALANDER_ID,
+                primary_gherb_id=G_HARRALANDER_ID,
+                primary_unf_id=HARRALANDER_UNF_ID,
+                secondary_item_id=ALDARIUM_ID,
+                product_item_id=GOADING_4_ID,
+                product_item_doses=4,
             )
-            p_regen_data = calculate_p_regen_prod_cost(
-                goggles=True, alchem=True, potions_per_hour=2500
+            
+            p_regen_calc = HerblorePotionCalc(
+                goggles=True,
+                alchem=True,
+                potions_per_hour=2500,
+                primary_herb_id=HUASCA_ID,
+                primary_gherb_id=G_HUASCA_ID,
+                primary_unf_id=HUASCA_UNF_ID,
+                secondary_item_id=ALDARIUM_ID,
+                product_item_id=P_REGEN_4_ID,
+                product_item_doses=4,
             )
-
+            
+            goading_data = {}
+            p_regen_data = {}
+            
             goading_info = {
                 "name": "Goading Potion",
                 "id": GOADING_4_ID,
@@ -561,14 +369,14 @@ class GoadingRegens:
             return self.render_template("osrs/goading_regens.html", error=str(e))
 
 
-
 if __name__ == "__main__":
-    import json
+    #Himport json
 
     print("Calculating goading and p_regen production costs and profits...")
     print("\n" + "=" * 60)
     print("GOADING 4 CALCULATIONS")
     print("=" * 60)
+    """
     print(
         json.dumps(
             calculate_goading_prod_cost(
@@ -589,3 +397,4 @@ if __name__ == "__main__":
             indent=4,
         )
     )
+    """
