@@ -518,6 +518,181 @@ def get_all_records(
 
 
 @init_psql_con_cursor
+def get_filtered_records(
+    cursor,
+    connection,
+    database: str,
+    schema_name: str,
+    table_name: str,
+    filters: list[dict] = [],
+    sort_by: str = None,
+    descending: bool = True,
+    nulls_last: bool = True,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> list:
+    """
+    Query a PostgreSQL table for records matching the given filters.
+    Args:
+        database (str) : Required, name of database to be queried
+        schema_name (str) : Required, name of schema to be queried
+        table_name (str) : Required, name of table to be queried
+        filters (list[dict]) : List of filter dictionaries. Each dictionary should have:
+            - logic (str{'AND', 'OR'}) : Logical operator to combine with previous filter
+            - rules (list[dict]) : List of rule dictionaries. Each rule should have:
+                - property (str) : Column name to filter on
+                - operator (str) : Named operators:
+                    - contains : ILIKE '%value%'
+                    - equals : = 'value'
+                    - does_not_contain : NOT ILIKE '%value%'
+                    - starts_with : ILIKE 'value%'
+                    - ends_with : ILIKE '%value'
+                    - greater_than : > 'value'
+                    - less_than : < 'value'
+                    - greater_than_or_equal_to : >= 'value'
+                    - less_than_or_equal_to : <= 'value'
+                    - not_equals : != 'value'
+                    - is_empty : IS NULL OR = ''
+                    - is_not_empty : IS NOT NULL AND != ''
+                - value (any) : Value to compare against
+                - logic (str{'AND', 'OR'}) : Logical operator to combine with previous rule
+        sort_by (str) : Optional, column name to sort by
+        descending (bool) : Whether to sort in descending order (default: True)
+        nulls_last (bool) : Whether NULL values should appear last (default: True)
+    """
+
+    def build_rule(rule):
+        col_str = rule.get("property", "")
+        col = sql.Identifier(col_str)
+        op = rule["operator"].lower()
+        value = rule.get("value", "")
+
+        if op in ["contains", "does_not_contain"]:
+            value = f"%{value}%"
+            op_sql = "ILIKE" if op == "contains" else "NOT ILIKE"
+            return sql.SQL("{col} {op} %s").format(col=col, op=sql.SQL(op_sql)), value
+        elif op == "starts_with":
+            value = f"{value}%"
+            return sql.SQL("{col} ILIKE %s").format(col=col), value
+        elif op == "ends_with":
+            value = f"%{value}"
+            return sql.SQL("{col} ILIKE %s").format(col=col), value
+        elif op in ["is_empty", "is_not_empty"]:
+            if op == "is_empty":
+                return sql.SQL("({col} IS NULL OR {col} = '')").format(col=col), None
+            else:
+                return (
+                    sql.SQL("({col} IS NOT NULL AND {col} != '')").format(col=col),
+                    None,
+                )
+        elif op in [
+            "equals",
+            "not_equals",
+            "greater_than",
+            "less_than",
+            "greater_than_or_equal_to",
+            "less_than_or_equal_to",
+        ]:
+            op_map = {
+                "equals": "=",
+                "not_equals": "!=",
+                "greater_than": ">",
+                "less_than": "<",
+                "greater_than_or_equal_to": ">=",
+                "less_than_or_equal_to": "<=",
+            }
+            if op not in op_map:
+                raise ValueError(f"Unsupported operator: {op}")
+            return (
+                sql.SQL("{col} {op} %s").format(col=col, op=sql.SQL(op_map[op])),
+                value,
+            )
+        else:
+            raise ValueError(f"Unsupported operator: {op}")
+
+    def build_group(filter):
+        rules = filter.get("rules", [])
+        rule_parts = []
+        values = []
+        group_logic = filter.get("logic", "AND").upper()
+
+        if group_logic not in ["AND", "OR"]:
+            raise ValueError("Group logic must be 'AND' or 'OR'.")
+
+        if not rules:
+            return sql.SQL(""), []
+
+        for index, rule in enumerate(rules):
+            if "property" not in rule or "operator" not in rule:
+                raise ValueError("Each rule must have 'property' and 'operator' keys.")
+
+            if index > 0:
+                rule_parts.append(sql.SQL(f" {group_logic} "))
+
+            rule_sql, rule_value = build_rule(rule)
+            rule_parts.append(rule_sql)
+
+            if rule_value is not None:
+                values.append(rule_value)
+
+        if len(rule_parts) == 1:
+            return rule_parts[0], values
+
+        group_sql = sql.SQL("({})").format(sql.SQL("").join(rule_parts))
+        return group_sql, values
+
+    schema_obj = sql.Identifier(schema_name)
+    table_obj = sql.Identifier(table_name)
+    where_parts = []
+    all_values = []
+
+    for index, filter in enumerate(filters):
+        if "rules" not in filter or not filter["rules"]:
+            continue
+
+        if index > 0:
+            filter_logic = filter.get("logic", "AND").upper()
+            if filter_logic not in ["AND", "OR"]:
+                raise ValueError("Filter logic must be 'AND' or 'OR'.")
+            where_parts.append(sql.SQL(f" {filter_logic} "))
+
+        group_sql, group_values = build_group(filter)
+        where_parts.append(group_sql)
+        all_values.extend(group_values)
+
+    where_clause = sql.SQL("")
+    if where_parts:
+        where_clause = sql.SQL("WHERE {}").format(sql.SQL("").join(where_parts))
+
+    sort_clause = sql.SQL("")
+    if sort_by:
+        sort_clause = sql.SQL("ORDER BY {sort_col} {order} NULLS {nulls}").format(
+            sort_col=sql.Identifier(sort_by),
+            order=sql.SQL("DESC") if descending else sql.SQL("ASC"),
+            nulls=sql.SQL("LAST") if nulls_last else sql.SQL("FIRST"),
+        )
+
+    query = sql.SQL(
+        """
+    SELECT * FROM {schema}.{table}
+    {where}
+    {sort}
+    """
+    ).format(schema=schema_obj, table=table_obj, where=where_clause, sort=sort_clause)
+    print(query.as_string(cursor))
+    print(query)
+    try:
+        cursor.execute(query, all_values)
+        records = cursor.fetchall()
+        return records
+    except Exception as e:
+        connection.rollback()
+        raise e
+
+
+@init_psql_con_cursor
 def fetch_top(
     cursor,
     connection,
