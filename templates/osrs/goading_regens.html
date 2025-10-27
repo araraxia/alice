@@ -30,90 +30,90 @@
 
                     {% if goading_data %}
                         <div class="time-intervals">
-                            {% if goading_data.get('production_cost_5m_fmt') %}
+                            {% if goading_data.get('production_cost_5min') %}
                             <div class="time-group">
                                 <h4>5-Minute Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_5m_fmt }}</span>
+                                    <span class="value">{{ goading_data.production_cost_5min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_5m_fmt }}</span>
+                                    <span class="value">{{ goading_data.revenue_5min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_5m_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.profit_5min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_5m_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.gp_per_hour_5min }}</span>
                                 </div>
                             </div>
                             {% endif %}
 
-                            {% if goading_data.get('production_cost_15m_fmt') %}
+                            {% if goading_data.get('production_cost_15min') %}
                             <div class="time-group">
                                 <h4>15-Minute Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_15m_fmt }}</span>
+                                    <span class="value">{{ goading_data.production_cost_15min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_15m_fmt }}</span>
+                                    <span class="value">{{ goading_data.revenue_15min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_15m_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.profit_15min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_15m_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.gp_per_hour_15min }}</span>
                                 </div>
                             </div>
                             {% endif %}
 
-                            {% if goading_data.get('production_cost_1h_fmt') %}
+                            {% if goading_data.get('production_cost_1h') %}
                             <div class="time-group">
                                 <h4>1-Hour Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_1h_fmt }}</span>
+                                    <span class="value">{{ goading_data.production_cost_1h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_1h_fmt }}</span>
+                                    <span class="value">{{ goading_data.revenue_1h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_1h_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.profit_1h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_1h_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.gp_per_hour_1h }}</span>
                                 </div>
                             </div>
                             {% endif %}
 
-                            {% if goading_data.get('production_cost_3h_fmt') %}
+                            {% if goading_data.get('production_cost_3h') %}
                             <div class="time-group">
                                 <h4>3-Hour Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_3h_fmt }}</span>
+                                    <span class="value">{{ goading_data.production_cost_3h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_3h_fmt }}</span>
+                                    <span class="value">{{ goading_data.revenue_3h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_3h_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.profit_3h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_3h_fmt }}</span>
+                                    <span class="value profit">{{ goading_data.gp_per_hour_3h }}</span>
                                 </div>
                             </div>
                             {% endif %}
@@ -130,90 +130,90 @@
 
                     {% if p_regen_data %}
                         <div class="time-intervals">
-                            {% if p_regen_data.get('production_cost_5m_fmt') %}
+                            {% if p_regen_data.get('production_cost_5min') %}
                             <div class="time-group">
                                 <h4>5-Minute Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_5m_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.production_cost_5min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_5m_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.revenue_5min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_5m_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.profit_5min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_5m_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.gp_per_hour_5min }}</span>
                                 </div>
                             </div>
                             {% endif %}
 
-                            {% if p_regen_data.get('production_cost_15m_fmt') %}
+                            {% if p_regen_data.get('production_cost_15min') %}
                             <div class="time-group">
                                 <h4>15-Minute Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_15m_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.production_cost_15min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_15m_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.revenue_15min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_15m_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.profit_15min }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_15m_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.gp_per_hour_15min }}</span>
                                 </div>
                             </div>
                             {% endif %}
 
-                            {% if p_regen_data.get('production_cost_1h_fmt') %}
+                            {% if p_regen_data.get('production_cost_1h') %}
                             <div class="time-group">
                                 <h4>1-Hour Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_1h_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.production_cost_1h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_1h_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.revenue_1h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_1h_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.profit_1h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_1h_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.gp_per_hour_1h }}</span>
                                 </div>
                             </div>
                             {% endif %}
 
-                            {% if p_regen_data.get('production_cost_3h_fmt') %}
+                            {% if p_regen_data.get('production_cost_3h') %}
                             <div class="time-group">
                                 <h4>3-Hour Pricing</h4>
                                 <div class="data-row">
                                     <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_3h_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.production_cost_3h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_3h_fmt }}</span>
+                                    <span class="value">{{ p_regen_data.revenue_3h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_3h_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.profit_3h }}</span>
                                 </div>
                                 <div class="data-row">
                                     <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_3h_fmt }}</span>
+                                    <span class="value profit">{{ p_regen_data.gp_per_hour_3h }}</span>
                                 </div>
                             </div>
                             {% endif %}
@@ -224,7 +224,7 @@
 
                 <!-- Raw Ingredient Prices Section -->
                 <div class="raw-prices-section">
-                    <h3 class="section-title">Raw Ingredient Prices (No Modifiers)</h3>
+                    <h3 class="section-title">Real Time Ingredient Prices (No Modifiers)</h3>
                 
                 <!-- Finished Potions -->
                 <div class="ingredient-category">
@@ -236,19 +236,19 @@
                             <div class="price-intervals">
                                 <div class="price-row">
                                     <span class="interval">5min:</span>
-                                    <span class="price">{{ goading_data.goading_4_cost_5m_fmt }}</span>
+                                    <span class="price">{{ goading_data.goading_4_price_5m }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">15min:</span>
-                                    <span class="price">{{ goading_data.goading_4_cost_15m_fmt }}</span>
+                                    <span class="price">{{ goading_data.goading_4_price_15m }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">1h:</span>
-                                    <span class="price">{{ goading_data.goading_4_cost_1h_fmt }}</span>
+                                    <span class="price">{{ goading_data.goading_4_price_1h }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">3h:</span>
-                                    <span class="price">{{ goading_data.goading_4_cost_3h_fmt }}</span>
+                                    <span class="price">{{ goading_data.goading_4_price_3h }}</span>
                                 </div>
                             </div>
                         </div>
@@ -258,19 +258,19 @@
                             <div class="price-intervals">
                                 <div class="price-row">
                                     <span class="interval">5min:</span>
-                                    <span class="price">{{ p_regen_data.pregen4_cost_5m_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.p_regen_4_price_5m }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">15min:</span>
-                                    <span class="price">{{ p_regen_data.pregen4_cost_15m_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.p_regen_4_price_15m }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">1h:</span>
-                                    <span class="price">{{ p_regen_data.pregen4_cost_1h_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.p_regen_4_price_1h }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">3h:</span>
-                                    <span class="price">{{ p_regen_data.pregen4_cost_3h_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.p_regen_4_price_3h }}</span>
                                 </div>
                             </div>
                         </div>
@@ -287,19 +287,19 @@
                             <div class="price-intervals">
                                 <div class="price-row">
                                     <span class="interval">5min:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_5_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_cost_5min }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">15min:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_15m_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_cost_15min }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">1h:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_1h_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_cost_1h }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">3h:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_3h_fmt }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_cost_3h }}</span>
                                 </div>
                             </div>
                         </div>
@@ -319,23 +319,23 @@
                                 <div class="price-intervals">
                                     <div class="price-row">
                                         <span class="interval">5min:</span>
-                                        <span class="price">{{ goading_data.cheapest_5min_primary_cost_fmt }}</span>
-                                        <span class="price">{{ goading_data.cheapest_5min_primary_label }}</span>
+                                        <span class="price">{{ goading_data.primary_cost_5min }}</span>
+                                        <span class="price">{{ goading_data.primary_name_5min }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">15min:</span>
-                                        <span class="price">{{ goading_data.cheapest_15min_primary_cost_fmt }}</span>
-                                        <span class="price">{{ goading_data.cheapest_15min_primary_label }}</span>
+                                        <span class="price">{{ goading_data.primary_cost_15min }}</span>
+                                        <span class="price">{{ goading_data.primary_name_15min }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">1h:</span>
-                                        <span class="price">{{ goading_data.cheapest_1h_primary_cost_fmt }}</span>
-                                        <span class="price">{{ goading_data.cheapest_1h_primary_label }}</span>
+                                        <span class="price">{{ goading_data.primary_cost_1h }}</span>
+                                        <span class="price">{{ goading_data.primary_name_1h }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">3h:</span>
-                                        <span class="price">{{ goading_data.cheapest_3h_primary_cost_fmt }}</span>
-                                        <span class="price">{{ goading_data.cheapest_3h_primary_label }}</span>
+                                        <span class="price">{{ goading_data.primary_cost_3h }}</span>
+                                        <span class="price">{{ goading_data.primary_name_3h }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -351,23 +351,23 @@
                                 <div class="price-intervals">
                                     <div class="price-row">
                                         <span class="interval">5min:</span>
-                                        <span class="price">{{ p_regen_data.cheapest_5min_primary_cost_fmt }}</span>
-                                        <span class="price">{{ p_regen_data.cheapest_5min_primary_label }}</span>
+                                        <span class="price">{{ p_regen_data.primary_cost_5min }}</span>
+                                        <span class="price">{{ p_regen_data.primary_name_5min }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">15min:</span>
-                                        <span class="price">{{ p_regen_data.cheapest_15min_primary_cost_fmt }}</span>
-                                        <span class="price">{{ p_regen_data.cheapest_15min_primary_label }}</span>
+                                        <span class="price">{{ p_regen_data.primary_cost_15min }}</span>
+                                        <span class="price">{{ p_regen_data.primary_name_15min }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">1h:</span>
-                                        <span class="price">{{ p_regen_data.cheapest_1h_primary_cost_fmt }}</span>
-                                        <span class="price">{{ p_regen_data.cheapest_1h_primary_label }}</span>
+                                        <span class="price">{{ p_regen_data.primary_cost_1h }}</span>
+                                        <span class="price">{{ p_regen_data.primary_name_1h }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">3h:</span>
-                                        <span class="price">{{ p_regen_data.cheapest_3h_primary_cost_fmt }}</span>
-                                        <span class="price">{{ p_regen_data.cheapest_3h_primary_label }}</span>
+                                        <span class="price">{{ p_regen_data.primary_cost_3h }}</span>
+                                        <span class="price">{{ p_regen_data.primary_name_3h }}</span>
                                     </div>
                                 </div>
                             </div>
