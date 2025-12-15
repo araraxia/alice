@@ -271,6 +271,11 @@ class HerblorePotionCalc:
                 self.cheapest_primary_raw_3h = raw_price_3h
                 self.cheapest_primary_3h = item
 
+        self.production_cost_5min += self.cheapest_primary_cost_5min
+        self.production_cost_15min += self.cheapest_primary_cost_15min
+        self.production_cost_1h += self.cheapest_primary_cost_1h
+        self.production_cost_3h += self.cheapest_primary_cost_3h
+
     def _calc_secondary_cost(
         self,
     ):
