@@ -117,6 +117,24 @@
                                 </div>
                             </div>
                             {% endif %}
+                            <div class="time-group">
+                                <h3>Misc. Information</h3>
+                                <div class="data-row">
+                                    <span class="label">GE Tax Rate:</span>
+                                    <span class="value">{{ goading_data.ge_tax_rate }}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Goggles Bonus:</span>
+                                    <span class="value">{{ goading_data.goggles_bonus }}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Alchemical Amulet Bonus:</span>
+                                    <span class="value">{{ goading_data.alchemical_amulet_bonus }}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Potions per hour:</span>
+                                    <span class="value">{{ goading_data.potions_per_hour }}</span>
+                                </div>
                         </div>
                     {% endif %}
                 </div>
@@ -217,6 +235,26 @@
                                 </div>
                             </div>
                             {% endif %}
+
+                            <div class="time-group">
+                                <h3>Misc. Information</h3>
+                                <div class="data-row">
+                                    <span class="label">GE Tax Rate:</span>
+                                    <span class="value">{{ p_regen_data.ge_tax_rate }}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Goggles Bonus:</span>
+                                    <span class="value">{{ p_regen_data.goggles_bonus }}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Alchemical Amulet Bonus:</span>
+                                    <span class="value">{{ p_regen_data.alchemical_amulet_bonus }}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="label">Potions per hour:</span>
+                                    <span class="value">{{ p_regen_data.potions_per_hour }}</span>
+                                </div>
+                            </div>
                         </div>
                     {% endif %}
                 </div>
@@ -287,19 +325,19 @@
                             <div class="price-intervals">
                                 <div class="price-row">
                                     <span class="interval">5min:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_5min }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_price_5min }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">15min:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_15min }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_price_15min }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">1h:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_1h }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_price_1h }}</span>
                                 </div>
                                 <div class="price-row">
                                     <span class="interval">3h:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_cost_3h }}</span>
+                                    <span class="price">{{ p_regen_data.aldarium_price_3h }}</span>
                                 </div>
                             </div>
                         </div>

@@ -145,18 +145,18 @@ class HerblorePotionCalc:
 
     def calc(self):
         """Perform all calculations"""
-        self.calculate_production_cost()
-        self.calculate_revenue()
-        self.calculate_profit()
+        self._calculate_production_cost()
+        self._calculate_revenue()
+        self._calculate_profit()
 
-    def calculate_production_cost(self):
+    def _calculate_production_cost(self):
         """Calculate the production cost for the herb potion"""
-        self.calc_cheapest_primary()
-        self.calc_secondary_cost()
+        self._calc_cheapest_primary()
+        self._calc_secondary_cost()
 
-    def calculate_revenue(self):
+    def _calculate_revenue(self):
         """Calculate the revenue for the herb potion"""
-        prod_5min, prod_15min, prod_1h, prod_3h = self.get_high_price(self.product_item)
+        prod_5min, prod_15min, prod_1h, prod_3h = self._get_high_price(self.product_item)
 
         # Handle None values by defaulting to 0
         prod_5min = prod_5min if prod_5min is not None else 0
@@ -181,7 +181,7 @@ class HerblorePotionCalc:
         self.revenue_1h = self.product_ppd_1h * doses_made
         self.revenue_3h = self.product_ppd_3h * doses_made
 
-    def calculate_profit(self):
+    def _calculate_profit(self):
         net_mod = 1 - GE_TAX
         self.profit_5min = (self.revenue_5min * net_mod) - self.production_cost_5min
         self.profit_15min = (self.revenue_15min * net_mod) - self.production_cost_15min
@@ -193,9 +193,9 @@ class HerblorePotionCalc:
         self.gp_per_hour_1h = self.profit_1h * self.potions_per_hour
         self.gp_per_hour_3h = self.profit_3h * self.potions_per_hour
 
-    def get_primary_cost(self, item, make_unf: bool, clean_grimy: bool = True):
+    def _get_primary_cost(self, item, make_unf: bool, clean_grimy: bool = True):
         # Get the low item price in each time bracket, defaulting to high price if low is unavailable
-        price_5min, price_15min, price_1h, price_3h = self.get_low_price(item)
+        price_5min, price_15min, price_1h, price_3h = self._get_low_price(item)
 
         # Replace None values with inf
         price_5min = price_5min if price_5min is not None else inf
@@ -214,7 +214,19 @@ class HerblorePotionCalc:
 
         return price_5min, price_15min, price_1h, price_3h
 
-    def calc_cheapest_primary(
+    def _get_raw_primary_cost(self, item):
+        # Get the low item price in each time bracket, defaulting to high price if low is unavailable
+        price_5min, price_15min, price_1h, price_3h = self._get_low_price(item)
+
+        # Replace None values with inf
+        price_5min = price_5min if price_5min is not None else inf
+        price_15min = price_15min if price_15min is not None else inf
+        price_1h = price_1h if price_1h is not None else inf
+        price_3h = price_3h if price_3h is not None else inf
+
+        return price_5min, price_15min, price_1h, price_3h
+
+    def _calc_cheapest_primary(
         self,
     ):
         """
@@ -230,30 +242,41 @@ class HerblorePotionCalc:
                 price_15min,
                 price_1h,
                 price_3h,
-            ) = self.get_primary_cost(item, make_unf, clean_grimy)
+            ) = self._get_primary_cost(item, make_unf, clean_grimy)
+
+            (
+                raw_price_5min,
+                raw_price_15min,
+                raw_price_1h,   
+                raw_price_3h,            
+            ) = self._get_raw_primary_cost(item)
 
             if price_5min and price_5min < self.cheapest_primary_cost_5min:
                 self.cheapest_primary_cost_5min = price_5min
+                self.cheapest_primary_raw_5min = raw_price_5min
                 self.cheapest_primary_5min = item
 
             if price_15min and price_15min < self.cheapest_primary_cost_15min:
                 self.cheapest_primary_cost_15min = price_15min
+                self.cheapest_primary_raw_15min = raw_price_15min
                 self.cheapest_primary_15min = item
 
             if price_1h and price_1h < self.cheapest_primary_cost_1h:
                 self.cheapest_primary_cost_1h = price_1h
+                self.cheapest_primary_raw_1h = raw_price_1h
                 self.cheapest_primary_1h = item
 
             if price_3h and price_3h < self.cheapest_primary_cost_3h:
                 self.cheapest_primary_cost_3h = price_3h
+                self.cheapest_primary_raw_3h = raw_price_3h
                 self.cheapest_primary_3h = item
 
-    def calc_secondary_cost(
+    def _calc_secondary_cost(
         self,
     ):
         """Calculate the secondary herb cost, considering goggles if applicable. Updates production cost attributes."""
 
-        price_5min, price_15min, price_1h, price_3h = self.get_low_price(
+        price_5min, price_15min, price_1h, price_3h = self._get_low_price(
             self.secondary_item
         )
         item_usage = 1 - GOGGLE_CHANCE if self.goggles else 1
@@ -268,8 +291,12 @@ class HerblorePotionCalc:
         self.production_cost_15min += item_usage * price_15min
         self.production_cost_1h += item_usage * price_1h
         self.production_cost_3h += item_usage * price_3h
+        self.raw_secondary_cost_5min = price_5min
+        self.raw_secondary_cost_15min = price_15min
+        self.raw_secondary_cost_1h = price_1h
+        self.raw_secondary_cost_3h = price_3h
 
-    def get_low_price(self, item):
+    def _get_low_price(self, item):
         """
         Get the low price of an item, defaulting to average if low is unavailable.
         """
@@ -296,7 +323,7 @@ class HerblorePotionCalc:
             ),
         )
 
-    def get_high_price(self, item):
+    def _get_high_price(self, item):
         """
         Get the high price of an item, defaulting to average if high is unavailable.
         """
@@ -503,7 +530,7 @@ class GoadingRegens:
                 aldarium_15min_price,
                 aldarium_1h_price,
                 aldarium_3h_price,
-            ) = p_regen_calc.get_low_price(p_regen_calc.secondary_item)
+            ) = p_regen_calc._get_low_price(p_regen_calc.secondary_item)
 
             goading_data = {
                 "production_cost_5min": goading_calc.format_value(
@@ -550,14 +577,18 @@ class GoadingRegens:
                 "goading_4_price_3h": goading_calc.format_value(
                     goading_calc.product_price_3h
                 ),
-                "primary_cost_5min": harr_cost_5min,
-                "primary_cost_15min": harr_cost_15min,
-                "primary_cost_1h": harr_cost_1h,
-                "primary_cost_3h": harr_cost_3h,
-                "primary_name_5min": harr_name_5min if harr_name_5min else "N/A",
-                "primary_name_15min": harr_name_15min if harr_name_15min else "N/A",
-                "primary_name_1h": harr_name_1h if harr_name_1h else "N/A",
-                "primary_name_3h": harr_name_3h if harr_name_3h else "N/A",
+                "primary_cost_5min": goading_calc.format_value(goading_calc.cheapest_primary_raw_5min),
+                "primary_cost_15min": goading_calc.format_value(goading_calc.cheapest_primary_raw_15min),
+                "primary_cost_1h": goading_calc.format_value(goading_calc.cheapest_primary_raw_1h),
+                "primary_cost_3h": goading_calc.format_value(goading_calc.cheapest_primary_raw_3h),
+                "primary_name_5min": goading_calc.cheapest_primary_5min.name if goading_calc.cheapest_primary_5min else "N/A",
+                "primary_name_15min": goading_calc.cheapest_primary_15min.name if goading_calc.cheapest_primary_15min else "N/A",
+                "primary_name_1h": goading_calc.cheapest_primary_1h.name if goading_calc.cheapest_primary_1h else "N/A",
+                "primary_name_3h": goading_calc.cheapest_primary_3h.name if goading_calc.cheapest_primary_3h else "N/A",
+                "potions_per_hour": goading_calc.potions_per_hour,
+                "alchemical_amulet_bonus": f"{int(CHEM_CHANCE * 100)}%",
+                "goggles_bonus": f"{int(GOGGLE_CHANCE * 100)}%",
+                "ge_tax_rate": f"{int(GE_TAX * 100)}%",
             }
             p_regen_data = {
                 "production_cost_5min": p_regen_calc.format_value(
@@ -604,18 +635,22 @@ class GoadingRegens:
                 "p_regen_4_price_3h": p_regen_calc.format_value(
                     p_regen_calc.product_price_3h
                 ),
-                "aldarium_price_5m": p_regen_calc.format_value(aldarium_5min_price),
-                "aldarium_price_15m": p_regen_calc.format_value(aldarium_15min_price),
-                "aldarium_price_1h": p_regen_calc.format_value(aldarium_1h_price),
-                "aldarium_price_3h": p_regen_calc.format_value(aldarium_3h_price),
+                "aldarium_price_5m": p_regen_calc.format_value(p_regen_calc.raw_secondary_cost_5min),
+                "aldarium_price_15m": p_regen_calc.format_value(p_regen_calc.raw_secondary_cost_15min),
+                "aldarium_price_1h": p_regen_calc.format_value(p_regen_calc.raw_secondary_cost_1h),
+                "aldarium_price_3h": p_regen_calc.format_value(p_regen_calc.raw_secondary_cost_3h),
                 "primary_name_5min": huasca_name_5min if huasca_name_5min else "N/A",
                 "primary_name_15min": huasca_name_15min if huasca_name_15min else "N/A",
                 "primary_name_1h": huasca_name_1h if huasca_name_1h else "N/A",
                 "primary_name_3h": huasca_name_3h if huasca_name_3h else "N/A",
-                "primary_cost_5min": huasca_cost_5min,
-                "primary_cost_15min": huasca_cost_15min,
-                "primary_cost_1h": huasca_cost_1h,
-                "primary_cost_3h": huasca_cost_3h,
+                "primary_cost_5min": p_regen_calc.format_value(p_regen_calc.cheapest_primary_raw_5min),
+                "primary_cost_15min": p_regen_calc.format_value(p_regen_calc.cheapest_primary_raw_15min),
+                "primary_cost_1h": p_regen_calc.format_value(p_regen_calc.cheapest_primary_raw_1h),
+                "primary_cost_3h": p_regen_calc.format_value(p_regen_calc.cheapest_primary_raw_3h),
+                "potions_per_hour": p_regen_calc.potions_per_hour,
+                "alchemical_amulet_bonus": f"{int(CHEM_CHANCE * 100)}%",
+                "goggles_bonus": f"{int(GOGGLE_CHANCE * 100)}%",
+                "ge_tax_rate": f"{int(GE_TAX * 100)}%",
             }
 
             goading_info = {
