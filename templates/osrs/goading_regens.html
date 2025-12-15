@@ -9,134 +9,135 @@
         </div>
 
         {% if error %}
-            <div class="error">
-                Error: {{ error }}
-            </div>
+        <div class="error">
+            Error: {{ error }}
+        </div>
         {% else %}
-            <div class="refresh-info">
-                Production cost analysis for Goading and Prayer Regeneration potions based on current OSRS Grand Exchange prices. 
-                Calculations include ingredient costs, GE tax, and profit margins. 
-                Calculations assume the user is wearing goggles and using an alchemical amulet.
-            </div>
+        <div class="refresh-info">
+            Production cost analysis for Goading and Prayer Regeneration potions based on current OSRS Grand Exchange prices. 
+            Calculations include ingredient costs, GE tax, and profit margins. 
+            Calculations assume the user is wearing goggles and using an alchemical amulet.
+        </div>
 
-            <div class="main-content-grid">
-                <div class="potion-grid">
-                    <!-- Goading 4 Section -->
-                    <div class="potion-card">
-                        <div class="potion-header">
-                            <h3>{{ goading_info.name }}</h3>
-                            <div class="item-id">ID: {{ goading_info.id }}</div>
-                        </div>
+        <div class="main-content-grid">
+            <div class="potion-grid">
+
+                <!-- Goading 4 Section -->
+                <div class="potion-card">
+                    <div class="potion-header">
+                        <h3>{{ goading_info.name }}</h3>
+                        <div class="item-id">ID: {{ goading_info.id }}</div>
+                    </div>
 
                     {% if goading_data %}
-                        <div class="time-intervals">
-                            {% if goading_data.get('production_cost_5min') %}
-                            <div class="time-group">
-                                <h4>5-Minute Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_5min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_5min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_5min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_5min }}</span>
-                                </div>
+                    <div class="time-intervals">
+                        {% if goading_data.get('production_cost_5min') %}
+                        <div class="time-group">
+                            <h4>5-Minute Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ goading_data.production_cost_5min }}</span>
                             </div>
-                            {% endif %}
-
-                            {% if goading_data.get('production_cost_15min') %}
-                            <div class="time-group">
-                                <h4>15-Minute Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_15min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_15min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_15min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_15min }}</span>
-                                </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ goading_data.revenue_5min }}</span>
                             </div>
-                            {% endif %}
-
-                            {% if goading_data.get('production_cost_1h') %}
-                            <div class="time-group">
-                                <h4>1-Hour Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_1h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_1h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_1h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_1h }}</span>
-                                </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ goading_data.profit_5min }}</span>
                             </div>
-                            {% endif %}
-
-                            {% if goading_data.get('production_cost_3h') %}
-                            <div class="time-group">
-                                <h4>3-Hour Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ goading_data.production_cost_3h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ goading_data.revenue_3h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ goading_data.profit_3h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ goading_data.gp_per_hour_3h }}</span>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <div class="time-group">
-                                <h3>Misc. Information</h3>
-                                <div class="data-row">
-                                    <span class="label">GE Tax Rate:</span>
-                                    <span class="value">{{ goading_data.ge_tax_rate }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Goggles Bonus:</span>
-                                    <span class="value">{{ goading_data.goggles_bonus }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Alchemical Amulet Bonus:</span>
-                                    <span class="value">{{ goading_data.alchemical_amulet_bonus }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Potions per hour:</span>
-                                    <span class="value">{{ goading_data.potions_per_hour }}</span>
-                                </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ goading_data.gp_per_hour_5min }}</span>
                             </div>
                         </div>
+                        {% endif %}
+
+                        {% if goading_data.get('production_cost_15min') %}
+                        <div class="time-group">
+                            <h4>15-Minute Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ goading_data.production_cost_15min }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ goading_data.revenue_15min }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ goading_data.profit_15min }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ goading_data.gp_per_hour_15min }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if goading_data.get('production_cost_1h') %}
+                        <div class="time-group">
+                            <h4>1-Hour Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ goading_data.production_cost_1h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ goading_data.revenue_1h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ goading_data.profit_1h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ goading_data.gp_per_hour_1h }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if goading_data.get('production_cost_3h') %}
+                        <div class="time-group">
+                            <h4>3-Hour Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ goading_data.production_cost_3h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ goading_data.revenue_3h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ goading_data.profit_3h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ goading_data.gp_per_hour_3h }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="time-group">
+                            <h3>Misc. Information</h3>
+                            <div class="data-row">
+                                <span class="label">GE Tax Rate:</span>
+                                <span class="value">{{ goading_data.ge_tax_rate }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Goggles Bonus:</span>
+                                <span class="value">{{ goading_data.goggles_bonus }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Alchemical Amulet Bonus:</span>
+                                <span class="value">{{ goading_data.alchemical_amulet_bonus }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Potions per hour:</span>
+                                <span class="value">{{ goading_data.potions_per_hour }}</span>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
 
@@ -148,273 +149,273 @@
                     </div>
 
                     {% if p_regen_data %}
-                        <div class="time-intervals">
-                            {% if p_regen_data.get('production_cost_5min') %}
-                            <div class="time-group">
-                                <h4>5-Minute Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_5min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_5min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_5min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_5min }}</span>
-                                </div>
+                    <div class="time-intervals">
+                        {% if p_regen_data.get('production_cost_5min') %}
+                        <div class="time-group">
+                            <h4>5-Minute Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ p_regen_data.production_cost_5min }}</span>
                             </div>
-                            {% endif %}
-
-                            {% if p_regen_data.get('production_cost_15min') %}
-                            <div class="time-group">
-                                <h4>15-Minute Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_15min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_15min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_15min }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_15min }}</span>
-                                </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ p_regen_data.revenue_5min }}</span>
                             </div>
-                            {% endif %}
-
-                            {% if p_regen_data.get('production_cost_1h') %}
-                            <div class="time-group">
-                                <h4>1-Hour Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_1h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_1h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_1h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_1h }}</span>
-                                </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ p_regen_data.profit_5min }}</span>
                             </div>
-                            {% endif %}
-
-                            {% if p_regen_data.get('production_cost_3h') %}
-                            <div class="time-group">
-                                <h4>3-Hour Pricing</h4>
-                                <div class="data-row">
-                                    <span class="label">Production Cost:</span>
-                                    <span class="value">{{ p_regen_data.production_cost_3h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Revenue:</span>
-                                    <span class="value">{{ p_regen_data.revenue_3h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Profit:</span>
-                                    <span class="value profit">{{ p_regen_data.profit_3h }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">GP/Hour:</span>
-                                    <span class="value profit">{{ p_regen_data.gp_per_hour_3h }}</span>
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <div class="time-group">
-                                <h3>Misc. Information</h3>
-                                <div class="data-row">
-                                    <span class="label">GE Tax Rate:</span>
-                                    <span class="value">{{ p_regen_data.ge_tax_rate }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Goggles Bonus:</span>
-                                    <span class="value">{{ p_regen_data.goggles_bonus }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Alchemical Amulet Bonus:</span>
-                                    <span class="value">{{ p_regen_data.alchemical_amulet_bonus }}</span>
-                                </div>
-                                <div class="data-row">
-                                    <span class="label">Potions per hour:</span>
-                                    <span class="value">{{ p_regen_data.potions_per_hour }}</span>
-                                </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ p_regen_data.gp_per_hour_5min }}</span>
                             </div>
                         </div>
+                        {% endif %}
+
+                        {% if p_regen_data.get('production_cost_15min') %}
+                        <div class="time-group">
+                            <h4>15-Minute Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ p_regen_data.production_cost_15min }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ p_regen_data.revenue_15min }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ p_regen_data.profit_15min }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ p_regen_data.gp_per_hour_15min }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if p_regen_data.get('production_cost_1h') %}
+                        <div class="time-group">
+                            <h4>1-Hour Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ p_regen_data.production_cost_1h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ p_regen_data.revenue_1h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ p_regen_data.profit_1h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ p_regen_data.gp_per_hour_1h }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if p_regen_data.get('production_cost_3h') %}
+                        <div class="time-group">
+                            <h4>3-Hour Pricing</h4>
+                            <div class="data-row">
+                                <span class="label">Production Cost:</span>
+                                <span class="value">{{ p_regen_data.production_cost_3h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Revenue:</span>
+                                <span class="value">{{ p_regen_data.revenue_3h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Profit:</span>
+                                <span class="value profit">{{ p_regen_data.profit_3h }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">GP/Hour:</span>
+                                <span class="value profit">{{ p_regen_data.gp_per_hour_3h }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="time-group">
+                            <h3>Misc. Information</h3>
+                            <div class="data-row">
+                                <span class="label">GE Tax Rate:</span>
+                                <span class="value">{{ p_regen_data.ge_tax_rate }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Goggles Bonus:</span>
+                                <span class="value">{{ p_regen_data.goggles_bonus }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Alchemical Amulet Bonus:</span>
+                                <span class="value">{{ p_regen_data.alchemical_amulet_bonus }}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="label">Potions per hour:</span>
+                                <span class="value">{{ p_regen_data.potions_per_hour }}</span>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
 
                 <!-- Raw Ingredient Prices Section -->
-                <div class="raw-prices-section">
+                <div class="potion-card raw-prices-section">
                     <h3 class="section-title">Real Time Ingredient Prices (No Modifiers)</h3>
                 
-                <!-- Finished Potions -->
-                <div class="ingredient-category">
-                    <h4 class="category-title">Finished Potions</h4>
-                    <div class="ingredients-grid">
-                        <div class="ingredient-item">
-                            <div class="ingredient-name">{{ goading_info.name }}</div>
-                            <div class="ingredient-id">ID: {{ goading_info.id }}</div>
-                            <div class="price-intervals">
-                                <div class="price-row">
-                                    <span class="interval">5min:</span>
-                                    <span class="price">{{ goading_data.goading_4_price_5m }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">15min:</span>
-                                    <span class="price">{{ goading_data.goading_4_price_15m }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">1h:</span>
-                                    <span class="price">{{ goading_data.goading_4_price_1h }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">3h:</span>
-                                    <span class="price">{{ goading_data.goading_4_price_3h }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ingredient-item">
-                            <div class="ingredient-name">{{ p_regen_info.name }}</div>
-                            <div class="ingredient-id">ID: {{ p_regen_info.id }}</div>
-                            <div class="price-intervals">
-                                <div class="price-row">
-                                    <span class="interval">5min:</span>
-                                    <span class="price">{{ p_regen_data.p_regen_4_price_5m }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">15min:</span>
-                                    <span class="price">{{ p_regen_data.p_regen_4_price_15m }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">1h:</span>
-                                    <span class="price">{{ p_regen_data.p_regen_4_price_1h }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">3h:</span>
-                                    <span class="price">{{ p_regen_data.p_regen_4_price_3h }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Secondary Ingredients -->
-                <div class="ingredient-category">
-                    <h4 class="category-title">Secondary Ingredients</h4>
-                    <div class="ingredients-grid">
-                        <div class="ingredient-item">
-                            <div class="ingredient-name">Aldarium</div>
-                            <div class="ingredient-id">ID: 29993</div>
-                            <div class="price-intervals">
-                                <div class="price-row">
-                                    <span class="interval">5min:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_price_5min }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">15min:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_price_15min }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">1h:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_price_1h }}</span>
-                                </div>
-                                <div class="price-row">
-                                    <span class="interval">3h:</span>
-                                    <span class="price">{{ p_regen_data.aldarium_price_3h }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Primary Ingredients -->
-                <div class="ingredient-category">
-                    <h4 class="category-title">Primary Ingredients</h4>
-                    
-                    <!-- Goading Herbs -->
-                    <div class="herb-subcategory">
-                        <h5 class="subcategory-title">Goading Herbs</h5>
+                    <!-- Finished Potions -->
+                    <div class="ingredient-category">
+                        <h4 class="category-title">Finished Potions</h4>
                         <div class="ingredients-grid">
                             <div class="ingredient-item">
-                                <div class="ingredient-name">Harralander</div>
+                                <div class="ingredient-name">{{ goading_info.name }}</div>
+                                <div class="ingredient-id">ID: {{ goading_info.id }}</div>
                                 <div class="price-intervals">
                                     <div class="price-row">
                                         <span class="interval">5min:</span>
-                                        <span class="price">{{ goading_data.primary_cost_5min }}</span>
-                                        <span class="price">{{ goading_data.primary_name_5min }}</span>
+                                        <span class="price">{{ goading_data.goading_4_price_5m }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">15min:</span>
-                                        <span class="price">{{ goading_data.primary_cost_15min }}</span>
-                                        <span class="price">{{ goading_data.primary_name_15min }}</span>
+                                        <span class="price">{{ goading_data.goading_4_price_15m }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">1h:</span>
-                                        <span class="price">{{ goading_data.primary_cost_1h }}</span>
-                                        <span class="price">{{ goading_data.primary_name_1h }}</span>
+                                        <span class="price">{{ goading_data.goading_4_price_1h }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">3h:</span>
-                                        <span class="price">{{ goading_data.primary_cost_3h }}</span>
-                                        <span class="price">{{ goading_data.primary_name_3h }}</span>
+                                        <span class="price">{{ goading_data.goading_4_price_3h }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ingredient-item">
+                                <div class="ingredient-name">{{ p_regen_info.name }}</div>
+                                <div class="ingredient-id">ID: {{ p_regen_info.id }}</div>
+                                <div class="price-intervals">
+                                    <div class="price-row">
+                                        <span class="interval">5min:</span>
+                                        <span class="price">{{ p_regen_data.p_regen_4_price_5m }}</span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span class="interval">15min:</span>
+                                        <span class="price">{{ p_regen_data.p_regen_4_price_15m }}</span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span class="interval">1h:</span>
+                                        <span class="price">{{ p_regen_data.p_regen_4_price_1h }}</span>
+                                    </div>
+                                    <div class="price-row">
+                                        <span class="interval">3h:</span>
+                                        <span class="price">{{ p_regen_data.p_regen_4_price_3h }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Prayer Regen Herbs -->
-                    <div class="herb-subcategory">
-                        <h5 class="subcategory-title">Prayer Regen Herbs</h5>
+                    <!-- Secondary Ingredients -->
+                    <div class="ingredient-category">
+                        <h4 class="category-title">Secondary Ingredients</h4>
                         <div class="ingredients-grid">
                             <div class="ingredient-item">
-                                <div class="ingredient-name">Huascas</div>
+                                <div class="ingredient-name">Aldarium</div>
+                                <div class="ingredient-id">ID: 29993</div>
                                 <div class="price-intervals">
                                     <div class="price-row">
                                         <span class="interval">5min:</span>
-                                        <span class="price">{{ p_regen_data.primary_cost_5min }}</span>
-                                        <span class="price">{{ p_regen_data.primary_name_5min }}</span>
+                                        <span class="price">{{ p_regen_data.aldarium_price_5min }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">15min:</span>
-                                        <span class="price">{{ p_regen_data.primary_cost_15min }}</span>
-                                        <span class="price">{{ p_regen_data.primary_name_15min }}</span>
+                                        <span class="price">{{ p_regen_data.aldarium_price_15min }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">1h:</span>
-                                        <span class="price">{{ p_regen_data.primary_cost_1h }}</span>
-                                        <span class="price">{{ p_regen_data.primary_name_1h }}</span>
+                                        <span class="price">{{ p_regen_data.aldarium_price_1h }}</span>
                                     </div>
                                     <div class="price-row">
                                         <span class="interval">3h:</span>
-                                        <span class="price">{{ p_regen_data.primary_cost_3h }}</span>
-                                        <span class="price">{{ p_regen_data.primary_name_3h }}</span>
+                                        <span class="price">{{ p_regen_data.aldarium_price_3h }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                </div> <!-- Close raw-prices-section -->
+
+                    <!-- Primary Ingredients -->
+                    <div class="ingredient-category">
+                        <h4 class="category-title">Primary Ingredients</h4>
+                        
+                        <!-- Goading Herbs -->
+                        <div class="herb-subcategory">
+                            <h5 class="subcategory-title">Goading Herbs</h5>
+                            <div class="ingredients-grid">
+                                <div class="ingredient-item">
+                                    <div class="ingredient-name">Harralander</div>
+                                    <div class="price-intervals">
+                                        <div class="price-row">
+                                            <span class="interval">5min:</span>
+                                            <span class="price">{{ goading_data.primary_cost_5min }}</span>
+                                            <span class="price">{{ goading_data.primary_name_5min }}</span>
+                                        </div>
+                                        <div class="price-row">
+                                            <span class="interval">15min:</span>
+                                            <span class="price">{{ goading_data.primary_cost_15min }}</span>
+                                            <span class="price">{{ goading_data.primary_name_15min }}</span>
+                                        </div>
+                                        <div class="price-row">
+                                            <span class="interval">1h:</span>
+                                            <span class="price">{{ goading_data.primary_cost_1h }}</span>
+                                            <span class="price">{{ goading_data.primary_name_1h }}</span>
+                                        </div>
+                                        <div class="price-row">
+                                            <span class="interval">3h:</span>
+                                            <span class="price">{{ goading_data.primary_cost_3h }}</span>
+                                            <span class="price">{{ goading_data.primary_name_3h }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prayer Regen Herbs -->
+                        <div class="herb-subcategory">
+                            <h5 class="subcategory-title">Prayer Regen Herbs</h5>
+                            <div class="ingredients-grid">
+                                <div class="ingredient-item">
+                                    <div class="ingredient-name">Huascas</div>
+                                    <div class="price-intervals">
+                                        <div class="price-row">
+                                            <span class="interval">5min:</span>
+                                            <span class="price">{{ p_regen_data.primary_cost_5min }}</span>
+                                            <span class="price">{{ p_regen_data.primary_name_5min }}</span>
+                                        </div>
+                                        <div class="price-row">
+                                            <span class="interval">15min:</span>
+                                            <span class="price">{{ p_regen_data.primary_cost_15min }}</span>
+                                            <span class="price">{{ p_regen_data.primary_name_15min }}</span>
+                                        </div>
+                                        <div class="price-row">
+                                            <span class="interval">1h:</span>
+                                            <span class="price">{{ p_regen_data.primary_cost_1h }}</span>
+                                            <span class="price">{{ p_regen_data.primary_name_1h }}</span>
+                                        </div>
+                                        <div class="price-row">
+                                            <span class="interval">3h:</span>
+                                            <span class="price">{{ p_regen_data.primary_cost_3h }}</span>
+                                            <span class="price">{{ p_regen_data.primary_name_3h }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- Close Primary Ingredients -->
+                </div> <!-- Close Raw Ingredient Prices Section -->
             </div> <!-- Close potion-grid -->
-            </div> <!-- Close main-content-grid -->
+        </div> <!-- Close main-content-grid -->
         {% endif %}
     </div>
 </div>
