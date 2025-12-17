@@ -5,6 +5,7 @@ from src.util.sql_helper import (
     create_cursor,
     get_filtered_records
 )
+from src.util.independant_logger import Logger
 from psycopg2.errors import UndefinedTable
 from functools import wraps
 from datetime import datetime
@@ -19,7 +20,13 @@ MAP_SCHEMA = "items"
 MAP_TABLE = "map"
 PRICE_SCHEMA = "prices"
 PK_COLUMN = "timestamp"
-
+logger = Logger(
+    log_name="item_properties_logger",
+    log_file="item_properties.log",
+    log_level=10,
+    file_level=20,
+    console_level=10,
+).get_logger()
 
 def prepare_datetime_for_timestamp_column(date_input):
     """
@@ -131,8 +138,8 @@ def manage_conn_cursor(func):
 
 class osrsItemProperties:
     @manage_conn_cursor
-    def __init__(self, item_id: int):
-        print(f"Initializing osrsItemProperties for item_id: {item_id}")
+    def __init__(self, item_id: int, load_data: bool = True):
+        logger.debug(f"Initializing osrsItemProperties for item_id: {item_id}")
         self.item_id = item_id
 
         self.name: str = None
@@ -185,28 +192,37 @@ class osrsItemProperties:
         self.latest_3h_volume_average: float = None
         self.latest_3h_timestamp: float = None
 
-        self.load_stored_data()
+        if load_data:
+            self.load_stored_data()
         self.interize_attributes()
+        logger.debug(f"Completed initialization for item_id: {item_id}")
 
     def interize_attributes(self):
+        logger.debug("Converting float attributes to int where applicable")
         for attr, value in self.__dict__.items():
             if isinstance(value, float):
                 setattr(self, attr, int(value))
 
     def init_conn_cursor(self):
+        logger.debug("Initializing database connection and cursor")
         self.conn = init_psql_connection(db=DB_NAME)
         self.cursor = create_cursor(self.conn)
 
     def destroy_conn_cursor(self):
+        logger.debug("Destroying database connection and cursor")
         if hasattr(self, "cursor"):
+            logger.debug("Closing cursor")
             self.cursor.close()
         if hasattr(self, "conn"):
+            logger.debug("Closing connection")
             self.conn.close()
 
     @manage_conn_cursor
     def load_stored_data(self):
+        logger.debug(f"Loading stored data for item_id: {self.item_id}")
 
         if not self.item_id:
+            logger.warning("Invalid item_id provided.")
             return None
 
         item_map = get_record(
@@ -220,8 +236,12 @@ class osrsItemProperties:
         )
 
         if not item_map:
+            logger.warning(f"No item_map found for item_id: {self.item_id}")
             return None
+        else:
+            logger.debug(f"Retrieved item_map for item_id: {self.item_id}")
 
+        logger.debug(f"Adding map data as attributes")
         for key, value in item_map.items():
             setattr(self, key, value)
 
@@ -243,6 +263,7 @@ class osrsItemProperties:
             "timestamp": datetime  # Timestamp of when the data was recorded
         }
         """
+        logger.debug(f"Fetching latest price data for item_id: {self.item_id}")
         table_name = f"{str(self.item_id)}_latest"
 
         try:
@@ -256,13 +277,16 @@ class osrsItemProperties:
                 limit=3,
             )
         except UndefinedTable:
+            logger.warning(f"Price table '{table_name}' does not exist.")
             self.conn.rollback()
             latest_price = []
         except Exception as e:
+            logger.error(f"Error fetching latest price data: {e}", exc_info=True)
             self.conn.rollback()
             latest_price = []
 
         if latest_price:
+            logger.debug(f"Processing latest price records for item_id: {self.item_id}")
             recent_record = latest_price[0]
 
             self.latest_price_high = recent_record.get("high") or 0
@@ -299,6 +323,7 @@ class osrsItemProperties:
             self.latest_3x_price_high = 0
             self.latest_3x_price_low = 0
             self.latest_3x_price_average = 0
+        logger.debug(f"Completed fetching latest price data for item_id: {self.item_id}")
 
     @manage_conn_cursor
     def get_latest_5min_price(self):
@@ -314,6 +339,7 @@ class osrsItemProperties:
             "timestamp": datetime  # Timestamp of when the data was recorded
         }
         """
+        logger.debug(f"Fetching latest 5-minute price data for item_id: {self.item_id}")
         table_name = f"{str(self.item_id)}_5min"
 
         try:
@@ -327,13 +353,16 @@ class osrsItemProperties:
                 limit=3,
             )
         except UndefinedTable:
+            logger.warning(f"Price table '{table_name}' does not exist.")
             self.conn.rollback()
             latest_5min_records = []
         except Exception as e:
+            logger.error(f"Error fetching latest 5-minute price data: {e}", exc_info=True)
             self.conn.rollback()
             latest_5min_records = []
 
         if latest_5min_records:
+            logger.debug(f"Processing latest 5-minute price records for item_id: {self.item_id}")
             recent_record = latest_5min_records[0]
 
             # Get 5min data from the most recent record
@@ -394,9 +423,12 @@ class osrsItemProperties:
             self.latest_15min_volume_high = 0
             self.latest_15min_volume_low = 0
             self.latest_15min_volume_average = 0
+            
+        logger.debug(f"Completed fetching latest 5-minute price data for item_id: {self.item_id}")
 
     @manage_conn_cursor
     def get_latest_1h_price(self):
+        logger.debug(f"Fetching latest 1-hour price data for item_id: {self.item_id}")
         table_name = f"{str(self.item_id)}_1h"
 
         try:
@@ -410,13 +442,16 @@ class osrsItemProperties:
                 limit=3,
             )
         except UndefinedTable:
+            logger.warning(f"Price table '{table_name}' does not exist.")
             self.conn.rollback()
             prices_1h = []
         except Exception as e:
+            logger.error(f"Error fetching latest 1-hour price data: {e}", exc_info=True)
             self.conn.rollback()
             prices_1h = []
 
         if prices_1h:
+            logger.debug(f"Processing latest 1-hour price records for item_id: {self.item_id}")
             recent_record = prices_1h[0]
 
             # Get 1h data from the most recent record
@@ -477,6 +512,8 @@ class osrsItemProperties:
             self.latest_3h_volume_high = 0
             self.latest_3h_volume_low = 0
             self.latest_3h_volume_average = 0
+            
+        logger.debug(f"Completed fetching latest 1-hour price data for item_id: {self.item_id}")
 
     @manage_conn_cursor
     def get_prices_between_dates(
@@ -499,10 +536,12 @@ class osrsItemProperties:
         Raises:
             ValueError: If start_date is after end_date or invalid table_type.
         """
+        logger.debug(f"Fetching prices between dates for item_id: {self.item_id}, table_type: {table_type}")
 
         # Validate table_type
         valid_table_types = ["latest", "5min", "1h"]
         if table_type not in valid_table_types:
+            logger.error(f"Invalid table_type: {table_type}")
             raise ValueError(
                 f"table_type must be one of {valid_table_types}, got '{table_type}'"
             )
@@ -515,7 +554,6 @@ class osrsItemProperties:
             # Convert dates to datetime objects for PostgreSQL timestamp column
             start_dt = prepare_datetime_for_timestamp_column(start_date)
             end_dt = prepare_datetime_for_timestamp_column(end_date)
-
         else:
             # "latest" table uses Unix timestamps in milliseconds (int4/bigint)
             start_dt = prepare_datetime_for_unix_ms_column(start_date)
@@ -530,15 +568,33 @@ class osrsItemProperties:
         table_name = f"{self.item_id}_{table_type}"
 
         # Build the SQL Filter
-        filters = {}
+        filters = [
+            {"logic": "AND", "rules": [
+                {"property": PK_COLUMN, "operator": "greater_than", "value": start_dt, "logic": "AND"},
+                {"property": PK_COLUMN, "operator": "less_than", "value": end_dt, "logic": "AND"}
+            ]}
+        ]
         
         # Execute the SQL query
         try:
-            get_filtered_records()
+            logger.debug(f"Executing filtered records query on table: {table_name} with filters: {filters}")
+            records = get_filtered_records(
+                cursor=self.cursor,
+                connection=self.conn,
+                database=DB_NAME,
+                schema_name=PRICE_SCHEMA,
+                table_name=table_name,
+                filters=filters,
+                sort_by=PK_COLUMN,
+                descending=sort_desc,
+                nulls_last=True,
+            )
+            logger.debug(f"Retrieved {len(records)} records from table: {table_name}")
+            return records[:limit] if limit is not None else records
         except Exception as e:
+            logger.error(f"Error fetching prices between dates: {e}", exc_info=True)
             raise e
             
-
     def average_price(self, prices: list[int], volumes: list[int]) -> float:
         """
         Average price weighted by volume.
