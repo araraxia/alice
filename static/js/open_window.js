@@ -11,6 +11,7 @@ class OpenWindow {
             onLoad: options.onLoad || null, // Callback after content loads
             onClose: options.onClose || null, // Callback when window closes
             onError: options.onError || null, // Error callback
+            escapeClosable: options.escapeClosable || false, // Close on Escape key
             ...options
         };
         this.container = null;
@@ -62,6 +63,11 @@ class OpenWindow {
             
             // Hide loading state
             this._hideLoading();
+            
+            if (this.options.escapeClosable) {
+                escapeWindowStack.push(this);
+                console.debug('Added window to escapeWindowStack:', this);
+            }
 
             // Execute callback if provided
             if (this.options.onLoad) {

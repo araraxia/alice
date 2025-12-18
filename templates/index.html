@@ -61,6 +61,8 @@
         const OSRSENDPOINT = "{{ url_for('osrs.index') }}";
         const SUPERCOMBATSENDPOINT = "{{ url_for('osrs.super_combats') }}";
         const GOADINGREGENSENDPOINT = "{{ url_for('osrs.goading_regens') }}";
+        // Set global variables
+        window.openStates = {};
     </script>
     <script src="{{ url_for('static', filename='js/index_background.js') }}"></script>
     <script src="{{ url_for('static', filename='js/drag_window.js') }}"></script>
@@ -166,6 +168,16 @@
     <script>
         document.getElementById('help-me-button').addEventListener('click', function() {
             alert('Help is on the way!');
+        });
+    </script>
+    <script>
+        let escapeWindowStack = []; // Stack to manage windows that can be closed with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && escapeWindowStack.length > 0) {
+                const topWindow = escapeWindowStack.pop();
+                console.debug('Closing window on Escape key:', topWindow.id);
+                topWindow.close();
+            }
         });
     </script>
 </body>

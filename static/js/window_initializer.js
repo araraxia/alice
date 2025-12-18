@@ -10,7 +10,7 @@
  * @param {string} titleBarId - The ID of the title bar element within the window.
  * @param {string} closeBtnId - The ID of the close button within the window.
  * @param {string} endpoint - The URL endpoint to load the window content from.
- * 
+ * @param {boolean} escapeClosable - Whether the window can be closed with the Escape key.
  */
 
 class WindowInitializer {
@@ -22,6 +22,7 @@ class WindowInitializer {
         titleBarId,
         closeBtnId,
         endpoint,
+        escapeClosable = false
     ) {
         this.windowManager = windowManager;
         this.windowName = windowName;
@@ -30,7 +31,7 @@ class WindowInitializer {
         this.titleId = titleBarId;
         this.closeBtnId = closeBtnId;
         this.endpoint = endpoint;
-
+        this.escapeClosable = escapeClosable;
         this.init();
     }
 
@@ -57,11 +58,34 @@ class WindowInitializer {
             onClose: () => {
                 this.windowManager.enableWindowButtons(this.windowId);
                 // Note: No unregisterWindow method exists, window manager handles cleanup automatically
-            }
+            },
+            escapeClosable: this.escapeClosable
         });
 
         // Store the window instance globally for reference
         window[`${this.windowName}Instance`] = newWindow;
+    }
+
+    assignOpenButton(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            this.windowManager.associateButton(this.windowId, button);
+            button.addEventListener('click', async function() {
+                console.log(`Opening ${this.windowId} via button click.`);
+                if (window.openStates[this.windowName]) {
+                    console.log(`${this.windowId} is already open`);
+                    return;
+                }
+                try {
+                    window.openStates[this.windowName] = true;
+                    this.windowManager.disableWindowButtons(this.windowId);
+                    // CONTINUE FROM HERE
+                }
+            })
+
+        } else {
+            console.warn(`Button with ID '${buttonId}' not found`);
+        }
     }
 
     initClose(windowInstance) {

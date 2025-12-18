@@ -41,7 +41,8 @@ class OSRSIndex {
             onClose: () => {
                 this.windowManager.enableWindowButtons(this.windowId);
                 // Note: No unregisterWindow method exists, window manager handles cleanup automatically
-            }
+            },
+            escapeClosable: true
         });
         
         // Store the window instance globally for reference
@@ -69,14 +70,16 @@ class OSRSIndex {
         const scContainerId = "super-combats-container";
         const superCombatsBtn = document.getElementById('super-combats-button');
         if (superCombatsBtn) {
-            const superCombatsInitializer = new window.WindowInitializer(
-                this.windowManager,
+            // Call WindowInitializer for Super Combats window
+            new window.WindowInitializer(
+                this.windowManager, 
                 "superCombats",
                 scWindowId,
                 "super-combats-button",
                 "super-combats-title-bar",
                 "close-super-combats-button",
-                SUPERCOMBATSENDPOINT
+                SUPERCOMBATSENDPOINT,
+                true
             );
             
             window.superCombatsBtn = superCombatsBtn;
@@ -120,6 +123,7 @@ class OSRSIndex {
         const grContainerId = "goading-regens-container";
         const goadingRegensBtn = document.getElementById('goading-regens-button');
         if (goadingRegensBtn) {
+            // Call WindowInitializer for Goading Regens window
             const goadingRegensInitializer = new window.WindowInitializer(
                 this.windowManager,
                 "goadingRegens",
@@ -130,6 +134,7 @@ class OSRSIndex {
                 GOADINGREGENSENDPOINT
             );
             
+            // Set the button globally for reference
             window.goadingRegensBtn = goadingRegensBtn;
             const windowManager = window.windowManager;
             windowManager.associateButton(grWindowId, goadingRegensBtn);
