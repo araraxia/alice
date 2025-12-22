@@ -6,11 +6,15 @@
  * @param {Object} windowManager - The global window manager instance.
  * @param {string} windowName - The name of the window (used for global reference).
  * @param {string} windowId - The unique ID for the window container.
+ * @param {string} containerId - The ID of the window container element.
  * @param {string} buttonId - The ID of the button that opens the window.
  * @param {string} titleBarId - The ID of the title bar element within the window.
  * @param {string} closeBtnId - The ID of the close button within the window.
  * @param {string} endpoint - The URL endpoint to load the window content from.
  * @param {boolean} escapeClosable - Whether the window can be closed with the Escape key.
+ * @param {string} maxWidth - The maximum width of the window container.
+ * @param {string} maxHeight - The maximum height of the window container.
+ * @param {string} padding - The padding to apply to the window container.
  */
 
 class WindowInitializer {
@@ -18,20 +22,28 @@ class WindowInitializer {
         windowManager,
         windowName,
         windowId,
+        containerId,
         buttonId,
         titleBarId,
         closeBtnId,
         endpoint,
-        escapeClosable = false
+        escapeClosable = false,
+        maxWidth = '1200px',
+        maxHeight = '1090px',
+        padding = '1px'
     ) {
         this.windowManager = windowManager;
         this.windowName = windowName;
         this.windowId = windowId;
+        this.containerId = containerId;
         this.buttonId = buttonId;
         this.titleId = titleBarId;
         this.closeBtnId = closeBtnId;
         this.endpoint = endpoint;
         this.escapeClosable = escapeClosable;
+        this.maxWidth = maxWidth;
+        this.maxHeight = maxHeight;
+        this.padding = padding;
         this.init();
     }
 
@@ -80,9 +92,27 @@ class WindowInitializer {
                     window.openStates[this.windowName] = true;
                     this.windowManager.disableWindowButtons(this.windowId);
                     // CONTINUE FROM HERE
+                    await window[`${this.windowName}Instance`].open();
+                    const container = document.getElementById(this.containerId);
+                    if (container) {
+                        container.style.maxWidth = this.maxWidth;
+                        container.style.maxHeight = this.maxHeight;
+                        container.style.padding = this.padding;
+                        setTimeout(() => {
+                            this.windowManager.centerWindow(this.windowId);
+                            this.windowManager.bringToFront(this.windowId);
+                        }, 100);
+                    } else {
+                        console.warn(`Container with ID '${this.containerId}' not found`);
+                        window.openStates[this.windowName] = false;
+                        this.windowManager.enableWindowButtons(this.windowId);
+                    }
+                } catch (error) {
+                    console.error(`Error opening ${this.windowId}:`, error);
+                    window.openStates[this.windowName] = false;
+                    this.windowManager.enableWindowButtons(this.windowId);
                 }
             })
-
         } else {
             console.warn(`Button with ID '${buttonId}' not found`);
         }
