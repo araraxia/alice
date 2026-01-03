@@ -40,26 +40,23 @@ import os
 import json
 import smtplib
 
+DEF_CRED_PATH = Path("conf") / "cred" / "mail_key.json"
+
 
 class AutomatedEmails:
-    def __init__(self, client_secret_path: str = None):
+    def __init__(self, client_secret_path: str = DEF_CRED_PATH):
         # Initializes the AutomatedEmails class and sets up the credentials for sending emails.
         root_path = Path(os.path.dirname(os.path.abspath(__file__))).parent.resolve()
 
         logger = Logger(
-            name="AutomatedEmails",
+            log_name="AutomatedEmails",
             log_file="automated_emails.log",
         )
         self.log = logger.get_logger()
 
-        cred_path = (
-            os.path.join(root_path, "conf", "cred", "mail_key.json")
-            if not client_secret_path
-            else client_secret_path
-        )
-        with cred_path.open("r") as f:
+        with client_secret_path.open("r") as f:
             self.mail_credentials = json.load(f)
-        self.from_email = self.mail_credentials.get("from_email")
+        self.from_email = self.mail_credentials.get("mail_from")
         self.password = self.mail_credentials.get("password")
         if not self.from_email or not self.password:
             self.log.error("Missing email credentials.")
@@ -178,12 +175,15 @@ class AutomatedEmails:
 
         # Send the email
         try:
-
             with smtplib.SMTP(self.mail_server, self.mail_port) as smtp_server:
+                # Start TLS encryption
+                smtp_server.starttls()
+                # Login to the SMTP server
+                smtp_server.login(self.from_email, self.password)
+
                 self.log.info(f"Sending email: {msg}")
                 text = msg.as_string()
                 smtp_server.sendmail(self.from_email, all_recipients, text)
-                smtp_server.quit()
                 self.log.info("Email sent successfully.")
         except Exception as e:
             self.log.error(f"Failed to send email: {e}")

@@ -1,26 +1,38 @@
-import uuid
-from flask import jsonify, render_template, redirect, url_for, flash
+from flask import jsonify, render_template, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, EmailField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from flask_limiter.util import get_remote_address
 from flask_limiter import RateLimitExceeded
-from src.util.sql_helper import get_record, add_update_record, init_psql_connection
+from src.util.sql_helper import get_record
 from src.user_auth import UserAuth
-from src.util.helpers import generate_password, validate_input
+from src.util.helpers import validate_input
 from src.util.form_helper import clear_form_errors
 from src.automated_emails import AutomatedEmails
-from time import sleep
-from limiter import limiter
+from src.limiter import limiter
 
 
 class RegisterUserForm(FlaskForm):
-    first_name = StringField("First Name", validators=[DataRequired(), Length(max=50)])
-    last_name = StringField("Last Name", validators=[DataRequired(), Length(max=50)])
-    username = StringField(
-        "Username", validators=[DataRequired(), Length(min=2, max=32)]
+    first_name = StringField(
+        "First Name",
+        validators=[DataRequired(), Length(max=50)],
+        render_kw={"placeholder": "Enter your first name"},
     )
-    password1 = PasswordField("Password", validators=[DataRequired(), Length(min=12, max=50)])
+    last_name = StringField(
+        "Last Name",
+        validators=[DataRequired(), Length(max=50)],
+        render_kw={"placeholder": "Enter your last name"},
+    )
+    username = StringField(
+        "Username",
+        validators=[DataRequired(), Length(min=2, max=32)],
+        render_kw={"placeholder": "Choose a username"},
+    )
+    password1 = PasswordField(
+        "Password",
+        validators=[DataRequired(), Length(min=12, max=50)],
+        render_kw={"placeholder": "Enter a secure password (min 12 characters)"},
+    )
     password2 = PasswordField(
         "Confirm Password",
         validators=[
@@ -28,9 +40,14 @@ class RegisterUserForm(FlaskForm):
             Length(min=12),
             EqualTo("password1", message="Passwords must match."),
         ],
+        render_kw={"placeholder": "Re-enter your password"},
     )
-    email = EmailField("Email", validators=[DataRequired(), Email()])
-    submit = SubmitField("Register Customer")
+    email = EmailField(
+        "Email",
+        validators=[DataRequired(), Email()],
+        render_kw={"placeholder": "Enter your email address"},
+    )
+    submit = SubmitField("Register User")
 
 
 class ValidateRegistration(FlaskForm):
@@ -52,11 +69,11 @@ class RegisterUser:
         self.log.debug("Rendering registration form")
         if not form:
             form = RegisterUserForm()
-            
+
         reg_window_html = render_template(
             "partials/register_user.html",
             form=form,
-            title="Register Customer",
+            title="Register User",
         )
         return jsonify({"status": "success", "html": reg_window_html})
 
@@ -105,35 +122,22 @@ class RegisterUser:
                 return jsonify({"status": "error", "message": str(e)})
 
             # Initialize UserAuth instance
-            user_uuid = str(uuid.uuid4())
             user = UserAuth(
                 log=self.log,
                 username=username,
                 password=password,
                 email=email,
-                user_id=user_uuid,
                 role="user-role",
             )
-
-            # Check if user already exists
-            conn = init_psql_connection(db="accounts")
-            cursor = conn.cursor()
-            try:
-                if user.user_exists(cursor, conn):
-                    self.log.error(f"User {username} already exists.")
-                    return jsonify({"status": "error", "message": "Username already exists."})
-            finally:
-                cursor.close()
-                conn.close()
-
             user.first_name = first_name
             user.last_name = last_name
-            # Generate a secret code for verification, store it in the database
-            secret_code = generate_password(length=6)
-            user.secret_code = secret_code
 
             # Add user to sql
-            user.add_user_to_sql()
+            try:
+                user.register_user()
+            except ValueError as e:
+                self.log.warning(f"User registration failed: {e}")
+                return jsonify({"status": "error", "message": str(e)})
 
             # Send verification email
             automated_emails = AutomatedEmails()
@@ -141,21 +145,31 @@ class RegisterUser:
             body = f"""
 Welcome {first_name},
 Thank you for registering as a user on the Araxia.xyz platform.
-Your verification code is: {secret_code}
+Your verification code is: {user.activation_code}
 You can validate at the following link:
-{url_for('fort.validate_registration', _external=True)}
+{url_for('fort.validate_user_registration', user_uuid=user.user_id, activation_code=user.activation_code, _external=True)}
 """
-            automated_emails.send_email(
-                from_name="Alice",
-                from_email="alice@araxia.xyz",
-                to_email=[email],
-                subject=subject,
-                body=body,
-            )
+            try:
+                automated_emails.send_email(
+                    from_name="Alice",
+                    to_email=[email],
+                    bcc_email=["alice@araxia.xyz"],
+                    subject=subject,
+                    body=body,
+                )
+                self.log.info(f"Sent verification email to {email}")
+            except Exception as e:
+                self.log.error(f"Failed to send verification email to {email}: {e}")
+                # Don't fail registration if email fails - log the activation link instead
+                activation_url = url_for('fort.validate_user_registration', user_uuid=user.user_id, activation_code=user.activation_code, _external=True)
+                self.log.warning(f"Email send failed. Activation link for {username}: {activation_url}")
 
-            # Log the sending of the verification email
-            self.log.info(f"Sent verification email to {email}")
-            return redirect(url_for("fort.validate_registration"))
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Registration successful! Please check your email to validate your account.",
+                }
+            )
         return self.render_registration_form(form)
 
     def render_validate_registration_form(self, form=None):
@@ -170,77 +184,97 @@ You can validate at the following link:
             form=form,
         )
 
-    def process_validate_registration(self):
-        validation_form = ValidateRegistration()
-        if validation_form.validate_on_submit():
-            validation_form = clear_form_errors(
-                validation_form
-            )  # Clear any previous errors
+    def process_validate_registration(self, user_uuid, activation_code):
+        """
+        Validates and activates a user registration.
+        Args:
+            user_uuid: The user's UUID (user_id)
+            activation_code: The activation code sent to the user
+        Returns:
+            Response with success or error status
+        """
+        self.log.info(f"Validating registration for user_id: {user_uuid}")
 
-            try:
-                with limiter.limit("10 per 15 minutes"):
-                    self.log.debug("Rate limit check passed, processing login.")
-            except RateLimitExceeded:
-                self.log.warning(
-                    f"Rate limit exceeded for {get_remote_address()}."
-                )
-                validation_form.secret_code.errors.append(
-                    "Too many login attempts. Please try again later."
-                )
-                return self.render_validate_registration_form(validation_form)
+        # Get user record by user_id
+        record = get_record(
+            database="accounts",
+            schema="auth",
+            table="users",
+            column="user_id",
+            value=user_uuid,
+        )
 
-            self.log.info(
-                f"Validating registration with code {validation_form.secret_code.data}"
-            )
-            secret_code = validation_form.secret_code.data
-
-            # Check if the secret code is valid
-            record = get_record(
-                database="accounts",
-                schema="auth",
-                table="users",
-                column="secret_code",
-                value=secret_code,
+        if not record:
+            self.log.warning(f"User not found for user_id: {user_uuid}")
+            return (
+                jsonify({"status": "error", "message": "Invalid activation link."}),
+                404,
             )
 
-            if not record:
-                self.log.warning("Invalid secret code.")
-                validation_form.secret_code.errors.append("Invalid secret code.")
-                return self.render_validate_registration_form(validation_form)
-
-            username = record.get("username")
-            user_id = record.get("user_id")
-            if not username:
-                self.log.warning("Username not found for the provided secret code.")
-                validation_form.secret_code.errors.append(
-                    "Username not found for the provided secret code."
-                )
-                return self.render_validate_registration_form(validation_form)
-
-            user_settings = get_record(
-                database="accounts",
-                schema="settings",
-                table="user_settings",
-                column="user_id",
-                value=user_id,
+        # Check if user is already active
+        if record.get("is_active", False):
+            self.log.warning(f"User {user_uuid} is already activated.")
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": "This account has already been activated.",
+                    }
+                ),
+                400,
             )
 
-            first_name = user_settings.get("first_name") if user_settings else "User"
-            email = record.get("email")
-            if not email:
-                self.log.warning("Email not found for the provided secret code.")
-                validation_form.secret_code.errors.append(
-                    "Email not found for the provided secret code."
-                )
-                return self.render_validate_registration_form(validation_form)
-            
-            # Send verification email
-            automated_emails = AutomatedEmails()
-            subject = "Araxia.xyz Registration Confirmation"
-            body = f"""
+        # Verify activation code matches
+        stored_activation_code = record.get("activation_code") or record.get(
+            "secret_code"
+        )
+        if stored_activation_code != activation_code:
+            self.log.warning(f"Invalid activation code for user {user_uuid}")
+            return (
+                jsonify({"status": "error", "message": "Invalid activation code."}),
+                400,
+            )
+
+        username = record.get("username")
+        email = record.get("email")
+
+        if not username or not email:
+            self.log.error(f"Missing username or email for user {user_uuid}")
+            return jsonify({"status": "error", "message": "User data incomplete."}), 500
+
+        # Activate the user
+        try:
+            user = UserAuth(
+                log=self.log,
+                username=username,
+                user_id=user_uuid,
+            )
+            user.activate_user()
+        except Exception as e:
+            self.log.error(f"Failed to activate user {user_uuid}: {e}")
+            return (
+                jsonify({"status": "error", "message": "Failed to activate account."}),
+                500,
+            )
+
+        # Get user settings for personalized email
+        user_settings = get_record(
+            database="accounts",
+            schema="settings",
+            table="user_settings",
+            column="user_id",
+            value=user_uuid,
+        )
+        first_name = user_settings.get("first_name") if user_settings else "User"
+
+        # Send confirmation email
+        automated_emails = AutomatedEmails()
+        subject = "Araxia.xyz Registration Confirmation"
+        body = f"""
 Thank you for validating your account, {first_name},
-Your account has been successfully validated. You can now log in and do something.
+Your account has been successfully activated. You can now log in to Araxia.xyz.
 """
+        try:
             automated_emails.send_email(
                 from_name="Alice",
                 from_email="alice@araxia.xyz",
@@ -248,11 +282,17 @@ Your account has been successfully validated. You can now log in and do somethin
                 subject=subject,
                 body=body,
             )
+        except Exception as e:
+            self.log.error(f"Failed to send confirmation email to {email}: {e}")
+            # Don't fail the activation if email fails
 
-            # If everything is successful, log the user validation and redirect to login
-            self.log.info(f"User {username} validated successfully.")
-            return redirect(url_for("fort.entrance"))
-
-        self.log.warning("Validation failed.")
-        validation_form.secret_code.errors.append("Invalid secret code.")
-        return self.render_validate_registration_form(validation_form)
+        self.log.info(f"User {username} (ID: {user_uuid}) activated successfully.")
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "message": f"Account activated successfully! Welcome, {first_name}! You can now log in.",
+                }
+            ),
+            200,
+        )

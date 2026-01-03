@@ -37,7 +37,7 @@
                 <li>
                     <div class="log-reg-container">
                         <button class="w98-button" id="index-login-btn">Login</button>
-                        <button class="w98-button" id="index-register-btn" disabled>Register</button>
+                        <button class="w98-button" id="index-register-btn">Register</button>
                     </div>
                 </li>
             </ul>
@@ -82,20 +82,40 @@
 
         // Initialize modular window system
         document.addEventListener('DOMContentLoaded', function() {
-            // Windows are automatically discovered and registered by WindowManager
+            // Wait for windowManager to be ready before using it
+            const initializeWindows = () => {
+                // Ensure windowManager is available
+                if (typeof windowManager === 'undefined') {
+                    console.error('windowManager is not defined. Check that window_manager.js is loaded correctly.');
+                    return;
+                }
+                
+                windowManager.centerWindow('index_container');
+                // Listen for window activation events
+                document.addEventListener('windowActivated', function(e) {
+                    console.log(`Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`);
+                    console.log('Current window order:', windowManager.getWindowZIndexOrder());
+                });
+                setTimeout(() => {
+                    windowManager.setupWindowControls();
+                    windowManager.setupWindowButton('#bg-control-button', 'disable-bg-container');
+                    console.log('Initial window z-index order:', windowManager.getWindowZIndexOrder());
+                }, 100);
+                
+                initializeUI();
+            };
             
-            windowManager.centerWindow('index_container');
-            // Listen for window activation events
-            document.addEventListener('windowActivated', function(e) {
-                console.log(`Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`);
-                console.log('Current window order:', windowManager.getWindowZIndexOrder());
-            });
-            setTimeout(() => {
-                windowManager.setupWindowControls();
-                windowManager.setupWindowButton('#bg-control-button', 'disable-bg-container');
-                console.log('Initial window z-index order:', windowManager.getWindowZIndexOrder());
-            }, 100);
-
+            // Wait for windowManager to finish auto-discovery
+            if (windowManager && windowManager.windows.size > 0) {
+                // Already initialized
+                initializeWindows();
+            } else {
+                // Wait for windowManager to be ready
+                document.addEventListener('windowManagerReady', initializeWindows, { once: true });
+            }
+        });
+        
+        function initializeUI() {
             // Get references to UI elements
             const loginButton = document.getElementById('index-login-btn');
             const registerButton = document.getElementById('index-register-btn');
@@ -126,18 +146,46 @@
                 const loginInstance = new window.WindowInitializer(
                     windowManager,
                     "loginContainer",
+                    "login-window",
                     "login-container",
                     "index-login-btn",
                     "login-title-bar",
                     "close-login-button",
-                    "{{ url_for('fort.login_modal') }}"
+                    "{{ url_for('fort.login_modal') }}",
+                    true
                 );
-                window.loginButton = loginButton;
+                
                 loginButton.addEventListener('click', async function() {
                     try {
+                        // The WindowInitializer stores the OpenWindow instance globally
                         await window.loginContainerInstance.open();
                     } catch (error) {
                         console.error('Failed to open login window:', error);
+                        alert('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later.')
+                    }   
+                });
+            }
+
+            if (registerButton) {
+                // Set up register button with window manager
+                const registerInstance = new window.WindowInitializer(
+                    windowManager,
+                    "registerContainer",
+                    "register-window",
+                    "register-container",
+                    "index-register-btn",
+                    "register-title-bar",
+                    "close-register-button",
+                    "{{ url_for('fort.register_modal') }}",
+                    true
+                );
+                
+                registerButton.addEventListener('click', async function() {
+                    try {
+                        // The WindowInitializer stores the OpenWindow instance globally
+                        await window.registerContainerInstance.open();
+                    } catch (error) {
+                        console.error('Failed to open register window:', error);
                         alert('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later.')
                     }   
                 });
@@ -163,7 +211,7 @@
             } else {
                 console.error('OSRS Tools button not found in the DOM.');
             }
-        });
+        }
     </script>
     <script>
         document.getElementById('help-me-button').addEventListener('click', function() {
