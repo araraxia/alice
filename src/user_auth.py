@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import hashlib, os, sys
+import hashlib, os, sys, uuid
 from flask_login import UserMixin
 from src.util.helpers import (
     generate_token,
@@ -11,6 +11,23 @@ from src.util.sql_helper import (
     get_record,
     update_existing_record,
 )
+
+
+class UserNotActiveError(Exception):
+    """Exception raised when a user account is not active."""
+
+    def __init__(self, username=None, user_id=None, message=None):
+        if message is None:
+            if username:
+                message = f"User '{username}' is not active"
+            elif user_id:
+                message = f"User with ID '{user_id}' is not active"
+            else:
+                message = "User account is not active"
+        self.username = username
+        self.user_id = user_id
+        super().__init__(message)
+
 
 class UserAuth(UserMixin):
     def __init__(
@@ -30,13 +47,25 @@ class UserAuth(UserMixin):
         self.table = "users"
 
         # User attributes
+        self.activation_code = ""
         self.username = username
         self.password = password
-        self.secret_key = api_token
+        self.password_hash = (
+            ""
+            if not self.password
+            else hashlib.sha256(self.password.encode()).hexdigest()
+        )
+        self.user_token = api_token
+        self.token_hash = (
+            ""
+            if not self.user_token
+            else hashlib.sha256(self.user_token.encode()).hexdigest()
+        )
         self.user_id = user_id
         self.email = email
         self.role = role
-        
+        self.is_active_var = False
+
         self.user_settings = {}
         self.init_user()
         log.debug(
@@ -82,7 +111,7 @@ class UserAuth(UserMixin):
         self.token_hash = psql_user.get("token_hash", self.token_hash)
         self.created_at = psql_user.get("created_at", None)
         self.role = psql_user.get("role", self.role)
-        self.is_active = psql_user.get("is_active", False)
+        self.is_active_var = psql_user.get("is_active", False)
         self.get_user_settings()
 
         return self
@@ -117,7 +146,10 @@ class UserAuth(UserMixin):
         Returns True if the user is active.
         This method is used by Flask-Login to determine if the user account is active.
         """
-        return self.is_active
+        return self.is_active_var
+
+    def is_registered(self):
+        return self.user_exists()
 
     def is_authenticated(self):
         return self.check_password() if self.password else False
@@ -143,7 +175,9 @@ class UserAuth(UserMixin):
 
     # User Management Methods
 
-    def add_user_to_sql(self,) -> object:
+    def register_user(
+        self,
+    ) -> object:
         """
         Adds a new user to the database.
         #### Returns:
@@ -154,10 +188,16 @@ class UserAuth(UserMixin):
         if self.is_active():
             self.log.warning(f"User {self.username} is already active in the database.")
             raise ValueError(f"User {self.username} already exists.")
-        
+
+        if self.is_registered():
+            self.log.warning(
+                f"User {self.username} is already registered in the database."
+            )
+            raise ValueError(f"User {self.username} already exists but is not active.")
+
         if not self.token_hash:
-            self.secret_key = generate_token()
-            self.token_hash = hashlib.sha256(self.secret_key.encode()).hexdigest()
+            self.user_token = generate_token()
+            self.token_hash = hashlib.sha256(self.user_token.encode()).hexdigest()
 
         if not self.password:
             self.password = generate_password()
@@ -165,20 +205,50 @@ class UserAuth(UserMixin):
         if not self.password_hash:
             self.password_hash = hashlib.sha256(self.password.encode()).hexdigest()
 
+        if not self.activation_code:
+            self.activation_code = str(uuid.uuid4())
+
+        if not self.user_id:
+            self.user_id = str(uuid.uuid4())
+
+        if not self.email:
+            self.log.warning("Email is required to register a new user.")
+            raise ValueError("Email is required to register a new user.")
+
+        if not self.username:
+            self.log.warning("Username is required to register a new user.")
+            raise ValueError("Username is required to register a new user.")
+
         try:
             add_update_record(
                 database=self.db_name,
                 schema=self.schema,
                 table=self.table,
-                columns=["user_id", "username", "email", "password_hash", "token_hash", "is_active", "secret_code"],
-                values=[self.user_id, self.username, self.email, self.password_hash, self.token_hash, False, self.secret_code],
-                conflict_target="username",
-                on_conflict="DO NOTHING",
+                columns=[
+                    "user_id",
+                    "username",
+                    "email",
+                    "password_hash",
+                    "token_hash",
+                    "is_active",
+                    "activation_code",
+                ],
+                values=[
+                    self.user_id,
+                    self.username,
+                    self.email,
+                    self.password_hash,
+                    self.token_hash,
+                    False,
+                    self.activation_code,
+                ],
+                conflict_target=["username"],
+                on_conflict="DO UPDATE SET",
             )
         except Exception as e:
             self.log.error(f"Error adding user to database: {e}")
             raise e
-        
+
         try:
             self.log.debug("Creating new user in the database")
             columns = [
@@ -218,7 +288,7 @@ class UserAuth(UserMixin):
             return False
 
         update_existing_record(
-            database=self.database,
+            database=self.db_name,
             schema=self.schema,
             table=self.table,
             update_columns=["is_active"],
@@ -226,6 +296,7 @@ class UserAuth(UserMixin):
             where_column="username",
             where_value=self.username,
         )
+        self.is_active_var = True
         self.log.info(f"User {self.username} has been activated.")
         return True
 
@@ -245,7 +316,9 @@ class UserAuth(UserMixin):
             return True
         return False
 
-    def check_password(self,):
+    def check_password(
+        self,
+    ):
         """
         Checks if the provided password matches the stored password hash for the user.
         #### Returns:
@@ -270,6 +343,11 @@ class UserAuth(UserMixin):
             value=self.username,
         )
         stored_password_hash = record.get("password_hash", None)
+        is_active = record.get("is_active", False)
+        self.is_active_var = is_active
+        if not is_active:
+            self.log.warning(f"User {self.username} is not active.")
+            raise UserNotActiveError(username=self.username)
 
         if stored_password_hash == password_hash:
             self.log.info(f"Password for user {self.username} is correct.")
@@ -279,8 +357,10 @@ class UserAuth(UserMixin):
             self.log.warning(f"Incorrect password for user {self.username}.")
             return False
 
-
-    def reset_user_password(self, new_password: str = None,):
+    def reset_user_password(
+        self,
+        new_password: str = None,
+    ):
         """
         Resets the password for a customer in the database.
         #### Args:
@@ -303,7 +383,7 @@ class UserAuth(UserMixin):
                 f"User {self.username} does not exist. Cannot reset password."
             )
             raise ValueError(f"User {self.username} does not exist.")
-        
+
         update_existing_record(
             database=self.database,
             schema=self.schema,
@@ -312,7 +392,6 @@ class UserAuth(UserMixin):
             update_values=[self.password_hash],
             where_column="username",
             where_value=self.username,
-
         )
         self.log.info(f"Password for user {self.username} has been reset.")
         return new_password
@@ -322,7 +401,7 @@ class UserAuth(UserMixin):
         Resets the token for a user in the database.
         #### Returns:
             - new_token: str: the new token for the user
-        
+
         """
         self.log.info(f"Resetting token for user {self.username}")
         new_token = generate_token()
@@ -346,7 +425,7 @@ class UserAuth(UserMixin):
         )
         self.log.info(f"Token for user {self.username} has been reset.")
         return new_token
-       
+
     def update_user_email(
         self,
         new_email: str,
@@ -390,7 +469,7 @@ class UserAuth(UserMixin):
             - bool: True if the settings were updated successfully, False otherwise
         """
         self.log.info(f"Updating settings for user {self.username}")
-                
+
         if not self.user_exists():
             self.log.warning(
                 f"User {self.username} does not exist. Cannot update settings."
@@ -404,12 +483,12 @@ class UserAuth(UserMixin):
             update_columns=[setting_key],
             update_values=[setting_value],
             where_column="user_id",
-            where_value=user_id
+            where_value=user_id,
         )
         self.get_user_settings()
         self.log.info(f"Settings for user {self.username} have been updated.")
         return True
-        
+
 
 if __name__ == "__main__":
     import os, json, logging
@@ -437,14 +516,14 @@ if __name__ == "__main__":
 
     sys.exit(0)
 
-    user.add_user_to_sql(database="accounts")
-    secret = user.secret_key
+    user.register_user(database="accounts")
+    secret = user.user_token
     username = user.username
     package = {
         "user_id": user.user_id,
         "username": user.username,
         "email": user.email,
-        "secret_key": user.secret_key,
+        "secret_key": user.user_token,
         "password": password,
     }
 
