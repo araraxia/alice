@@ -51,7 +51,7 @@ class AutomatedEmails:
             log_file="automated_emails.log",
         )
         self.log = logger.get_logger()
-        
+
         cred_path = (
             os.path.join(root_path, "conf", "cred", "mail_key.json")
             if not client_secret_path
@@ -83,6 +83,7 @@ class AutomatedEmails:
         file_names: list = [],
         disable_header: bool = True,  # Switch to false once time to deploy
         disable_footer: bool = True,  # Switch to false once time to deploy
+        is_html: bool = False,
     ):
         """
         Sends an email with the specified subject, body, and file attachments using the provided parameters.
@@ -99,6 +100,7 @@ class AutomatedEmails:
             file_attachment_ios (list, optional): List of tuples containing file name and file content. Defaults to an empty list.
             disable_header (bool, optional): Whether to disable the header in the email. Defaults to True.
             disable_footer (bool, optional): Whether to disable the footer in the email. Defaults to True.
+            is_html (bool, optional): Whether the body is in HTML format. Defaults to False.
         Returns:
             None
         Raises:
@@ -123,7 +125,10 @@ class AutomatedEmails:
         msg["Subject"] = subject if subject else ""
 
         # Attach the body with the msg instance
-        msg.attach(MIMEText(body, "plain"))
+        body = body if body else ""
+        # Use 'html' if is_html is True, otherwise use 'plain'
+        content_type = "html" if is_html else "plain"
+        msg.attach(MIMEText(body, content_type))
 
         # Attach files if any
         if file_attachment_ios:
@@ -173,7 +178,7 @@ class AutomatedEmails:
 
         # Send the email
         try:
-            
+
             with smtplib.SMTP(self.mail_server, self.mail_port) as smtp_server:
                 self.log.info(f"Sending email: {msg}")
                 text = msg.as_string()
