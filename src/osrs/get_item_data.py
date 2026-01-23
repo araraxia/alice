@@ -3,23 +3,25 @@
 import requests, json
 from pathlib import Path
 from src.util.independant_logger import Logger
+from src.util.sql_helper import log_error_to_db
 
 FILE_PATH = Path(__file__).resolve()
 OSRS_DIR = FILE_PATH.parent
 ROOT_DIR = OSRS_DIR.parent.parent
 
 ENDPOINTS = {
-    'latest_prices': 'https://prices.runescape.wiki/api/v1/osrs/latest',
-    '5min_prices': 'https://prices.runescape.wiki/api/v1/osrs/5m',
-    '1h_prices': 'https://prices.runescape.wiki/api/v1/osrs/1h',
-    'timeseries': 'https://prices.runescape.wiki/api/v1/osrs/timeseries',
-    'mapping': 'https://prices.runescape.wiki/api/v1/osrs/mapping', 
+    "latest_prices": "https://prices.runescape.wiki/api/v1/osrs/latest",
+    "5min_prices": "https://prices.runescape.wiki/api/v1/osrs/5m",
+    "1h_prices": "https://prices.runescape.wiki/api/v1/osrs/1h",
+    "timeseries": "https://prices.runescape.wiki/api/v1/osrs/timeseries",
+    "mapping": "https://prices.runescape.wiki/api/v1/osrs/mapping",
 }
 
-with open(ROOT_DIR / 'conf' / 'osrs_wiki_headers.json', 'r', encoding='utf-8') as f:
+with open(ROOT_DIR / "conf" / "osrs_wiki_headers.json", "r", encoding="utf-8") as f:
     HEADERS = json.load(f)
-if not HEADERS.get('User-Agent'):
+if not HEADERS.get("User-Agent"):
     raise ValueError("User-Agent not found in osrs_wiki_headers.json")
+
 
 class WikiDataGetter:
     def __init__(self, headers: dict = HEADERS):
@@ -35,9 +37,9 @@ class WikiDataGetter:
 
     def get_data(self, endpoint: str, id: int = None, timestamp: int = None) -> dict:
         """
-        Retrieves data from the specified OSRS Wiki Prices API endpoint. 
+        Retrieves data from the specified OSRS Wiki Prices API endpoint.
         https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices
-        
+
         ## Endpoints:
         - 'latest_prices': Latest item prices.
         - '5min_prices': 5-minute average item prices.
@@ -49,22 +51,47 @@ class WikiDataGetter:
         Returns:
             dict: The JSON response from the API as a dictionary.
         """
-        self.log.info(f"Fetching data from endpoint: {endpoint} with id: {id} and timestamp: {timestamp}")
+        self.log.info(
+            f"Fetching data from endpoint: {endpoint} with id: {id} and timestamp: {timestamp}"
+        )
         if endpoint not in ENDPOINTS:
             self.log.error(f"Invalid endpoint: {endpoint}")
             raise ValueError(f"Invalid endpoint: {endpoint}")
-        
+
         params = {}
         if id is not None:
-            params['id'] = id
+            params["id"] = id
         if timestamp is not None:
-            params['timestamp'] = timestamp
+            params["timestamp"] = timestamp
 
         try:
             response = self.session.get(ENDPOINTS[endpoint], params=params)
             response.raise_for_status()
-            self.log.info(f"Data fetched successfully from {endpoint}, code: {response.status_code}")
+            self.log.info(
+                f"Data fetched successfully from {endpoint}, code: {response.status_code}"
+            )
             return response.json()
         except requests.RequestException as e:
             self.log.error(f"Error fetching data from {endpoint}: {e}")
-            return {}
+            error_response = None
+            try:
+                error_response = e.response.json()
+            except Exception:
+                error_response = {"message": "No JSON response available."}
+            log_error_to_db(
+                database="server",
+                error_message=str(e),
+                module_name="get_item_data.py",
+                error_type="RequestException",
+                additional_info=json.dumps(
+                    {
+                        "endpoint": endpoint,
+                        "params": params,
+                        "status_code": e.response.status_code if e.response else None,
+                        "response_text": e.response.text if e.response else None,
+                    }
+                ),
+            )
+            raise RuntimeError(
+                f"Failed to fetch data from {endpoint}: {error_response}"
+            ) from e

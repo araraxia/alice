@@ -1,68 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Araxia.xyz</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            visibility: hidden;
-            min-height: 100vh;
-        }   
-    </style> 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-</head>
-<body>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        visibility: hidden;
+        min-height: 100vh;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/main.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
+  </head>
+  <body>
     <canvas id="background"></canvas>
-    <div id="index_container" class="draggable-window medium-window index_container">
-        <div class="window-content">
-            <div class="title-bar" id="index-title-bar">
-                <h4>Araxia.xyz</h4>
-                <div>
-                    <button id="bg-control-button" class="w98-button title-button" title="Background Control">BG</button>
-                    <button id="help-me-button" class="w98-button title-button">?</button>
-                </div>
-            </div>
-            <h1>Welcome!</h1>
-            <ul>
-                <li>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                </li>
-                <li>
-                    <button class="w98-button" id="osrs-index-button">OSRS Tools</button>
-                </li>
-                <li>
-                    <div class="log-reg-container">
-                        <button class="w98-button" id="index-login-btn">Login</button>
-                        <button class="w98-button" id="index-register-btn" disabled>Register</button>
-                    </div>
-                </li>
-            </ul>
+    <div
+      id="index_container"
+      class="draggable-window medium-window index_container"
+    >
+      <div class="window-content">
+        <div class="title-bar" id="index-title-bar">
+          <h4>Araxia.xyz</h4>
+          <div>
+            <button
+              id="bg-control-button"
+              class="w98-button title-button"
+              title="Background Control"
+            >
+              BG
+            </button>
+            <button id="help-me-button" class="w98-button title-button">
+              ?
+            </button>
+          </div>
         </div>
+        <h1>Welcome!</h1>
+        <ul>
+          <li>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </li>
+          <li>
+            <button class="w98-button" id="osrs-index-button">
+              OSRS Tools
+            </button>
+          </li>
+          <li>
+            <div class="log-reg-container">
+              <button class="w98-button" id="index-login-btn">Login</button>
+              <button class="w98-button" id="index-register-btn" disabled>
+                Register
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div id="disable-bg-container" class="draggable-window small-window top-right disable-bg-container">
-        <div class="window-content">
-            <div class="title-bar" id="disable-bg-title-bar">
-                <h4>Background Control</h4>
-                <button id="close-disable-bg-button" class="w98-button title-button">X</button>
-            </div>
-            <div style="padding: 15px;">
-                <p style="margin: 0 0 10px 0; font-size: 11px;">Control the animated background:</p>
-                <button id="toggle-bg-button" class="w98-button">Disable Background</button>
-            </div>
+    <div
+      id="disable-bg-container"
+      class="draggable-window small-window top-right disable-bg-container"
+    >
+      <div class="window-content">
+        <div class="title-bar" id="disable-bg-title-bar">
+          <h4>Background Control</h4>
+          <button id="close-disable-bg-button" class="w98-button title-button">
+            X
+          </button>
         </div>
+        <div style="padding: 15px">
+          <p style="margin: 0 0 10px 0; font-size: 11px">
+            Control the animated background:
+          </p>
+          <button id="toggle-bg-button" class="w98-button">
+            Disable Background
+          </button>
+        </div>
+      </div>
     </div>
     <script>
-        // Set global constants
-        const SHADERURL = "{{ url_for('static', filename='glsl/indexBGShader.glsl') }}";
-        const OSRSENDPOINT = "{{ url_for('osrs.index') }}";
-        const SUPERCOMBATSENDPOINT = "{{ url_for('osrs.super_combats') }}";
-        const GOADINGREGENSENDPOINT = "{{ url_for('osrs.goading_regens') }}";
-        // Set global variables
-        window.openStates = {};
+      // Set global constants
+      const SHADERURL =
+        "{{ url_for('static', filename='glsl/indexBGShader.glsl') }}";
+      const OSRSENDPOINT = "{{ url_for('osrs.index') }}";
+      const SUPERCOMBATSENDPOINT = "{{ url_for('osrs.super_combats') }}";
+      const GOADINGREGENSENDPOINT = "{{ url_for('osrs.goading_regens') }}";
+      const ITEMSEARCHENDPOINT = "{{ url_for('osrs.item_search') }}";
+      // Set global variables
+      window.openStates = {};
     </script>
     <script src="{{ url_for('static', filename='js/index_background.js') }}"></script>
     <script src="{{ url_for('static', filename='js/drag_window.js') }}"></script>
@@ -70,115 +105,135 @@
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_initializer.js') }}"></script>
     <script>
-        function loadScript(url) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
-                document.head.appendChild(script);
-            });
+      function loadScript(url) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = url;
+          script.onload = () => resolve();
+          script.onerror = () =>
+            reject(new Error(`Failed to load script: ${url}`));
+          document.head.appendChild(script);
+        });
+      }
+
+      // Initialize modular window system
+      document.addEventListener("DOMContentLoaded", function () {
+        // Windows are automatically discovered and registered by WindowManager
+
+        windowManager.centerWindow("index_container");
+        // Listen for window activation events
+        document.addEventListener("windowActivated", function (e) {
+          console.log(
+            `Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`,
+          );
+          console.log(
+            "Current window order:",
+            windowManager.getWindowZIndexOrder(),
+          );
+        });
+        setTimeout(() => {
+          windowManager.setupWindowControls();
+          windowManager.setupWindowButton(
+            "#bg-control-button",
+            "disable-bg-container",
+          );
+          console.log(
+            "Initial window z-index order:",
+            windowManager.getWindowZIndexOrder(),
+          );
+        }, 100);
+
+        // Get references to UI elements
+        const loginButton = document.getElementById("index-login-btn");
+        const registerButton = document.getElementById("index-register-btn");
+        const toggleBgButton = document.getElementById("toggle-bg-button");
+        const closeBgButton = document.getElementById(
+          "close-disable-bg-button",
+        );
+        const bgControlButton = document.getElementById("bg-control-button");
+        const osrsButton = document.getElementById("osrs-index-button");
+
+        // Background toggle functionality
+        if (toggleBgButton) {
+          toggleBgButton.addEventListener("click", function () {
+            if (typeof backgroundWave !== "undefined" && backgroundWave) {
+              const isEnabled = backgroundWave.toggle();
+              toggleBgButton.textContent = isEnabled
+                ? "Disable Background"
+                : "Enable Background";
+            }
+          });
         }
 
-        // Initialize modular window system
-        document.addEventListener('DOMContentLoaded', function() {
-            // Windows are automatically discovered and registered by WindowManager
-            
-            windowManager.centerWindow('index_container');
-            // Listen for window activation events
-            document.addEventListener('windowActivated', function(e) {
-                console.log(`Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`);
-                console.log('Current window order:', windowManager.getWindowZIndexOrder());
+        // Close background control window
+        if (closeBgButton) {
+          closeBgButton.addEventListener("click", function () {
+            windowManager.hideWindow("disable-bg-container");
+          });
+        }
+
+        if (loginButton) {
+          // Set up login button with window manager
+          const loginInstance = new window.WindowInitializer(
+            windowManager,
+            "loginContainer",
+            "login-container",
+            "index-login-btn",
+            "login-title-bar",
+            "close-login-button",
+            "{{ url_for('fort.login_modal') }}",
+          );
+          window.loginButton = loginButton;
+          loginButton.addEventListener("click", async function () {
+            try {
+              await window.loginContainerInstance.open();
+            } catch (error) {
+              console.error("Failed to open login window:", error);
+              alert(
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later.",
+              );
+            }
+          });
+        }
+
+        if (osrsButton) {
+          osrsButton.addEventListener("mouseover", async () => {
+            console.log("OSRS Tools button hovered, preloading osrs_index.js");
+            if ("osrsIndex" in window) {
+              console.log("Preventing multiple loads of osrs_index.js");
+              return;
+            }
+            console.log("Loading osrs_index.js");
+            await loadScript(
+              "{{ url_for('static', filename='js/osrs_index.js') }}",
+            );
+            await window.osrsIndex.openWindow();
+            osrsButton.addEventListener("click", async () => {
+              console.log("osrsButton clicked, opening OSRS tools window");
+              await window.osrsWindow.open();
             });
-            setTimeout(() => {
-                windowManager.setupWindowControls();
-                windowManager.setupWindowButton('#bg-control-button', 'disable-bg-container');
-                console.log('Initial window z-index order:', windowManager.getWindowZIndexOrder());
-            }, 100);
-
-            // Get references to UI elements
-            const loginButton = document.getElementById('index-login-btn');
-            const registerButton = document.getElementById('index-register-btn');
-            const toggleBgButton = document.getElementById('toggle-bg-button');
-            const closeBgButton = document.getElementById('close-disable-bg-button');
-            const bgControlButton = document.getElementById('bg-control-button');
-            const osrsButton = document.getElementById('osrs-index-button');
-
-            // Background toggle functionality
-            if (toggleBgButton) {
-                toggleBgButton.addEventListener('click', function() {
-                    if (typeof backgroundWave !== 'undefined' && backgroundWave) {
-                        const isEnabled = backgroundWave.toggle();
-                        toggleBgButton.textContent = isEnabled ? 'Disable Background' : 'Enable Background';
-                    }
-                });
-            }
-
-            // Close background control window
-            if (closeBgButton) {
-                closeBgButton.addEventListener('click', function() {
-                    windowManager.hideWindow('disable-bg-container');
-                });
-            }
-
-            if (loginButton) {
-                // Set up login button with window manager
-                const loginInstance = new window.WindowInitializer(
-                    windowManager,
-                    "loginContainer",
-                    "login-container",
-                    "index-login-btn",
-                    "login-title-bar",
-                    "close-login-button",
-                    "{{ url_for('fort.login_modal') }}"
-                );
-                window.loginButton = loginButton;
-                loginButton.addEventListener('click', async function() {
-                    try {
-                        await window.loginContainerInstance.open();
-                    } catch (error) {
-                        console.error('Failed to open login window:', error);
-                        alert('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later.')
-                    }   
-                });
-            }
-
-            if (osrsButton) {
-                osrsButton.addEventListener('mouseover', async () => {
-                    console.log('OSRS Tools button hovered, preloading osrs_index.js');
-                    if ('osrsIndex' in window) {
-                        console.log('Preventing multiple loads of osrs_index.js');
-                        return;
-                    }
-                    console.log('Loading osrs_index.js');
-                    await loadScript("{{ url_for('static', filename='js/osrs_index.js') }}");
-                    await window.osrsIndex.openWindow();
-                    osrsButton.addEventListener('click', async () => {
-                        console.log('osrsButton clicked, opening OSRS tools window');
-                        await window.osrsWindow.open();
-                    });
-                });
-
-
-            } else {
-                console.error('OSRS Tools button not found in the DOM.');
-            }
+          });
+        } else {
+          console.error("OSRS Tools button not found in the DOM.");
+        }
+      });
+    </script>
+    <script>
+      document
+        .getElementById("help-me-button")
+        .addEventListener("click", function () {
+          alert("Help is on the way!");
         });
     </script>
     <script>
-        document.getElementById('help-me-button').addEventListener('click', function() {
-            alert('Help is on the way!');
-        });
+      let escapeWindowStack = []; // Stack to manage windows that can be closed with Escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && escapeWindowStack.length > 0) {
+          const topWindow = escapeWindowStack.pop();
+          console.debug("Closing window on Escape key:", topWindow.id);
+          topWindow.close();
+        }
+      });
     </script>
-    <script>
-        let escapeWindowStack = []; // Stack to manage windows that can be closed with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && escapeWindowStack.length > 0) {
-                const topWindow = escapeWindowStack.pop();
-                console.debug('Closing window on Escape key:', topWindow.id);
-                topWindow.close();
-            }
-        });
-    </script>
-</body>
+  </body>
 </html>

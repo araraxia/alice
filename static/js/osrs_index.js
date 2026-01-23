@@ -9,6 +9,7 @@ class OSRSIndex {
         this.endpoint = OSRSENDPOINT;
         window.superCombatsOpenState = false; 
         window.goadingRegensOpenState = false;
+        window.itemSearchOpenState = false;
     }
 
     async openWindow() {
@@ -37,6 +38,7 @@ class OSRSIndex {
                 this.initClose(osrsWindow);
                 this.initSuperCombats();
                 this.initGoadingRegens();
+                this.initItemSearch();
             },
             onClose: () => {
                 this.windowManager.enableWindowButtons(this.windowId);
@@ -95,11 +97,30 @@ class OSRSIndex {
             "close-goading-regens-button",
             GOADINGREGENSENDPOINT,
             true,
-            '1200px',
-            '1090px',
+            '950px',
+            '700px',
             '1px'
         );
         goadingRegensInitializer.assignOpenButton('goading-regens-button');
+    }
+
+    initItemSearch() {
+        console.log("Initializing Item Search window.");
+        const itemSearchInitializer = new window.WindowInitializer(
+            this.windowManager,
+            "itemSearch",
+            "item-search-window",
+            "item-search-container",
+            "item-search-button",
+            "item-search-title-bar",
+            "close-item-search-button",
+            ITEMSEARCHENDPOINT,
+            true,
+            '600px',
+            '700px',
+            '1px'
+        );
+        itemSearchInitializer.assignOpenButton('item-search-button');
     }
 
     checkIfOpen() {

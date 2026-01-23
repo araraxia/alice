@@ -1426,6 +1426,90 @@ def add_pk_constraint(
 ###########################################
 
 
+@init_psql_con_cursor
+def log_error_to_db(
+    cursor,
+    connection,
+    database: str,
+    error_message: str,
+    module_name: str = None,
+    error_type: str = None,
+    additional_data: dict = None,
+    host: str = sql_ip,
+    port: int = sql_port,
+    user: str = sql_user,
+    password: str = sql_pass,
+) -> bool:
+    """
+    Logs an error message to the database with timestamp and module information.
+
+    Args:
+        database (str): Database name (should be 'server')
+        error_message (str): The error message to log
+        module_name (str): Optional, name of the module where error occurred.
+                          If not provided, will attempt to detect from call stack.
+        error_type (str): Optional, type/category of error
+        additional_data (dict): Optional, additional JSON data to store with error
+
+    Returns:
+        bool: True if error was logged successfully, False otherwise
+    """
+    import inspect
+    from datetime import datetime
+
+    # Auto-detect module name if not provided
+    if module_name is None:
+        frame = inspect.currentframe()
+        try:
+            caller_frame = frame.f_back.f_back  # Skip decorator frame
+            module_name = caller_frame.f_globals.get("__name__", "unknown")
+        finally:
+            del frame
+
+    schema_name = "notification"
+    table_name = "errors"
+    timestamp = datetime.now()
+
+    # Prepare columns and values
+    columns = ["error_message", "module_name", "timestamp"]
+    values = [error_message, module_name, timestamp]
+
+    if error_type:
+        columns.append("error_type")
+        values.append(error_type)
+
+    if additional_data:
+        columns.append("additional_data")
+        values.append(json.dumps(additional_data))
+
+    # Build the insert query
+    schema_obj = sql.Identifier(schema_name)
+    table_obj = sql.Identifier(table_name)
+    columns_str = sql.SQL(", ").join(map(sql.Identifier, columns))
+    placeholders_str = sql.SQL(", ").join(sql.Placeholder() for _ in columns)
+
+    query = sql.SQL(
+        """
+        INSERT INTO {schema}.{table} ({columns})
+        VALUES ({placeholders})
+        """
+    ).format(
+        schema=schema_obj,
+        table=table_obj,
+        columns=columns_str,
+        placeholders=placeholders_str,
+    )
+
+    try:
+        cursor.execute(query, values)
+        connection.commit()
+        return True
+    except Exception as e:
+        print(Fore.RED + f"Error logging error to database: {e}" + Fore.RESET)
+        connection.rollback()
+        return False
+
+
 def guess_column_type(value) -> str:
     """
     Attempts to guess the SQL column type based on a sample value.

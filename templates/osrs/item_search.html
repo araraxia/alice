@@ -1,0 +1,158 @@
+<div class="window-content" id="item-search-window">
+  <div class="title-bar" id="item-search-title-bar">
+    <h4>Item Search</h4>
+    <div>
+      <button id="close-item-search-button" class="w98-button title-button">
+        X
+      </button>
+    </div>
+  </div>
+
+  <div style="padding: 20px">
+    <div style="margin-bottom: 20px">
+      <label style="display: block; margin-bottom: 5px">Search By:</label>
+      <select
+        id="search-type-select"
+        class="w98-input"
+        style="width: 100%; padding: 5px; margin-bottom: 10px"
+      >
+        <option value="name">Item Name</option>
+        <option value="id">Item ID</option>
+      </select>
+
+      <input
+        type="text"
+        id="search-input"
+        class="w98-input"
+        placeholder="Enter item name or ID"
+        style="width: calc(100% - 12px); padding: 5px; margin-bottom: 10px"
+      />
+
+      <button
+        id="search-button"
+        class="w98-button"
+        style="width: 100%; padding: 8px"
+      >
+        Search
+      </button>
+    </div>
+
+    <div
+      id="search-results"
+      style="
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #000;
+        padding: 10px;
+        background-color: white;
+      "
+    >
+      <p style="color: #666; text-align: center">
+        Enter a search query to find items
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const searchInput = document.getElementById("search-input");
+      const searchButton = document.getElementById("search-button");
+      const searchTypeSelect = document.getElementById("search-type-select");
+      const searchResults = document.getElementById("search-results");
+
+      function performSearch() {
+        const searchType = searchTypeSelect.value;
+        const searchValue = searchInput.value.trim();
+
+        if (!searchValue) {
+          searchResults.innerHTML =
+            '<p style="color: #666; text-align: center;">Please enter a search query</p>';
+          return;
+        }
+
+        searchResults.innerHTML =
+          '<p style="color: #666; text-align: center;">Searching...</p>';
+
+        fetch("/osrs/item-search/search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            search_type: searchType,
+            search_value: searchValue,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              displayResults(data.items);
+            } else {
+              searchResults.innerHTML = `<p style="color: red; text-align: center;">Error: ${data.message}</p>`;
+            }
+          })
+          .catch((error) => {
+            console.error("Search error:", error);
+            searchResults.innerHTML =
+              '<p style="color: red; text-align: center;">An error occurred during search</p>';
+          });
+      }
+
+      function displayResults(items) {
+        if (!items || items.length === 0) {
+          searchResults.innerHTML =
+            '<p style="color: #666; text-align: center;">No items found</p>';
+          return;
+        }
+
+        let html =
+          '<div style="display: flex; flex-direction: column; gap: 10px;">';
+
+        items.forEach((item) => {
+          html += `
+                        <div style="border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong style="font-size: 14px;">${escapeHtml(item.name)}</strong>
+                                <span style="color: #666; font-size: 12px;">ID: ${item.id}</span>
+                            </div>
+                            ${item.examine ? `<p style="margin: 5px 0; font-size: 12px; color: #555;">${escapeHtml(item.examine)}</p>` : ""}
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 11px; margin-top: 8px;">
+                                ${item.value !== null ? `<div><strong>Value:</strong> ${item.value.toLocaleString()} gp</div>` : ""}
+                                ${item.highalch !== null ? `<div><strong>High Alch:</strong> ${item.highalch.toLocaleString()} gp</div>` : ""}
+                                ${item.lowalch !== null ? `<div><strong>Low Alch:</strong> ${item.lowalch.toLocaleString()} gp</div>` : ""}
+                                ${item.limit !== null ? `<div><strong>GE Limit:</strong> ${item.limit.toLocaleString()}</div>` : ""}
+                                <div><strong>Members:</strong> ${item.members ? "Yes" : "No"}</div>
+                            </div>
+                        </div>
+                    `;
+        });
+
+        html += "</div>";
+        searchResults.innerHTML = html;
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      searchButton.addEventListener("click", performSearch);
+      searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          performSearch();
+        }
+      });
+
+      // Update placeholder text based on search type
+      searchTypeSelect.addEventListener("change", () => {
+        const searchType = searchTypeSelect.value;
+        searchInput.placeholder =
+          searchType === "id" ? "Enter item ID" : "Enter item name";
+        searchInput.value = "";
+        searchResults.innerHTML =
+          '<p style="color: #666; text-align: center;">Enter a search query to find items</p>';
+      });
+    })();
+  </script>
+</div>
