@@ -82,7 +82,7 @@ class WindowInitializer {
         const button = document.getElementById(buttonId);
         if (button) {
             this.windowManager.associateButton(this.windowId, button);
-            button.addEventListener('click', async function() {
+            button.addEventListener('click', async () => {
                 console.log(`Opening ${this.windowId} via button click.`);
                 if (window.openStates[this.windowName]) {
                     console.log(`${this.windowId} is already open`);

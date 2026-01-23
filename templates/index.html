@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Araxia.xyz</title>
     <style>
       body {
@@ -57,12 +58,30 @@
             </button>
           </li>
           <li>
+            {% if current_user.is_authenticated %}
+            <div
+              class="log-reg-container"
+              style="
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+                justify-content: center;
+              "
+            >
+              <p style="margin: 0">
+                Logged in as: <strong>{{ current_user.username }}</strong>
+              </p>
+              <button class="w98-button" id="index-logout-btn">Logout</button>
+            </div>
+            {% else %}
             <div class="log-reg-container">
               <button class="w98-button" id="index-login-btn">Login</button>
-              <button class="w98-button" id="index-register-btn" disabled>
+              <button class="w98-button" id="index-register-btn">
                 Register
               </button>
             </div>
+            {% endif %}
           </li>
         </ul>
       </div>
@@ -118,37 +137,61 @@
 
       // Initialize modular window system
       document.addEventListener("DOMContentLoaded", function () {
-        // Windows are automatically discovered and registered by WindowManager
+        // Wait for windowManager to be ready before using it
+        const initializeWindows = () => {
+          // Ensure windowManager is available
+          if (typeof windowManager === "undefined") {
+            console.error(
+              "windowManager is not defined. Check that window_manager.js is loaded correctly."
+            );
+            return;
+          }
 
-        windowManager.centerWindow("index_container");
-        // Listen for window activation events
-        document.addEventListener("windowActivated", function (e) {
-          console.log(
-            `Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`,
-          );
-          console.log(
-            "Current window order:",
-            windowManager.getWindowZIndexOrder(),
-          );
-        });
-        setTimeout(() => {
-          windowManager.setupWindowControls();
-          windowManager.setupWindowButton(
-            "#bg-control-button",
-            "disable-bg-container",
-          );
-          console.log(
-            "Initial window z-index order:",
-            windowManager.getWindowZIndexOrder(),
-          );
-        }, 100);
+          windowManager.centerWindow("index_container");
+          // Listen for window activation events
+          document.addEventListener("windowActivated", function (e) {
+            console.log(
+              `Window activated: ${e.detail.windowId} with z-index ${e.detail.zIndex}`
+            );
+            console.log(
+              "Current window order:",
+              windowManager.getWindowZIndexOrder()
+            );
+          });
+          setTimeout(() => {
+            windowManager.setupWindowControls();
+            windowManager.setupWindowButton(
+              "#bg-control-button",
+              "disable-bg-container"
+            );
+            console.log(
+              "Initial window z-index order:",
+              windowManager.getWindowZIndexOrder()
+            );
+          }, 100);
 
+          initializeUI();
+        };
+
+        // Wait for windowManager to finish auto-discovery
+        if (windowManager && windowManager.windows.size > 0) {
+          // Already initialized
+          initializeWindows();
+        } else {
+          // Wait for windowManager to be ready
+          document.addEventListener("windowManagerReady", initializeWindows, {
+            once: true,
+          });
+        }
+      });
+
+      function initializeUI() {
         // Get references to UI elements
         const loginButton = document.getElementById("index-login-btn");
         const registerButton = document.getElementById("index-register-btn");
         const toggleBgButton = document.getElementById("toggle-bg-button");
         const closeBgButton = document.getElementById(
-          "close-disable-bg-button",
+          "close-disable-bg-button"
         );
         const bgControlButton = document.getElementById("bg-control-button");
         const osrsButton = document.getElementById("osrs-index-button");
@@ -177,21 +220,84 @@
           const loginInstance = new window.WindowInitializer(
             windowManager,
             "loginContainer",
+            "login-window",
             "login-container",
             "index-login-btn",
             "login-title-bar",
             "close-login-button",
             "{{ url_for('fort.login_modal') }}",
+            true
           );
-          window.loginButton = loginButton;
+
           loginButton.addEventListener("click", async function () {
             try {
+              // The WindowInitializer stores the OpenWindow instance globally
               await window.loginContainerInstance.open();
             } catch (error) {
               console.error("Failed to open login window:", error);
               alert(
-                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later.",
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later."
               );
+            }
+          });
+        }
+
+        if (registerButton) {
+          // Set up register button with window manager
+          const registerInstance = new window.WindowInitializer(
+            windowManager,
+            "registerContainer",
+            "register-window",
+            "register-container",
+            "index-register-btn",
+            "register-title-bar",
+            "close-register-button",
+            "{{ url_for('fort.register_modal') }}",
+            true
+          );
+
+          registerButton.addEventListener("click", async function () {
+            try {
+              // The WindowInitializer stores the OpenWindow instance globally
+              await window.registerContainerInstance.open();
+            } catch (error) {
+              console.error("Failed to open register window:", error);
+              alert(
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later."
+              );
+            }
+          });
+        }
+
+        // Handle logout button
+        const logoutButton = document.getElementById("index-logout-btn");
+        if (logoutButton) {
+          logoutButton.addEventListener("click", async function () {
+            try {
+              const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+              const response = await fetch("{{ url_for('fort.logout') }}", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": csrfToken,
+                },
+              });
+
+              const result = await response.json();
+
+              if (result.status === "success") {
+                console.log("Logout successful, reloading page");
+                window.location.reload();
+              } else {
+                console.error("Logout failed:", result);
+                alert("Logout failed. Please try again.");
+              }
+            } catch (error) {
+              console.error("Logout error:", error);
+              alert("Logout failed: " + error.message);
             }
           });
         }
@@ -205,7 +311,7 @@
             }
             console.log("Loading osrs_index.js");
             await loadScript(
-              "{{ url_for('static', filename='js/osrs_index.js') }}",
+              "{{ url_for('static', filename='js/osrs_index.js') }}"
             );
             await window.osrsIndex.openWindow();
             osrsButton.addEventListener("click", async () => {
@@ -216,7 +322,7 @@
         } else {
           console.error("OSRS Tools button not found in the DOM.");
         }
-      });
+      }
     </script>
     <script>
       document

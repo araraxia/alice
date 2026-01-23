@@ -1,0 +1,78 @@
+<div class="register-container" id="register-container" style="z-index: 11; position: absolute;">
+    <div class="window-content">
+        <div class="title-bar" id="register-title-bar">
+            <h4>Register</h4>
+            <button id="close-register-button" class="w98-button title-button">X</button>
+        </div>
+        <div class="register-content" style="padding: 15px;">
+            <form method="POST" action="{{ url_for('fort.register_user') }}" class="register-form" style="display: flex; flex-direction: column; align-items: center;">
+                {{ form.hidden_tag() }}
+                <p style="text-align: center; width: 100%; margin: 5px 0;">
+                    {{ form.first_name.label }}<br>
+                    {{ form.first_name(size=32) }}
+                    {% if form.first_name.errors %}
+                        {% for error in form.first_name.errors %}
+                            <span style="color:red">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <p style="text-align: center; width: 100%; margin: 5px 0;">
+                    {{ form.last_name.label }}<br>
+                    {{ form.last_name(size=32) }}
+                    {% if form.last_name.errors %}
+                        {% for error in form.last_name.errors %}
+                            <span style="color:red">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <p style="text-align: center; width: 100%; margin: 5px 0;">
+                    {{ form.username.label }}<br>
+                    {{ form.username(size=32) }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <span style="color:red">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <p style="text-align: center; width: 100%; margin: 5px 0;">
+                    {{ form.email.label }}<br>
+                    {{ form.email(size=32) }}
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <span style="color:red">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <p style="text-align: center; width: 100%; margin: 5px 0;">
+                    {{ form.password1.label }}<br>
+                    {{ form.password1(size=32) }}
+                    {% if form.password1.errors %}
+                        {% for error in form.password1.errors %}
+                            <span style="color:red">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <p style="text-align: center; width: 100%; margin: 5px 0;">
+                    {{ form.password2.label }}<br>
+                    {{ form.password2(size=32) }}
+                    {% if form.password2.errors %}
+                        {% for error in form.password2.errors %}
+                            <span style="color:red">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </p>
+                <div style="text-align: center; width: 100%; margin-top: 10px;">
+                    {{ form.submit(class="w98-button") }}
+                </div>
+            </form>
+            {% for field, errors in form.errors.items() %}
+                {% if field not in ['first_name', 'last_name', 'username', 'email', 'password1', 'password2'] %}
+                    {% for error in errors %}
+                        <p style="color:red">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>

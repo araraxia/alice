@@ -18,13 +18,13 @@ if not _logger.hasHandlers():
     _logger.info("Logging initialized for helpers.py")
 
 
-def generate_token():
+def generate_token(length=32):
     """
     Generates a random API key using secrets.
     """
     import secrets
 
-    return secrets.token_urlsafe(32)
+    return secrets.token_urlsafe(length)
 
 def generate_password(length=16):
     """

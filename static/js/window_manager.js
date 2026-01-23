@@ -37,6 +37,9 @@ class WindowManager {
         if (this.windows.size > 0 && !this.activeWindowId) {
             this._findAndSetNextActiveWindow();
         }
+        
+        // Dispatch an event to signal that windowManager is ready
+        document.dispatchEvent(new CustomEvent('windowManagerReady', { detail: { manager: this } }));
     }
 
     /**

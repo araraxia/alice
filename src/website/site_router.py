@@ -16,6 +16,7 @@ from flask_limiter.util import get_remote_address
 from src.user_auth import UserAuth
 from src.limiter import limiter
 from src.website.forms.login_page import LoginForm
+from src.website.forms.register_user import RegisterUser, RegisterUserForm
 from src.util.form_helper import clear_form_errors
 from src.util.helpers import validate_input
 
@@ -54,6 +55,30 @@ def login_modal():
     else:
         # Return JSON for other use cases
         return jsonify({"html": window_html})
+
+@fort_route.route('/register-modal', methods=['GET'])
+def register_modal():
+    register_handler = RegisterUser(current_app._get_current_object(), current_app.logger)
+    form = RegisterUserForm()
+    window_html = render_template("partials/register.html", form=form, title="Register")
+    
+    # Check if it's an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Return plain HTML for OpenWindow compatibility
+        return window_html
+    else:
+        # Return JSON for other use cases
+        return jsonify({"html": window_html})
+
+@fort_route.route('/register-user', methods=['POST'])
+def register_user():
+    register_handler = RegisterUser(current_app._get_current_object(), current_app.logger)
+    return register_handler.process_registration()
+
+@fort_route.route('/register-user/validate/<user_uuid>/<activation_code>', methods=['GET'])
+def validate_user_registration(user_uuid, activation_code):
+    register_handler = RegisterUser(current_app._get_current_object(), current_app.logger)
+    return register_handler.process_validate_registration(user_uuid, activation_code)
 
 @fort_route.route('/entrance', methods=['POST'])
 def entrance():
