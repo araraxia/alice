@@ -21,6 +21,7 @@
     </div>
 
     <div class="main-content-grid">
+      <!-- Top Row: Potion Analysis Cards -->
       <div class="potion-grid">
         <!-- Goading 4 Section -->
         <div class="potion-card">
@@ -155,15 +156,17 @@
           </div>
           {% endif %}
         </div>
+      </div>
+      <!-- Close potion-grid -->
 
-        <!-- Raw Ingredient Prices Section -->
-        <div class="potion-card raw-prices-section">
-          <h3 class="section-title">
-            Real Time Ingredient Prices (No Modifiers)
-          </h3>
-
+      <!-- Bottom Row: Ingredient Prices -->
+      <div class="ingredients-section">
+        <h3 class="section-title">
+          Real Time Ingredient Prices (No Modifiers)
+        </h3>
+        <div class="ingredients-horizontal-grid">
           <!-- Finished Potions -->
-          <div class="ingredient-category">
+          <div class="ingredient-category-card">
             <h4 class="category-title">Finished Potions</h4>
             <div class="ingredients-grid">
               <div class="ingredient-item">
@@ -230,7 +233,7 @@
           </div>
 
           <!-- Secondary Ingredients -->
-          <div class="ingredient-category">
+          <div class="ingredient-category-card">
             <h4 class="category-title">Secondary Ingredients</h4>
             <div class="ingredients-grid">
               <div class="ingredient-item">
@@ -267,110 +270,112 @@
           </div>
 
           <!-- Primary Ingredients -->
-          <div class="ingredient-category">
+          <div class="ingredient-category-card primary-ingredients-card">
             <h4 class="category-title">Primary Ingredients</h4>
+            <div class="primary-ingredients-horizontal">
+              <!-- Goading Herbs -->
+              <div class="herb-subcategory">
+                <h5 class="subcategory-title">Goading Herbs</h5>
+                <div class="ingredients-grid">
+                  <div class="ingredient-item">
+                    <div class="ingredient-name">Harralander</div>
+                    <div class="price-intervals">
+                      <div class="price-row">
+                        <span class="interval">5min:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_5min }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_5min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">15min:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_15min }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_15min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">1h:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_1h }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_1h }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">3h:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_3h }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_3h }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            <!-- Goading Herbs -->
-            <div class="herb-subcategory">
-              <h5 class="subcategory-title">Goading Herbs</h5>
-              <div class="ingredients-grid">
-                <div class="ingredient-item">
-                  <div class="ingredient-name">Harralander</div>
-                  <div class="price-intervals">
-                    <div class="price-row">
-                      <span class="interval">5min:</span>
-                      <span class="price"
-                        >{{ goading_data.primary_cost_5min }}</span
-                      >
-                      <span class="price"
-                        >{{ goading_data.primary_name_5min }}</span
-                      >
-                    </div>
-                    <div class="price-row">
-                      <span class="interval">15min:</span>
-                      <span class="price"
-                        >{{ goading_data.primary_cost_15min }}</span
-                      >
-                      <span class="price"
-                        >{{ goading_data.primary_name_15min }}</span
-                      >
-                    </div>
-                    <div class="price-row">
-                      <span class="interval">1h:</span>
-                      <span class="price"
-                        >{{ goading_data.primary_cost_1h }}</span
-                      >
-                      <span class="price"
-                        >{{ goading_data.primary_name_1h }}</span
-                      >
-                    </div>
-                    <div class="price-row">
-                      <span class="interval">3h:</span>
-                      <span class="price"
-                        >{{ goading_data.primary_cost_3h }}</span
-                      >
-                      <span class="price"
-                        >{{ goading_data.primary_name_3h }}</span
-                      >
+              <!-- Prayer Regen Herbs -->
+              <div class="herb-subcategory">
+                <h5 class="subcategory-title">Prayer Regen Herbs</h5>
+                <div class="ingredients-grid">
+                  <div class="ingredient-item">
+                    <div class="ingredient-name">Huascas</div>
+                    <div class="price-intervals">
+                      <div class="price-row">
+                        <span class="interval">5min:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_5min }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_5min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">15min:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_15min }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_15min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">1h:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_1h }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_1h }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">3h:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_3h }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_3h }}</span
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <!-- Prayer Regen Herbs -->
-            <div class="herb-subcategory">
-              <h5 class="subcategory-title">Prayer Regen Herbs</h5>
-              <div class="ingredients-grid">
-                <div class="ingredient-item">
-                  <div class="ingredient-name">Huascas</div>
-                  <div class="price-intervals">
-                    <div class="price-row">
-                      <span class="interval">5min:</span>
-                      <span class="price"
-                        >{{ p_regen_data.primary_cost_5min }}</span
-                      >
-                      <span class="price"
-                        >{{ p_regen_data.primary_name_5min }}</span
-                      >
-                    </div>
-                    <div class="price-row">
-                      <span class="interval">15min:</span>
-                      <span class="price"
-                        >{{ p_regen_data.primary_cost_15min }}</span
-                      >
-                      <span class="price"
-                        >{{ p_regen_data.primary_name_15min }}</span
-                      >
-                    </div>
-                    <div class="price-row">
-                      <span class="interval">1h:</span>
-                      <span class="price"
-                        >{{ p_regen_data.primary_cost_1h }}</span
-                      >
-                      <span class="price"
-                        >{{ p_regen_data.primary_name_1h }}</span
-                      >
-                    </div>
-                    <div class="price-row">
-                      <span class="interval">3h:</span>
-                      <span class="price"
-                        >{{ p_regen_data.primary_cost_3h }}</span
-                      >
-                      <span class="price"
-                        >{{ p_regen_data.primary_name_3h }}</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Close primary-ingredients-horizontal -->
           </div>
-          <!-- Close Primary Ingredients -->
+          <!-- Close Primary Ingredients card -->
         </div>
-        <!-- Close Raw Ingredient Prices Section -->
+        <!-- Close ingredients-horizontal-grid -->
       </div>
-      <!-- Close potion-grid -->
+      <!-- Close ingredients-section -->
     </div>
     <!-- Close main-content-grid -->
     {% endif %}
@@ -378,14 +383,43 @@
 </div>
 
 <style>
+  /* Ensure proper box-sizing for all elements */
+  #goading-regens-container * {
+    box-sizing: border-box;
+  }
+
+  #goading-regens-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-height: 700px;
+    overflow: hidden;
+  }
+
+  .title-bar {
+    flex-shrink: 0;
+  }
+
+  .content-container {
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+  }
+
   .main-content-grid {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     margin-top: 20px;
+    width: 100%;
   }
 
   .potion-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
     width: 100%;
   }
@@ -394,6 +428,8 @@
     border: 2px solid #c0c0c0;
     padding: 8px;
     background-color: #f8f8f8;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .potion-header {
@@ -479,14 +515,42 @@
     margin: 10px 0;
   }
 
-  /* Raw Prices Section Styles */
-  .raw-prices-section {
-    margin-top: 0;
+  /* Ingredients Section Styles */
+  .ingredients-section {
+    width: 100%;
     padding: 8px;
     border: 2px solid #c0c0c0;
     background-color: #f0f0f0;
     border-radius: 4px;
-    height: fit-content;
+    min-width: 0;
+  }
+
+  .ingredients-horizontal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .ingredient-category-card {
+    border: 1px solid #c0c0c0;
+    padding: 8px;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .primary-ingredients-card {
+    grid-column: 1 / -1;
+  }
+
+  .primary-ingredients-horizontal {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 5px;
   }
 
   .section-title {
@@ -499,7 +563,7 @@
   }
 
   .ingredient-category {
-    margin-bottom: 8px;
+    margin-bottom: 0;
   }
 
   .category-title {
@@ -508,6 +572,10 @@
     font-size: 0.9em;
     border-bottom: 1px solid #ccc;
     padding-bottom: 3px;
+  }
+
+  .ingredient-category-card h4 {
+    margin-top: 0;
   }
 
   .herb-subcategory {
@@ -583,6 +651,7 @@
     border-collapse: collapse;
     font-size: 0.85em;
     margin-bottom: 8px;
+    table-layout: fixed;
   }
 
   .compact-table th,
@@ -590,6 +659,9 @@
     border: 1px solid #ddd;
     padding: 3px 5px;
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .compact-table th {
