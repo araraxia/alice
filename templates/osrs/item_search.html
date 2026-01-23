@@ -73,11 +73,23 @@
         searchResults.innerHTML =
           '<p style="color: #666; text-align: center;">Searching...</p>';
 
+        // Get CSRF token from meta tag
+        const csrfToken = document
+          .querySelector('meta[name="csrf-token"]')
+          ?.getAttribute("content");
+
+        const headers = {
+          "Content-Type": "application/json",
+        };
+
+        // Add CSRF token if available
+        if (csrfToken) {
+          headers["X-CSRFToken"] = csrfToken;
+        }
+
         fetch("/osrs/item-search/search", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: headers,
           body: JSON.stringify({
             search_type: searchType,
             search_value: searchValue,
