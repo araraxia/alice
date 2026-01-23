@@ -334,35 +334,35 @@ def fuzzy_search_records(
     schema_obj = sql.Identifier(schema_name)
     table_obj = sql.Identifier(table_name)
     col_obj = sql.Identifier(column_name)
-    not_str = "NOT" if pattern_negation else ""
-    escape_str = f"ESCAPE '{escape_char}'" if escape_char else ""
 
+    # Build NOT clause
+    not_clause = sql.SQL("NOT ") if pattern_negation else sql.SQL("")
+
+    # Build ESCAPE clause
+    escape_clause = sql.SQL(f" ESCAPE '{escape_char}'") if escape_char else sql.SQL("")
+
+    # Determine operator and adjust pattern
     if regex:
-        func_str = "~*"
+        func_sql = sql.SQL("~*")
     elif case_sensitive:
-        func_str = "LIKE"
+        func_sql = sql.SQL("LIKE")
         if not "%" in search_pattern and not "_" in search_pattern:
             search_pattern = f"%{search_pattern}%"
     else:
-        func_str = "ILIKE"
+        func_sql = sql.SQL("ILIKE")
         if not "%" in search_pattern and not "_" in search_pattern:
             search_pattern = f"%{search_pattern}%"
 
-    query = (
-        sql.SQL(
-            """
-        SELECT * FROM {schema}.{table}
-        WHERE {col} {NOT} {FUNC} %s {ESCAPE}
-    """
-        )
-        .replace("{NOT}", not_str)
-        .replace("{FUNC}", func_str)
-        .replace("{ESCAPE}", escape_str)
-        .format(
-            schema=schema_obj,
-            table=table_obj,
-            col=col_obj,
-        )
+    # Build the query using SQL composition
+    query = sql.SQL(
+        "SELECT * FROM {schema}.{table} WHERE {col} {not_clause}{func} %s{escape_clause}"
+    ).format(
+        schema=schema_obj,
+        table=table_obj,
+        col=col_obj,
+        not_clause=not_clause,
+        func=func_sql,
+        escape_clause=escape_clause,
     )
 
     try:
