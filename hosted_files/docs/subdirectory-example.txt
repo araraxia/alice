@@ -1,0 +1,11 @@
+# Subdirectory Example
+
+This file is located in a subdirectory and can be accessed via:
+`http://localhost:6969/files/docs/subdirectory-example.txt`
+
+The file hosting system now supports:
+- Deep directory nesting
+- Path components like /path/to/file.ext
+- While still preventing upward traversal with ..
+
+You can organize files in any subdirectory structure!

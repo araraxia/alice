@@ -1,0 +1,52 @@
+{
+  "categories": [
+    {
+      "name": "Getting Started",
+      "items": [
+        {
+          "id": "welcome",
+          "title": "Welcome"
+        },
+        {
+          "id": "about",
+          "title": "About This Site"
+        }
+      ]
+    },
+    {
+      "name": "Python Projects",
+      "items": [
+        {
+          "id": "sprite-pattern-generator",
+          "title": "Sprite Pattern Generator"
+        }
+      ]
+    },
+    {
+      "name": "Web Development",
+      "items": [
+        {
+          "id": "shader-background",
+          "title": "GLSL Shader Background"
+        },
+        {
+          "id": "window-system",
+          "title": "Draggable Window System"
+        }
+      ]
+    },
+    {
+      "name": "OSRS Tools",
+      "items": [
+        {
+          "id": "item-search",
+          "title": "Item Search Tool"
+        },
+        {
+          "id": "super-combats",
+          "title": "Super Combat Calculator"
+        }
+      ]
+    }
+  ]
+}

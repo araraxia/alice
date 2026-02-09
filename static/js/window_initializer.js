@@ -52,6 +52,7 @@ class WindowInitializer {
             onLoad: (container, html) => {
                 console.log(`${this.windowId} loaded successfully.`);
                 container.classList.add('draggable-window');
+                container.classList.add('w98-window');
                 container.id = this.windowId;
 
                 // Associate the button with the window
@@ -120,11 +121,11 @@ class WindowInitializer {
 
     initClose(windowInstance) {
         // Set up close button
-        console.log(`Setting up close button for ${this.windowId}.`);
+        console.log(`[window_initializer.js] Setting up close button for ${this.windowId}.`);
         const closeBtn = document.getElementById(this.closeBtnId);
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
-                console.log(`Close button clicked for ${this.windowId}`);
+                console.log(`[window_initializer.js] Close button clicked for ${this.windowId}`);
                 this.windowManager.enableWindowButtons(this.windowId);
                 windowInstance.close();
             });

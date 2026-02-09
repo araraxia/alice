@@ -1,0 +1,32 @@
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/showcase.css') }}"
+/>
+
+<div class="title-bar" id="showcase-title-bar">
+<h4>Showcase</h4>
+<div>
+    <button id="close-showcase-button" class="w98-button title-button">
+    X
+    </button>
+</div>
+</div>
+
+<div class="showcase-container" id="showcase-container">
+<nav class="showcase-sidebar">
+    <div class="sidebar-header">
+    <h3>Projects</h3>
+    </div>
+    <div class="sidebar-nav" id="showcase-nav">
+    <!-- Navigation will be loaded dynamically -->
+    </div>
+</nav>
+<main class="showcase-main">
+    <article id="showcase-article" class="markdown-content">
+    <div class="loading-message">
+        <p>Select a topic from the sidebar to get started</p>
+    </div>
+    </article>
+</main>
+</div>
+<script src="{{ url_for('static', filename='js/showcase.js') }}"></script>

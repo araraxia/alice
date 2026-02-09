@@ -48,16 +48,26 @@
         <ul>
           <li>
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              This is a personal site built and hosted by Aria Corona to showcase neat things and act as a digital playground to experiment and learn new things.
             </p>
           </li>
           <li>
-            <button class="w98-button" id="osrs-index-button">
-              OSRS Tools
-            </button>
+            <div class="index-window-navbuttons">
+              <button class="w98-button" id="osrs-index-button">
+                OSRS Tools
+              </button>
+              <button class="w98-button" id="showcase-button">
+                Showcase
+              </button>
+              <button class="w98-button" id="blog-button" disabled=true>Blog</button>
+              <button class="w98-button" id="about-me-button" disabled=true>Bio</button>
+              <a href="https://github.com/araraxia">
+                <button class="w98-button" id="github-button">
+                  Github
+                </button>
+              </a> 
+            </div>
           </li>
-          <li>
             {% if current_user.is_authenticated %}
             <div
               class="log-reg-container"
@@ -187,14 +197,16 @@
 
       function initializeUI() {
         // Get references to UI elements
-        const loginButton = document.getElementById("index-login-btn");
-        const registerButton = document.getElementById("index-register-btn");
         const toggleBgButton = document.getElementById("toggle-bg-button");
-        const closeBgButton = document.getElementById(
-          "close-disable-bg-button"
-        );
+        const closeBgButton = document.getElementById("close-disable-bg-button");
         const bgControlButton = document.getElementById("bg-control-button");
         const osrsButton = document.getElementById("osrs-index-button");
+        const showcaseButton = document.getElementById("showcase-button");
+        const blogButton = document.getElementById("blog-button");
+        const aboutMeButton = document.getElementById("about-me-button");
+        const loginButton = document.getElementById("index-login-btn");
+        const registerButton = document.getElementById("index-register-btn");
+        const logoutButton = document.getElementById("index-logout-btn");
 
         // Background toggle functionality
         if (toggleBgButton) {
@@ -241,6 +253,7 @@
             }
           });
         }
+        
 
         if (registerButton) {
           // Set up register button with window manager
@@ -270,7 +283,6 @@
         }
 
         // Handle logout button
-        const logoutButton = document.getElementById("index-logout-btn");
         if (logoutButton) {
           logoutButton.addEventListener("click", async function () {
             try {
@@ -319,8 +331,32 @@
               await window.osrsWindow.open();
             });
           });
-        } else {
-          console.error("OSRS Tools button not found in the DOM.");
+        }
+
+        if (showcaseButton) {
+          const showcaseInstance = new window.WindowInitializer(
+            windowManager,
+            "showcaseWindow",
+            "showcase-window",
+            "showcase-container",
+            "showcase-button",
+            "showcase-title-bar",
+            "close-showcase-button",
+            "{{ url_for('showcase.showcase_modal') }}",
+            true,
+            "1200px",
+            "900px",
+          );
+          showcaseButton.addEventListener("click", async function () {
+            try {
+              await window.showcaseWindowInstance.open();
+            } catch (error) {
+              console.error("Failed to open showcase window:", error);
+              alert(
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later."
+              );
+            }
+          });
         }
       }
     </script>

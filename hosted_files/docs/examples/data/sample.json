@@ -1,0 +1,12 @@
+{
+  "message": "This is a deeply nested example file",
+  "path": "hosted_files/docs/examples/data/sample.json",
+  "accessible_via": "http://localhost:6969/files/docs/examples/data/sample.json",
+  "features": [
+    "Deep directory nesting supported",
+    "Path traversal (..) blocked",
+    "Safe file serving",
+    "JSON files work great"
+  ],
+  "timestamp": "2026-02-09"
+}

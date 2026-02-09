@@ -364,7 +364,7 @@ class WindowManager {
      * @param {string} windowId - Window identifier
      */
     centerWindow(windowId) {
-        console.log(`Centering window '${windowId}'`);
+        console.log(`[window_manager.js] Centering window '${windowId}'`);
         const window = this.getWindow(windowId);
         if (window && window.dragWindow) {
             window.dragWindow.center();
@@ -381,6 +381,7 @@ class WindowManager {
         const window = this.getWindow(windowId);
         if (window && window.container) {
             // Only update z-index if this window isn't already the active one
+            console.log('[window_manager.js] Bringing window to front:', windowId);
             if (this.activeWindowId !== windowId) {
                 this.currentMaxZIndex += 1;
                 window.container.style.zIndex = this.currentMaxZIndex;
