@@ -1,0 +1,11 @@
+# Example Hosted File
+
+This is an example file that can be accessed via:
+`http://localhost:6969/files/example.txt`
+
+The file hosting system is secure and prevents:
+- Directory traversal attacks (../)
+- Path escaping
+- Access to files outside the hosted_files directory
+
+You can place any files here and they will be publicly accessible through the /files/ endpoint.

@@ -1,26 +1,26 @@
-from flask import Flask, render_template, request, jsonify, send_file, current_app
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify,
+    send_file,
+    send_from_directory,
+    current_app,
+    abort,
+)
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
 from waitress import serve
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.utils import secure_filename
 from pathlib import Path
 
 from src.user_auth import UserAuth
 from src.logger import setup_logger
 from src.limiter import limiter
+from src.util.blueprint_init import register_blueprints
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-
-from src.website.site_router import fort_route
-from src.website.wiki_router import wiki_route
-from src.website.osrs_router import osrs_route
-from src.discord.discord_router import discord_route
-ROUTE_LIST = [
-    fort_route,
-    wiki_route,
-    osrs_route,
-    discord_route,
-]
 
 from datetime import timedelta, datetime
 import os, pickle
@@ -29,51 +29,56 @@ BASE_DIR = Path(__file__).resolve().parent
 SRC_DIR = BASE_DIR / "src"
 TEMPLATE_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
+FILE_HOSTING_DIR = BASE_DIR / "hosted_files"
 DEFAULT_SECRET_FILE = BASE_DIR / "conf" / "cred" / "secret_key.pkl"
+
 
 class Alice:
     def __init__(self):
         self.app = Flask(
-__name__,
+            __name__,
             template_folder=TEMPLATE_DIR,
             static_folder=STATIC_DIR,
-            )
+        )
 
         self.init_attributes()
         self.init_limiter()
         CSRFProtect(self.app)
         self.init_login_manager()
 
-        self.app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-        self.app.config['TEMPLATES_AUTO_RELOAD'] = True
+        self.app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+        self.app.config["TEMPLATES_AUTO_RELOAD"] = True
         self.app.jinja_env.cache = {}
 
         # Add custom template filters
         self.init_template_filters()
 
         # Blueprint registration
-        for route in ROUTE_LIST:
-            self.app.register_blueprint(route)
+        register_blueprints(self.app)
 
         self.set_routes()
         self.app.logger.info("Alice initialized")
 
-    
     def init_attributes(self):
         self.app.wsgi_app = ProxyFix(self.app.wsgi_app, x_for=1, x_proto=1, x_host=1)
         self.app.secret_key = self.get_secret()
         self.app = setup_logger(self.app)
-        self.app.config['VERSION'] = '0.1.0'
-        self.app.config['CURRENT_YEAR'] = 2025
-        self.app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64 MB
+        self.app.config["VERSION"] = "0.1.0"
+        self.app.config["CURRENT_YEAR"] = 2025
+        self.app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024  # 64 MB
         self.app.permanent_session_lifetime = timedelta(minutes=90)
-        
+
         self.static_dir = STATIC_DIR
         self.template_dir = TEMPLATE_DIR
         self.favicon_path = os.path.join(STATIC_DIR, "favicon.png")
 
+        # Initialize file hosting directory
+        self.file_hosting_dir = FILE_HOSTING_DIR
+        os.makedirs(self.file_hosting_dir, exist_ok=True)
+        self.app.logger.info(f"File hosting directory: {self.file_hosting_dir}")
+
     def init_template_filters(self):
-        @self.app.template_filter('timestamp')
+        @self.app.template_filter("timestamp")
         def format_timestamp(timestamp):
             """Format timestamp to YYYY-MM-DD HH:MM:SS"""
             if not timestamp:
@@ -82,7 +87,7 @@ __name__,
                 # Handle different timestamp types
                 if isinstance(timestamp, datetime):
                     # Already a datetime object
-                    return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                    return timestamp.strftime("%Y-%m-%d %H:%M:%S")
                 elif isinstance(timestamp, (int, float)):
                     # Unix timestamp (assume milliseconds if > 1e10, otherwise seconds)
                     if timestamp > 1e10:  # Milliseconds
@@ -90,7 +95,7 @@ __name__,
                     else:  # Seconds
                         timestamp_seconds = timestamp
                     dt = datetime.fromtimestamp(timestamp_seconds)
-                    return dt.strftime('%Y-%m-%d %H:%M:%S')
+                    return dt.strftime("%Y-%m-%d %H:%M:%S")
                 else:
                     # Try to convert to float first
                     timestamp_num = float(timestamp)
@@ -99,11 +104,10 @@ __name__,
                     else:  # Seconds
                         timestamp_seconds = timestamp_num
                     dt = datetime.fromtimestamp(timestamp_seconds)
-                    return dt.strftime('%Y-%m-%d %H:%M:%S')
+                    return dt.strftime("%Y-%m-%d %H:%M:%S")
             except (ValueError, OSError, TypeError) as e:
                 return f"Invalid timestamp: {timestamp}"
 
-    
     def init_login_manager(self):
         login_manager = LoginManager()
         login_manager.init_app(self.app)
@@ -111,11 +115,11 @@ __name__,
         login_manager.session_protection = "strong"
         login_manager.remember_cookie_duration = timedelta(days=7)
         self.login_manager = login_manager
-        
+
         @self.login_manager.user_loader
         def load_user(user_id):
             return UserAuth(log=self.app.logger, user_id=user_id)
-    
+
     def init_limiter(self):
         try:
             limiter.init_app(self.app)
@@ -130,6 +134,7 @@ __name__,
             )
             failover_limiter.init_app(self.app)
             self.app.logger.info("Failover limiter initialized with in-memory storage")
+
     def get_secret(self):
         if os.path.exists(DEFAULT_SECRET_FILE):
             with open(DEFAULT_SECRET_FILE, "rb") as f:
@@ -137,6 +142,7 @@ __name__,
             return secret
         else:
             import secrets
+
             secret = secrets.token_hex(32)
             os.makedirs(os.path.dirname(DEFAULT_SECRET_FILE), exist_ok=True)
             with open(DEFAULT_SECRET_FILE, "wb") as f:
@@ -147,22 +153,23 @@ __name__,
         @self.app.before_request
         def before_request():
             client_ip = (
-                request.headers.get("Conn-Remote-Addr") or
-                request.headers.get("X-Forwarded-For") or
-                request.remote_addr
+                request.headers.get("Conn-Remote-Addr")
+                or request.headers.get("X-Forwarded-For")
+                or request.remote_addr
             )
             self.app.logger.debug(f"Request from {client_ip} to {request.path}")
-        
+
         @self.app.route("/", methods=["GET"])
         def index():
             from src.website.index import IndexPage
+
             index_page = IndexPage(current_app)
             return index_page.display()
 
         @self.app.route("/health", methods=["GET"])
         def health_check():
             return jsonify({"status": "ok"}), 200
-        
+
         @self.app.route("/debug", methods=["GET"])
         def debug_info():
             info = {
@@ -171,22 +178,73 @@ __name__,
                 "all_headers": dict(request.headers),
             }
             return jsonify(info), 200
-        
+
         @self.app.errorhandler(404)
         def not_found_error(e):
             return render_template("404.html"), 404
-        
+
         @self.app.errorhandler(500)
         def internal_error(e):
             self.app.logger.error(f"Internal server error: {e}")
             return render_template("500.html"), 500
-        
+
         @self.app.route("/favicon.ico")
         def favicon():
             return send_file(self.favicon_path, mimetype="image/webp")
-        
+
+        @self.app.route("/files/<path:filename>")
+        def serve_hosted_file(filename):
+            """
+            Secure file serving route that prevents directory traversal attacks.
+            Allows serving files from subdirectories but prevents escaping the hosted_files directory.
+            """
+            try:
+                # Block attempts to traverse up in directory tree
+                if ".." in filename:
+                    self.app.logger.warning(
+                        f"Attempted directory traversal with '..': {filename}"
+                    )
+                    abort(403)
+
+                # Normalize path separators and remove any leading slashes
+                normalized_path = filename.replace("\\", "/").lstrip("/")
+
+                # Construct full file path
+                file_path = os.path.join(self.file_hosting_dir, normalized_path)
+
+                # Use realpath to resolve any symlinks and verify it's within hosting dir
+                real_hosting_dir = os.path.realpath(self.file_hosting_dir)
+                real_file_path = os.path.realpath(file_path)
+
+                # Verify the resolved path is within the hosting directory
+                if not real_file_path.startswith(real_hosting_dir + os.sep):
+                    self.app.logger.warning(
+                        f"Attempted path escape: {filename} -> {real_file_path}"
+                    )
+                    abort(403)
+
+                # Check if file exists and is a file (not a directory)
+                if not os.path.isfile(real_file_path):
+                    self.app.logger.info(
+                        f"File not found or is directory: {normalized_path}"
+                    )
+                    abort(404)
+
+                # Serve the file using send_from_directory for proper handling
+                directory = os.path.join(
+                    self.file_hosting_dir, os.path.dirname(normalized_path)
+                )
+                filename_only = os.path.basename(normalized_path)
+
+                return send_from_directory(directory, filename_only, as_attachment=True)
+
+            except Exception as e:
+                self.app.logger.error(f"Error serving file {filename}: {e}")
+                abort(500)
+
+
 alice = Alice()
 app = alice.app
-    
+
 if __name__ == "__main__":
     serve(app, host="0.0.0.0", port=6969, threads=4, expose_tracebacks=True)
