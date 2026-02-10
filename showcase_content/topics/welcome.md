@@ -1,4 +1,4 @@
-# Welcome to Araxia's Showcase
+# Showcase
 
 Welcome to my personal project showcase! This is where I document and share the various projects, tools, and experiments I've built.
 
@@ -24,7 +24,7 @@ Use the sidebar on the left to browse through different categories and topics. E
 
 This site is built with:
 
-- **Backend**: Python Flask
+- **Backend**: Python Flask + Waitress WSGI, Apache Reverse-Proxy
 - **Frontend**: Vanilla JavaScript, HTML5 Canvas
 - **Styling**: Custom CSS with Windows 98-inspired aesthetics
 - **Graphics**: GLSL shaders for animated backgrounds

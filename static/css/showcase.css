@@ -16,7 +16,7 @@
 .showcase-container {
   display: flex;
   height: calc(100% - 30px); /* Subtract title bar height */
-  padding: 2px;
+  padding: 0 3px 4px 2px;
   margin: 0 2px;
   overflow: hidden;
   flex-grow: 1;

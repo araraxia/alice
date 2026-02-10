@@ -18,7 +18,6 @@ But with modern web technologies underneath:
 
 - WebGL shaders for dynamic backgrounds
 - Responsive layouts
-- Smooth animations
 
 ### Modular Architecture
 
@@ -43,6 +42,7 @@ windowManager.createWindow({
 ```
 
 The window system handles:
+
 - Window creation and destruction
 - Focus management
 - Drag functionality
@@ -52,10 +52,10 @@ The window system handles:
 
 The Flask backend is organized into blueprints:
 
-- `fort` - Authentication and user management
+- `fort` - Authentication, user management and future website feature hosting (forum, live chat, etc.).
 - `osrs` - Old School RuneScape tools
 - `showcase` - Project documentation (you're here!)
-- `wiki` - Wiki integration
+- `wiki` - Future documentation hosting
 
 ### Data Flow
 
@@ -63,7 +63,7 @@ The Flask backend is organized into blueprints:
 2. JavaScript fetches HTML from Flask endpoint
 3. Window is created with loaded content
 4. Additional scripts initialize the window's functionality
-5. Window becomes interactive
+5. Window becomes interactive and managed by windowManager.
 
 ## Development Goals
 
@@ -76,19 +76,19 @@ This site serves multiple purposes:
 
 ## Open Source
 
-Much of the code powering this site could be useful to others. If there's interest, I may open-source certain components. Feel free to reach out if you're curious about specific implementations!
+Much of the code powering this site could be useful to others, and could not be made without the hard work of people before me. All the code powering this site and most of my projects is open source and free for anyone to utilize.
 
 ## Future Plans
 
 Some ideas I'm considering:
 
-- [ ] Blog system with markdown support (partially done!)
-- [ ] More OSRS calculators and tools
+- [ ] More OSRS calculators and tools (Primarily real-time gp/xp calculations for different skills. A lot of money can be made with the "buyable" skills with the right margins at the right time.)
 - [ ] Interactive demos and visualizations
-- [ ] User-contributed content system
-- [ ] Dark/light theme toggle
 - [ ] Mobile-responsive window system
+- [ ] Blog system with markdown support (partially done!)
+- [ ] User forums with account customization. The aim is for the classic late 2000s forum style as counter form to the current trend of everything being on platforms such as reddit or discord, platforms with a dubious lifespan where the content can be lost at any moment.
+- [ ] Write a blob post about the inevitable loss of a huge source of knowledge/data thanks to discord being used as a psuedo wiki/forum/documentation site.
 
 ---
 
-*Built with ❤️ by Aria Corona*
+~*Built with <3 by Aria Corona*~
