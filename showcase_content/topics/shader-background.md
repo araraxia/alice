@@ -47,14 +47,26 @@ The pattern is generated procedurally using:
 Different "tones" represent different brightness levels:
 
 ```glsl
-vec2 sprite_darkest = vec2(0x404040, 0x404040);
-vec2 sprite_medium_dark = vec2(0x808080, 0x808080);
-vec2 sprite_medium_light = vec2(0x808080, 0x808080);
-vec2 sprite_lightest = vec2(0xF0F0F0, 0xF0F0F0);
-vec2 sprite_empty = vec2(0x000000, 0x00003543534500);
+vec2 sprite_max_vibrant = vec2(0xFFFFFF, 0xFFFFFF);
+vec2 sprite_brightest = vec2(0xEDFEDF, 0xEDFEDF);
+vec2 sprite_brighter = vec2(0xDDDDDD, 0xDDDDDD);
+vec2 sprite_bright = vec2(0x7ADB52, 0x7ADB52);
+vec2 sprite_medium = vec2(0xB524AD, 0x4ADB52);
+vec2 sprite_dark = vec2(0xB52312, 0xB52312);
+vec2 sprite_darker = vec2(0x912264, 0x489912);
+vec2 sprite_darkest = vec2(0x024480, 0x012240);
+vec2 sprite_darkestest = vec2(0x024000, 0x000240);
+vec2 sprite_more_darkestest = vec2(0x000400, 0x000080);
+vec2 sprite_empty = vec2(0x000000, 0x000000);
 ```
 
-Each vec2 stores a complete 6×8 pixel pattern in 48 bits.
+Each vec2 stores a complete 6×8 pixel pattern in 48 bit. Ideally these would be generated algorithmically, but the dither patterns are currently designed manually. I'm not very knowledgable about different dither pattern algorithms, so combining that with my first attempt at utilizing GLSL was a bit too much for one project.
+
+If you want to learn more about dither patterns, here are some good resources that I would recommend:
+
+- [https://surma.dev/things/ditherpunk/](https://surma.dev/things/ditherpunk/)
+- [https://forums.tigsource.com/index.php?topic=40832.msg1363742#msg1363742](https://forums.tigsource.com/index.php?topic=40832.msg1363742#msg1363742) (more about mapping a dither pattern but still a neat read anyway)
+- [https://blog.kaetemi.be/2015/04/01/practical-bayer-dithering/](https://blog.kaetemi.be/2015/04/01/practical-bayer-dithering/)
 
 ### Bit Extraction
 
@@ -128,15 +140,6 @@ float waveAmplitude = 0.8;    // Wave intensity
 float separation = 0.2;       // Color separation
 ```
 
-### Adding New Patterns
-
-Create new sprites using the [Sprite Pattern Generator](/#sprite-pattern-generator):
-
-1. Design your 6×8 pattern
-2. Generate hex values
-3. Add to shader as new tone
-4. Map to intensity range
-
 ## Browser Compatibility
 
 Requires WebGL support (available in all modern browsers):
@@ -147,16 +150,6 @@ Requires WebGL support (available in all modern browsers):
 - Opera: Full support
 
 Fallback: Plain color background if WebGL unavailable.
-
-## Performance Impact
-
-Benchmarks on various hardware:
-
-- **High-end** (RTX 3080): ~0.5ms per frame
-- **Mid-range** (GTX 1060): ~1.2ms per frame  
-- **Integrated** (Intel UHD): ~3ms per frame
-
-All measurements at 1920×1080, well under 16.6ms target for 60 FPS.
 
 ## Toggle Control
 
@@ -170,21 +163,17 @@ This improves performance on lower-end devices.
 
 ## Source Files
 
-- `static/glsl/indexBGShader.glsl` - Main shader code
-- `static/js/index_background.js` - JavaScript wrapper
-- `sprite_pattern_generator.py` - Pattern creation tool
+- [indexBGShader.glsl](/files/showcase/indexBGShader.glsl) - Main shader code
+- [index_background.js](/files/showcase/index_background.js) - JavaScript wrapper
+- [sprite_pattern_generator.py](/files/showcase/sprite_pattern_generator.py) - Pattern creation tool
 
 ## Future Enhancements
 
 Ideas for the shader:
 
 - [ ] User-customizable colors
-- [ ] Multiple pattern sets
+- [ ] Algorithmic pattern generation
 - [ ] Particle effects
 - [ ] Interactive elements (mouse influence)
 - [ ] Seasonal themes
 - [ ] Performance auto-adjust
-
----
-
-*WebGL makes the impossible possible - like running pixel art animations that would choke a CPU at 60fps.*

@@ -78,7 +78,14 @@ def get_topic(topic_id):
 
         html = markdown.markdown(
             content,
-            extensions=["fenced_code", "codehilite", "tables", "toc"]
+            extensions=[
+                "fenced_code",
+                "codehilite",
+                "tables",
+                "toc",
+                "def_list",
+                "markdown_checklist.extension",
+            ]
         )
         
         return jsonify({"status": "success", "content": html, "topic_id": topic_id})

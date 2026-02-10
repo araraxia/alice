@@ -6,11 +6,12 @@ The Sprite Pattern Generator is a Python/Tkinter GUI tool for creating tiny 6×8
 
 ## The Problem
 
-When working with GLSL shaders, I needed a way to define small pixel patterns for procedural texture generation. The shader uses bit-packed data to efficiently store sprite patterns, but manually calculating hex values for 6×8 pixel grids is tedious and error-prone.
+The dithering patterns are created manually instead of algorithmically because of the awkward grid size used in [Demonin's Original Script](https://demonin.com/script.js) and my lack of knowledge on dither patterns outside of [bayer matrix dithers](https://blog.kaetemi.be/2015/04/01/practical-bayer-dithering/). When working with GLSL shader used to make this background, I needed a way to define small pixel patterns for procedural texture generation. The shader uses bit-packed data to efficiently store sprite patterns, but manually calculating hex values for 6×8 pixel grids is tedious and error-prone.
 
 ## The Solution
 
 A visual editor that lets you:
+
 1. Click cells to toggle pixels on/off
 2. See your pattern in real-time
 3. Generate the correct hex values automatically
@@ -61,19 +62,16 @@ Row 2: [1][0][0][0][1][0]  → bits 12-17
 ## Features
 
 ### Visual Editor
+
 - 6×8 clickable grid
 - White = pixel on, Black = pixel off
 - Instant visual feedback
 
 ### Import/Export
+
 - **Generate**: Creates `vec2(0xXXXXXX, 0xXXXXXX)` format
 - **Import**: Load existing hex values for editing
 - **Copy**: Auto-copies to clipboard
-
-### Quick Actions
-- Clear All - Reset grid
-- Fill All - Set all pixels
-- Import vec2 - Load from clipboard
 
 ## Usage Example
 
@@ -121,11 +119,13 @@ def import_vec2(self):
 ## Limitations
 
 The current version is limited to 6×8 sprites because:
+
 - Storage is constrained to 48 bits (vec2)
 - 8×8 would need 64 bits (requires vec3 or vec4)
 - All existing patterns use 6×8 encoding
 
 Expanding to 8×8 would require:
+
 1. Changing storage format
 2. Updating bit extraction logic
 3. Re-encoding all existing patterns
@@ -133,17 +133,17 @@ Expanding to 8×8 would require:
 ## Future Improvements
 
 Potential enhancements:
+
 - [ ] Support for different sprite sizes (4×4, 8×8, 16×16)
 - [ ] Pattern library with presets
-- [ ] Animation preview
 - [ ] Export to different formats (PNG, C array, etc.)
+- [ ] Import from different formats
 - [ ] Undo/redo functionality
 - [ ] Pattern symmetry tools
 
 ## Files
 
-- `sprite_pattern_generator.py` - Main application
-- Located in repository root
+- [sprite_pattern_generator.py](https://araxia.xyz/files/showcase/sprite_pattern_generator.py)
 
 ## Try It!
 
@@ -153,7 +153,3 @@ python sprite_pattern_generator.py
 ```
 
 No additional dependencies required beyond Python's built-in `tkinter`!
-
----
-
-*A simple tool that solves a specific problem - my favorite kind of project.*

@@ -108,11 +108,15 @@ const loginWindow = new WindowInitializer(
   'login-title-bar',     // Drag handle
   'close-login-button',  // Close button
   '/auth/login_modal',   // Content endpoint
-  true                   // Auto-center
+  true,                  // Bind Esc to close
+  600,                   // Max width (px)
+  400,                   // Max height (px)
+  2                      // Window padding (px)
 );
 ```
 
 This automatically:
+
 - Creates the OpenWindow instance
 - Stores it globally
 - Sets up event listeners
@@ -296,7 +300,7 @@ if (document.readyState === 'loading') {
 
 ### Creating a New Window Type
 
-1. **Create Flask endpoint**:
+#### 1. **Create Flask endpoint**:
 
 ```python
 @app.route('/my-feature')
@@ -305,7 +309,7 @@ def my_feature():
     return jsonify({'status': 'success', 'html': html})
 ```
 
-2. **Add button to trigger**:
+#### 2. **Add button to trigger**:
 
 ```html
 <button id="my-feature-btn" class="w98-button">
@@ -313,7 +317,7 @@ def my_feature():
 </button>
 ```
 
-3. **Initialize window**:
+#### 3. **Initialize window**:
 
 ```javascript
 const myFeature = new WindowInitializer(
@@ -325,7 +329,10 @@ const myFeature = new WindowInitializer(
   'my-feature-title-bar',
   'close-my-feature-button',
   '/my-feature',
-  true
+  true,                  // Bind Esc to close
+  600,                   // Max width (px)
+  400,                   // Max height (px)
+  2                      // Window padding (px)
 );
 ```
 
@@ -334,6 +341,7 @@ Done! The window system handles the rest.
 ## Browser Compatibility
 
 Tested and working on:
+
 - Chrome 90+
 - Firefox 88+
 - Edge 90+
@@ -357,18 +365,20 @@ Uses vanilla JavaScript - no framework dependencies.
 - ❌ Not cleaning up event listeners
 - ❌ Excessive z-index calculation
 
-## Accessibility
+## ToDo
 
 Current limitations:
+
 - Keyboard navigation needs improvement
 - Screen reader support not implemented
 - Focus management could be enhanced
 
 Future work:
+
 - [ ] Tab navigation between windows
 - [ ] Keyboard shortcuts for window operations
-- [ ] ARIA labels and roles
 - [ ] Focus trap within modal windows
+- [ ] Streamline clean-up process on close
 
 ## Related Files
 
