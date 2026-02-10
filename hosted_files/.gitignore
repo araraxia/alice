@@ -1,6 +1,7 @@
 # Ignore all files in this directory except important documentation and examples
 *
-!*.py
+!showcase/
+!showcase/**
 !.gitignore
 !README.md
 !example.txt
