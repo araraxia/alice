@@ -141,3 +141,23 @@ body {
     cursor: not-allowed;
     text-shadow: 1px 1px 0px #ffffff;
 }
+
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    border-color: #606060 #dfdfdf #efefef #606060;
+    outline: none;
+    box-shadow:
+        inset -1px -1px 0px #ffffff,
+        inset -2px -2px 0px #dfdfdf,
+        inset 1px 1px 0px #808080,
+        inset 2px 2px 0px #707070;
+    margin-bottom: 0;
+}
+
+input[type="checkbox"]:hover {
+    background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+}
