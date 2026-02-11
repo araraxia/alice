@@ -135,9 +135,65 @@
                                 ${item.limit !== null ? `<div><strong>GE Limit:</strong> ${item.limit.toLocaleString()}</div>` : ""}
                                 <div><strong>Members:</strong> ${item.members ? "Yes" : "No"}</div>
                             </div>
+                            <div style="margin-top: 10px;">
+                                <button 
+                                    class="w98-button"
+                                    id="price-data-button-${item.id}"
+                                    onclick="openPriceDataWindow(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}')"
+                                    style="width: 100%; padding: 6px; font-size: 12px;"
+                                >
+                                    Price Data
+                                </button>
+                            </div>
                         </div>
                     `;
         });
+        
+        const windowHtml = `
+          <div class="window-content" id="price-data-selector-container-${itemId}" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; z-index: 10001; background: white; border: 2px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,0.2);">
+            <div class="title-bar" id="price-data-selector-title-bar-${itemId}" style="background: linear-gradient(to bottom, #000080, #1084d0); color: white; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center; cursor: move;">
+              <h4 style="margin: 0; font-size: 14px;">Price Data - ${escapeHtml(itemName)}</h4>
+              <button class="w98-button" id="price-data-selector-close-button-${itemId}" style="padding: 2px 8px; font-size: 12px;">X</button>
+            </div>
+            <div style="padding: 20px;">
+              <h3 style="margin-top: 0; font-size: 16px;">Select Time Range</h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '12h')" style="padding: 10px; width: 100%;">
+                  Last 12 Hours
+                </button>
+                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '1d')" style="padding: 10px; width: 100%;">
+                  Last 1 Day
+                </button>
+                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '7d')" style="padding: 10px; width: 100%;">
+                  Last 7 Days
+                </button>
+                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '1m')" style="padding: 10px; width: 100%;">
+                  Last 1 Month
+                </button>
+              </div>
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                <label style="display: block; margin-bottom: 5px; font-size: 12px;">Data Type:</label>
+                <select id="table-type-${itemId}" class="w98-input" style="width: 100%; padding: 5px;">
+                  <option value="5min">5-Minute Average</option>
+                  <option value="1h">1-Hour Average</option>
+                  <option value="latest">Latest (Real-time)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `;
+
+        new window.WindowInitializer(
+          window.windowManager,
+          `priceDataSelector${itemId}`,
+          `price-data-selector-window-${itemId}`,
+          `price-data-selector-container-${itemId}`,
+          `price-data-button-${itemId}`,
+          `price-data-selector-title-bar-${itemId}`,
+          `price-data-selector-close-button-${itemId}`,
+          windowHtml,
+          true,
+        );
 
         html += "</div>";
         searchResults.innerHTML = html;
@@ -165,6 +221,134 @@
         searchResults.innerHTML =
           '<p style="color: #666; text-align: center;">Enter a search query to find items</p>';
       });
+
+      // Make openPriceDataWindow globally accessible
+      window.openPriceDataWindow = async function (itemId, itemName) {
+        // Create time range selector window
+        console.log('[item_search.html] Opening price data selector for item:', itemId, itemName);
+        try {
+          await window.priceDataSelector${itemId}Instance.open();
+        } catch (error) {
+          console.error('Error opening price data selector:', error);
+        }
+
+      };
+
+      window.loadPriceGraph = function (itemId, itemName, timeRange) {
+        // Calculate start date based on time range
+        const now = new Date();
+        const startDate = new Date(now);
+
+        switch (timeRange) {
+          case "12h":
+            startDate.setHours(now.getHours() - 12);
+            break;
+          case "1d":
+            startDate.setDate(now.getDate() - 1);
+            break;
+          case "7d":
+            startDate.setDate(now.getDate() - 7);
+            break;
+          case "1m":
+            startDate.setMonth(now.getMonth() - 1);
+            break;
+        }
+
+        const tableType =
+          document.getElementById(`table-type-${itemId}`)?.value || "5min";
+
+        // Get CSRF token
+        const csrfToken = document
+          .querySelector('meta[name="csrf-token"]')
+          ?.getAttribute("content");
+        const headers = {
+          "Content-Type": "application/json",
+        };
+        if (csrfToken) {
+          headers["X-CSRFToken"] = csrfToken;
+        }
+
+        // Show loading message
+        const selector = document.getElementById(
+          `price-data-selector-${itemId}`,
+        );
+        if (selector) {
+          const content = selector.querySelector('div[style*="padding: 20px"]');
+          content.innerHTML =
+            '<p style="text-align: center; padding: 20px;">Loading price data...</p>';
+        }
+
+        // Fetch price graph
+        fetch("/osrs/item-price-graph", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({
+            item_id: itemId,
+            start_date: startDate.toISOString(),
+            end_date: now.toISOString(),
+            table_type: tableType,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              // Close the selector
+              closePriceDataSelector(itemId);
+              // Inject the price graph modal
+              document.body.insertAdjacentHTML("beforeend", data.html);
+            } else {
+              if (selector) {
+                const content = selector.querySelector(
+                  'div[style*="padding: 20px"]',
+                );
+                content.innerHTML = `<p style="color: red; text-align: center;">Error: ${data.message}</p>`;
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("Error loading price graph:", error);
+            if (selector) {
+              const content = selector.querySelector(
+                'div[style*="padding: 20px"]',
+              );
+              content.innerHTML =
+                '<p style="color: red; text-align: center;">An error occurred while loading the graph</p>';
+            }
+          });
+      };
+
+      // Simple draggable functionality
+      function makeDraggable(element, handle) {
+        let pos1 = 0,
+          pos2 = 0,
+          pos3 = 0,
+          pos4 = 0;
+
+        handle.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+          e.preventDefault();
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          document.onmouseup = closeDragElement;
+          document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+          e.preventDefault();
+          pos1 = pos3 - e.clientX;
+          pos2 = pos4 - e.clientY;
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          element.style.top = element.offsetTop - pos2 + "px";
+          element.style.left = element.offsetLeft - pos1 + "px";
+        }
+
+        function closeDragElement() {
+          document.onmouseup = null;
+          document.onmousemove = null;
+        }
+      }
     })();
   </script>
 </div>

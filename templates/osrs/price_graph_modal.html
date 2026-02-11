@@ -1,0 +1,30 @@
+<div class="modal-overlay" id="{{ modal_id }}" onclick="if(event.target === this) closePriceGraphModal('{{ modal_id }}')">
+    <div class="modal-content price-graph-modal">
+        <div class="modal-header">
+            <h2>{{ item_name }} - Price History</h2>
+            <button class="modal-close" onclick="closePriceGraphModal('{{ modal_id }}')" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <canvas id="{{ canvas_id }}" style="max-width: 100%; height: 400px;"></canvas>
+        </div>
+        <div class="modal-footer">
+            <p><strong>Data Type:</strong> {{ table_type }} | <strong>Start:</strong> {{ start_date }} | <strong>End:</strong> {{ end_date_display }}</p>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/price_graph_modal.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/price_graph_modal.js') }}"></script>
+<script>
+    // Initialize chart with data for this specific modal
+    console.log('Initializing price chart for modal:', '{{ modal_id }}');
+    initializePriceChart({
+        modalId: '{{ modal_id }}',
+        canvasId: '{{ canvas_id }}',
+        timestamps: {{ timestamps_json | safe }},
+        highPrices: {{ high_prices_json | safe }},
+        lowPrices: {{ low_prices_json | safe }}
+    });
+</script>

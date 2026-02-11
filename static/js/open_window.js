@@ -5,6 +5,7 @@
 class OpenWindow {
     constructor(url, options = {}) {
         this.url = url;
+        this.isHtmlString = this._isHtmlString(url);
         this.options = {
             containerId: options.containerId || null, // Optional container ID
             replaceContent: options.replaceContent || false, // Replace vs append
@@ -15,54 +16,83 @@ class OpenWindow {
             ...options
         };
         this.container = null;
-        console.log(`OpenWindow initialized with URL: ${this.url}`);
+        console.log(`OpenWindow initialized with ${this.isHtmlString ? 'HTML string' : 'URL: ' + this.url}`);
     }
 
     /**
-     * Fetch HTML partial and inject into page
+     * Detect if input is HTML string or URL
+     */
+    _isHtmlString(input) {
+        if (typeof input !== 'string') return false;
+        
+        // Check if it looks like a URL (starts with /, http://, https://, or contains protocol)
+        if (input.startsWith('/') || input.startsWith('http://') || input.startsWith('https://') || input.includes('://')) {
+            return false;
+        }
+        
+        // Check if it contains HTML tags
+        return input.trim().startsWith('<') || /<[a-z][\s\S]*>/i.test(input);
+    }
+
+    /**
+     * Fetch HTML partial and inject into page (or inject HTML string directly)
      */
     async open(showLoading = true, disableBtnImmediately = false) {
         try {
-            // Show loading state if needed
-            if (showLoading) {
-                this._showLoading();
-            }
-
-            // Make AJAX request
-            const response = await fetch(this.url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'text/html',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            // Check if response is JSON or plain HTML
-            const contentType = response.headers.get('content-type');
             let htmlContent;
-            
-            if (contentType && contentType.includes('application/json')) {
-                const jsonData = await response.json();
-                // Handle JSON response with html property
-                if (jsonData.html) {
-                    htmlContent = jsonData.html;
-                } else {
-                    throw new Error('JSON response does not contain html property');
+
+            if (this.isHtmlString) {
+                // HTML string provided directly - no need to fetch
+                if (showLoading) {
+                    this._showLoading();
                 }
+                
+                htmlContent = this.url; // The "url" is actually the HTML string
+                
+                // Small delay to show loading state briefly (optional)
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                this._hideLoading();
             } else {
-                // Handle plain HTML response
-                htmlContent = await response.text();
+                // URL provided - fetch content via AJAX
+                if (showLoading) {
+                    this._showLoading();
+                }
+
+                // Make AJAX request
+                const response = await fetch(this.url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Check if response is JSON or plain HTML
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const jsonData = await response.json();
+                    // Handle JSON response with html property
+                    if (jsonData.html) {
+                        htmlContent = jsonData.html;
+                    } else {
+                        throw new Error('JSON response does not contain html property');
+                    }
+                } else {
+                    // Handle plain HTML response
+                    htmlContent = await response.text();
+                }
+                
+                this._hideLoading();
             }
             
             // Inject content into page
             this._injectContent(htmlContent);
-            
-            // Hide loading state
-            this._hideLoading();
             
             if (this.options.escapeClosable) {
                 escapeWindowStack.push(this);
