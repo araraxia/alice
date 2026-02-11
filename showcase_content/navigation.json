@@ -18,7 +18,7 @@
       "items": [
         {
           "id": "sprite-pattern-generator",
-          "title": "Sprite Pattern Generator"
+          "title": "vec2 Sprite Pattern Painter"
         }
       ]
     },
@@ -39,12 +39,20 @@
       "name": "OSRS Tools",
       "items": [
         {
+          "id": "osrs-live-data",
+          "title": "OSRS Real-Time Prices"
+        },
+        {
           "id": "item-search",
           "title": "Item Search Tool"
         },
         {
           "id": "super-combats",
           "title": "Super Combat Calculator"
+        },
+        {
+          "id": "prayerregen-goading",
+          "title": "Prayer Regen + Goading Calculator"
         }
       ]
     }

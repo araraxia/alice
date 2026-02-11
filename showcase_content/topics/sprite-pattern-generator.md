@@ -1,8 +1,8 @@
-# Sprite Pattern Generator
+# vec2 Sprite Pattern Painter
 
 ## Introduction
 
-The Sprite Pattern Generator is a Python/Tkinter GUI tool for creating tiny 6×8 pixel sprites and converting them into hexadecimal values that can be used in GLSL shaders.
+The Sprite Pattern Painter is a Python/Tkinter GUI tool for creating tiny 6×8 pixel sprites and converting them into hexadecimal values that can be used in GLSL shaders.
 
 ## The Problem
 
