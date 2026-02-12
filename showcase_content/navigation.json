@@ -51,6 +51,10 @@
           "title": "Super Combat Calculator"
         },
         {
+          "id": "herblore-potion-calc",
+          "title": "Herblore Potion Calculator"
+        },
+        {
           "id": "prayerregen-goading",
           "title": "Prayer Regen + Goading Calculator"
         }

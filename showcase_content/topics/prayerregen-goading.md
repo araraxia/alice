@@ -1,5 +1,9 @@
 # Goading & Prayer Regeneration Potion Production Calculator
 
+## NOTE
+
+This got refactored into [[/#herblore-potion-calc]] for modularity sake, and is remaining as historic documentatin.
+
 ## Overview
 
 The Goading & Prayer Regeneration Potion share the same expensive secondary ingredient, [Aldarium](https://oldschool.runescape.wiki/w/Aldarium). Thanks to the secondary's high price, we can take advantage of the effects of the [Prescription Goggles](https://oldschool.runescape.wiki/w/Prescription_goggles) and [Alchemist's amulet](https://oldschool.runescape.wiki/w/Alchemist%27s_amulet) to turn a profit. Due to the volitility of this method, it is recommended to only create these potions in a quantity large enough to be statistically significant to avoid losing money.
@@ -132,41 +136,6 @@ The side-by-side presentation of Goading and Prayer Regen calculations enables i
 
 These comparisons inform production decisions - players might switch between potions hourly to capture the most favorable markets, or commit to the consistently more profitable option for sustained grinds.
 
-## User Interface Design
-
-### Dual Potion Cards
-
-The top row presents two equivalent cards (Goading 4, Prayer Regen 4), each containing:
-
-**Summary Table**: Compact tabular view showing Cost, Revenue, Profit, and GP/h across all four timeframes. This dense information presentation allows rapid scanning to identify optimal production windows.
-
-**Modifier Summary**: Single-line footer displaying tax rate, goggles bonus, amulet bonus, and production rate assumptions. This contextualizes the calculations and reminds users which equipment bonuses are assumed.
-
-The parallel card layout facilitates direct comparison - users can scan down a single column (e.g., "Profit") across both potions to immediately see which offers better returns at any timeframe.
-
-### Ingredient Price Section
-
-Below the potion cards, a three-column grid displays raw ingredient prices without modifiers:
-
-**Finished Potions**: Shows the 4-dose potion prices across timeframes that drive revenue calculations. Seeing these raw prices helps players validate whether selling prices are entering historical highs or lows.
-
-**Secondary Ingredients**: Displays Aldarium prices. Since both potions share this ingredient, a single card suffices. Players can quickly assess how secondary ingredient costs are trending.
-
-**Primary Ingredients**: Split into two subsections (Goading Herbs, Prayer Regen Herbs), showing which specific primary form (grimy/clean/unfinished) was selected as optimal for each timeframe, along with its raw price.
-
-This ingredient transparency allows experienced players to validate the calculator's selections and understand the market dynamics driving profitability changes.
-
-### Compact Information Density
-
-The interface prioritizes information density using:
-- Tabular layouts for time-series data
-- Small font sizes with clear hierarchy
-- Color coding (green for profit values)
-- Minimal whitespace while maintaining readability
-- Abbreviations (5m, 15m, 1h, 3h) for timeframes
-
-This dense presentation fits substantial analysis into a reasonably-sized window, avoiding excessive scrolling while maintaining the retro Windows 98 aesthetic.
-
 ## Technical Implementation
 
 ### HerblorePotionCalc Class
@@ -185,6 +154,7 @@ goading_calc = HerblorePotionCalc(
 ```
 
 Each calculator instance independently:
+
 1. Fetches item properties for all ingredient variants and the finished product
 2. Evaluates primary herb costs across all forms and timeframes
 3. Calculates secondary costs with equipment modifiers
@@ -197,18 +167,21 @@ Each calculator instance independently:
 The `calc()` method orchestrates a three-stage calculation pipeline:
 
 **Stage 1 - Production Costs** (`_calculate_production_cost`):
+
 - Evaluates all primary herb forms via `_calc_cheapest_primary()`
 - Selects minimum cost option per timeframe
 - Calculates secondary costs with modifiers via `_calc_secondary_cost()`
 - Sums to total production cost
 
 **Stage 2 - Revenue** (`_calculate_revenue`):
+
 - Retrieves finished potion high prices
 - Divides by 4 to get price per dose
 - Multiplies by 3.15 (base 3.0 + 15% amulet bonus)
 - Stores revenue per production cycle
 
 **Stage 3 - Profit** (`_calculate_profit`):
+
 - Applies 2% GE tax to revenue (multiply by 0.98)
 - Subtracts production costs
 - Multiplies by potions-per-hour rate
@@ -244,35 +217,10 @@ price_5min = price_5min if price_5min is not None else inf
 
 Using `inf` for missing values ensures invalid options automatically lose in minimum-cost comparisons, gracefully excluding incomplete data without breaking the calculation pipeline.
 
-## Use Cases
+## Source Files
 
-### Production Method Selection
-
-Players deciding which potion to produce check both cards simultaneously:
-- If Goading shows 500k gp/h and Prayer Regen shows 300k gp/h, produce Goading
-- If both show similar profits, produce whichever has more stable margins across timeframes
-- If both show losses, neither potion is worth producing at current prices
-
-### Market Timing
-
-The four-timeframe analysis helps identify favorable production windows:
-- 5-minute data suddenly shows 50% higher profit than 3-hour average → opportunistic production
-- All timeframes show consistent high profits → sustained production session worthwhile
-- Short-term (5m/15m) profits differ significantly from long-term (1h/3h) → market in flux, wait for stability
-
-### Ingredient Stockpiling
-
-The raw ingredient prices help plan bulk purchases:
-- Aldarium at historical lows across all timeframes → stockpile for future production
-- Primary herbs (grimy/clean/unfinished) showing unusual pricing → arbitrage opportunity
-- Finished potions at historical highs → ideal selling conditions
-
-### Comparative Money-Making
-
-The GP/hour projections enable comparison with alternative activities:
-- Production shows 800k gp/h → competitive with mid-tier PvM
-- Production shows 300k gp/h → probably better to do other activities
-- One potion profitable, one unprofitable → clear choice exists
+- [goading_regens.py](/files/showcase/goading_regens.html)
+- [goading_regens.html](/files/showcase/goading_regens.html)
 
 ## Future Enhancements
 
