@@ -1,0 +1,704 @@
+<div class="window-content" id="goading-regens-container">
+  <div class="title-bar" id="goading-regens-title-bar">
+    <h4>Goading & P Regen Potions - Production Calculator</h4>
+    <button id="close-goading-regens-button" class="w98-button title-button">
+      X
+    </button>
+  </div>
+  <div class="content-container">
+    <div class="action-bar">
+      <button id="refresh-goading-regens-button" class="w98-button" disabled>
+        Refresh Data
+      </button>
+    </div>
+
+    {% if error %}
+    <div class="error">Error: {{ error }}</div>
+    {% else %}
+    <div class="refresh-info">
+      Cost analysis for Goading & Prayer Regen potions. Includes GE tax, goggles
+      & alchemical amulet bonuses.
+    </div>
+
+    <div class="main-content-grid">
+      <!-- Top Row: Potion Analysis Cards -->
+      <div class="potion-grid">
+        <!-- Goading 4 Section -->
+        <div class="potion-card">
+          <div class="potion-header">
+            <h3>{{ goading_info.name }}</h3>
+            <div class="item-id">ID: {{ goading_info.id }}</div>
+          </div>
+
+          {% if goading_data %}
+          <div class="time-intervals">
+            <table class="compact-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Cost</th>
+                  <th>Revenue</th>
+                  <th>Profit</th>
+                  <th>GP/h</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if goading_data.get('production_cost_5min') %}
+                <tr>
+                  <td>5m</td>
+                  <td>{{ goading_data.production_cost_5min }}</td>
+                  <td>{{ goading_data.revenue_5min }}</td>
+                  <td class="profit">{{ goading_data.profit_5min }}</td>
+                  <td class="profit">{{ goading_data.gp_per_hour_5min }}</td>
+                </tr>
+                {% endif %} {% if goading_data.get('production_cost_15min') %}
+                <tr>
+                  <td>15m</td>
+                  <td>{{ goading_data.production_cost_15min }}</td>
+                  <td>{{ goading_data.revenue_15min }}</td>
+                  <td class="profit">{{ goading_data.profit_15min }}</td>
+                  <td class="profit">{{ goading_data.gp_per_hour_15min }}</td>
+                </tr>
+                {% endif %} {% if goading_data.get('production_cost_1h') %}
+                <tr>
+                  <td>1h</td>
+                  <td>{{ goading_data.production_cost_1h }}</td>
+                  <td>{{ goading_data.revenue_1h }}</td>
+                  <td class="profit">{{ goading_data.profit_1h }}</td>
+                  <td class="profit">{{ goading_data.gp_per_hour_1h }}</td>
+                </tr>
+                {% endif %} {% if goading_data.get('production_cost_3h') %}
+                <tr>
+                  <td>3h</td>
+                  <td>{{ goading_data.production_cost_3h }}</td>
+                  <td>{{ goading_data.revenue_3h }}</td>
+                  <td class="profit">{{ goading_data.profit_3h }}</td>
+                  <td class="profit">{{ goading_data.gp_per_hour_3h }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+            <div class="misc-info">
+              <div class="info-compact">
+                Tax: {{ goading_data.ge_tax_rate }} | Goggles: {{
+                goading_data.goggles_bonus }} | Amulet: {{
+                goading_data.alchemical_amulet_bonus }} | Pots/h: {{
+                goading_data.potions_per_hour }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- P Regen 4 Section -->
+        <div class="potion-card">
+          <div class="potion-header">
+            <h3>{{ p_regen_info.name }}</h3>
+            <div class="item-id">ID: {{ p_regen_info.id }}</div>
+          </div>
+
+          {% if p_regen_data %}
+          <div class="time-intervals">
+            <table class="compact-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Cost</th>
+                  <th>Revenue</th>
+                  <th>Profit</th>
+                  <th>GP/h</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if p_regen_data.get('production_cost_5min') %}
+                <tr>
+                  <td>5m</td>
+                  <td>{{ p_regen_data.production_cost_5min }}</td>
+                  <td>{{ p_regen_data.revenue_5min }}</td>
+                  <td class="profit">{{ p_regen_data.profit_5min }}</td>
+                  <td class="profit">{{ p_regen_data.gp_per_hour_5min }}</td>
+                </tr>
+                {% endif %} {% if p_regen_data.get('production_cost_15min') %}
+                <tr>
+                  <td>15m</td>
+                  <td>{{ p_regen_data.production_cost_15min }}</td>
+                  <td>{{ p_regen_data.revenue_15min }}</td>
+                  <td class="profit">{{ p_regen_data.profit_15min }}</td>
+                  <td class="profit">{{ p_regen_data.gp_per_hour_15min }}</td>
+                </tr>
+                {% endif %} {% if p_regen_data.get('production_cost_1h') %}
+                <tr>
+                  <td>1h</td>
+                  <td>{{ p_regen_data.production_cost_1h }}</td>
+                  <td>{{ p_regen_data.revenue_1h }}</td>
+                  <td class="profit">{{ p_regen_data.profit_1h }}</td>
+                  <td class="profit">{{ p_regen_data.gp_per_hour_1h }}</td>
+                </tr>
+                {% endif %} {% if p_regen_data.get('production_cost_3h') %}
+                <tr>
+                  <td>3h</td>
+                  <td>{{ p_regen_data.production_cost_3h }}</td>
+                  <td>{{ p_regen_data.revenue_3h }}</td>
+                  <td class="profit">{{ p_regen_data.profit_3h }}</td>
+                  <td class="profit">{{ p_regen_data.gp_per_hour_3h }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+            <div class="misc-info">
+              <div class="info-compact">
+                Tax: {{ p_regen_data.ge_tax_rate }} | Goggles: {{
+                p_regen_data.goggles_bonus }} | Amulet: {{
+                p_regen_data.alchemical_amulet_bonus }} | Pots/h: {{
+                p_regen_data.potions_per_hour }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Close potion-grid -->
+
+      <!-- Bottom Row: Ingredient Prices -->
+      <div class="ingredients-section">
+        <h3 class="section-title">
+          Real Time Ingredient Prices (No Modifiers)
+        </h3>
+        <div class="ingredients-horizontal-grid">
+          <!-- Finished Potions -->
+          <div class="ingredient-category-card">
+            <h4 class="category-title">Finished Potions (4 Dose)</h4>
+            <div class="ingredients-grid">
+              <div class="ingredient-item">
+                <div class="ingredient-name">{{ goading_info.name }}</div>
+                <div class="ingredient-id">ID: {{ goading_info.id }}</div>
+                <div class="price-intervals">
+                  <div class="price-row">
+                    <span class="interval">5min:</span>
+                    <span class="price"
+                      >{{ goading_data.goading_4_price_5m }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">15min:</span>
+                    <span class="price"
+                      >{{ goading_data.goading_4_price_15m }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">1h:</span>
+                    <span class="price"
+                      >{{ goading_data.goading_4_price_1h }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">3h:</span>
+                    <span class="price"
+                      >{{ goading_data.goading_4_price_3h }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="ingredient-item">
+                <div class="ingredient-name">{{ p_regen_info.name }}</div>
+                <div class="ingredient-id">ID: {{ p_regen_info.id }}</div>
+                <div class="price-intervals">
+                  <div class="price-row">
+                    <span class="interval">5min:</span>
+                    <span class="price"
+                      >{{ p_regen_data.p_regen_4_price_5m }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">15min:</span>
+                    <span class="price"
+                      >{{ p_regen_data.p_regen_4_price_15m }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">1h:</span>
+                    <span class="price"
+                      >{{ p_regen_data.p_regen_4_price_1h }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">3h:</span>
+                    <span class="price"
+                      >{{ p_regen_data.p_regen_4_price_3h }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Ingredients -->
+          <div class="ingredient-category-card">
+            <h4 class="category-title">Secondary Ingredients</h4>
+            <div class="ingredients-grid">
+              <div class="ingredient-item">
+                <div class="ingredient-name">Aldarium</div>
+                <div class="ingredient-id">ID: 29993</div>
+                <div class="price-intervals">
+                  <div class="price-row">
+                    <span class="interval">5min:</span>
+                    <span class="price"
+                      >{{ p_regen_data.aldarium_price_5min }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">15min:</span>
+                    <span class="price"
+                      >{{ p_regen_data.aldarium_price_15min }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">1h:</span>
+                    <span class="price"
+                      >{{ p_regen_data.aldarium_price_1h }}</span
+                    >
+                  </div>
+                  <div class="price-row">
+                    <span class="interval">3h:</span>
+                    <span class="price"
+                      >{{ p_regen_data.aldarium_price_3h }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Primary Ingredients -->
+          <div class="ingredient-category-card primary-ingredients-card">
+            <h4 class="category-title">Primary Ingredients</h4>
+            <div class="primary-ingredients-horizontal">
+              <!-- Goading Herbs -->
+              <div class="herb-subcategory">
+                <h5 class="subcategory-title">Goading Herbs</h5>
+                <div class="ingredients-grid">
+                  <div class="ingredient-item">
+                    <div class="ingredient-name">Harralander</div>
+                    <div class="price-intervals">
+                      <div class="price-row">
+                        <span class="interval">5min:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_5min }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_5min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">15min:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_15min }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_15min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">1h:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_1h }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_1h }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">3h:</span>
+                        <span class="price"
+                          >{{ goading_data.primary_cost_3h }}</span
+                        >
+                        <span class="price"
+                          >{{ goading_data.primary_name_3h }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Prayer Regen Herbs -->
+              <div class="herb-subcategory">
+                <h5 class="subcategory-title">Prayer Regen Herbs</h5>
+                <div class="ingredients-grid">
+                  <div class="ingredient-item">
+                    <div class="ingredient-name">Huascas</div>
+                    <div class="price-intervals">
+                      <div class="price-row">
+                        <span class="interval">5min:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_5min }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_5min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">15min:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_15min }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_15min }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">1h:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_1h }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_1h }}</span
+                        >
+                      </div>
+                      <div class="price-row">
+                        <span class="interval">3h:</span>
+                        <span class="price"
+                          >{{ p_regen_data.primary_cost_3h }}</span
+                        >
+                        <span class="price"
+                          >{{ p_regen_data.primary_name_3h }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Close primary-ingredients-horizontal -->
+          </div>
+          <!-- Close Primary Ingredients card -->
+        </div>
+        <!-- Close ingredients-horizontal-grid -->
+      </div>
+      <!-- Close ingredients-section -->
+    </div>
+    <!-- Close main-content-grid -->
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  /* Ensure proper box-sizing for all elements */
+  #goading-regens-container * {
+    box-sizing: border-box;
+  }
+  
+  #goading-regens-window {
+    min-width: 1000px;
+  }
+
+  #goading-regens-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-height: 700px;
+    overflow: hidden;
+  }
+
+  .title-bar {
+    flex-shrink: 0;
+  }
+
+  .content-container {
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .main-content-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .potion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .potion-card {
+    border: 2px solid #c0c0c0;
+    padding: 8px;
+    background-color: #f8f8f8;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .potion-header {
+    text-align: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+  }
+
+  .potion-header h3 {
+    margin: 0;
+    color: #000080;
+    font-size: 1em;
+  }
+
+  .item-id {
+    font-size: 0.75em;
+    color: #666;
+  }
+
+  .time-group {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+  }
+
+  .time-group h4 {
+    margin: 0 0 10px 0;
+    color: #000080;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+  }
+
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px dotted #eee;
+  }
+
+  .data-row:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-weight: bold;
+  }
+
+  .value {
+    font-family: monospace;
+  }
+
+  .value.profit {
+    color: #008000;
+    font-weight: bold;
+  }
+
+  .action-bar {
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .refresh-info {
+    background-color: #e6f3ff;
+    padding: 6px;
+    border: 1px solid #b3d9ff;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+
+  .content-container {
+    padding: 8px;
+  }
+
+  .error {
+    background-color: #ffe6e6;
+    color: #cc0000;
+    padding: 10px;
+    border: 1px solid #ff9999;
+    border-radius: 4px;
+    margin: 10px 0;
+  }
+
+  /* Ingredients Section Styles */
+  .ingredients-section {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #c0c0c0;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    min-width: 0;
+  }
+
+  .ingredients-horizontal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .ingredient-category-card {
+    border: 1px solid #c0c0c0;
+    padding: 8px;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .primary-ingredients-card {
+  }
+
+  .primary-ingredients-horizontal {
+    display: grid;
+    gap: 8px;
+    margin-top: 5px;
+  }
+
+  .section-title {
+    text-align: center;
+    color: #000080;
+    margin: 0 0 8px 0;
+    font-size: 0.95em;
+    border-bottom: 2px solid #000080;
+    padding-bottom: 4px;
+  }
+
+  .ingredient-category {
+    margin-bottom: 0;
+  }
+
+  .category-title {
+    color: #000080;
+    margin: 0 0 5px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 3px;
+  }
+
+  .ingredient-category-card h4 {
+    margin-top: 0;
+  }
+
+  .herb-subcategory {
+    margin-bottom: 6px;
+  }
+
+  .subcategory-title {
+    color: #006600;
+    margin: 0 0 4px 0;
+    font-size: 0.8em;
+    font-weight: bold;
+  }
+
+  .ingredients-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .ingredient-item {
+    border: 1px solid #ccc;
+    padding: 5px;
+    background-color: #fff;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .ingredient-name {
+    font-weight: bold;
+    color: #000080;
+    margin-bottom: 2px;
+    font-size: 0.85em;
+  }
+
+  .ingredient-id {
+    font-size: 0.7em;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .price-intervals {
+    border-top: 1px solid #eee;
+    padding-top: 4px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    border-bottom: 1px dotted #ddd;
+    font-size: 0.8em;
+  }
+
+  .price-row:last-child {
+    border-bottom: none;
+  }
+
+  .interval {
+    font-weight: bold;
+    color: #333;
+    min-width: 35px;
+  }
+
+  .price {
+    font-family: monospace;
+    color: #008000;
+    font-weight: bold;
+  }
+
+  /* Compact table styles */
+  .compact-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+    margin-bottom: 8px;
+    table-layout: fixed;
+  }
+
+  .compact-table th,
+  .compact-table td {
+    border: 1px solid #ddd;
+    padding: 3px 5px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .compact-table th {
+    background-color: #000080;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85em;
+  }
+
+  .compact-table td {
+    background-color: #fff;
+    font-family: monospace;
+  }
+
+  .compact-table td:first-child {
+    font-weight: bold;
+    background-color: #f0f0f0;
+  }
+
+  .compact-table .profit {
+    color: #008000;
+    font-weight: bold;
+  }
+
+  .misc-info {
+    margin-top: 5px;
+    padding: 4px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+  }
+
+  .info-compact {
+    font-size: 0.75em;
+    color: #555;
+    text-align: center;
+  }
+</style>
