@@ -147,53 +147,68 @@
                             </div>
                         </div>
                     `;
-        });
-        
-        const windowHtml = `
-          <div class="window-content" id="price-data-selector-container-${itemId}" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; z-index: 10001; background: white; border: 2px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,0.2);">
-            <div class="title-bar" id="price-data-selector-title-bar-${itemId}" style="background: linear-gradient(to bottom, #000080, #1084d0); color: white; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center; cursor: move;">
-              <h4 style="margin: 0; font-size: 14px;">Price Data - ${escapeHtml(itemName)}</h4>
-              <button class="w98-button" id="price-data-selector-close-button-${itemId}" style="padding: 2px 8px; font-size: 12px;">X</button>
-            </div>
-            <div style="padding: 20px;">
-              <h3 style="margin-top: 0; font-size: 16px;">Select Time Range</h3>
-              <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '12h')" style="padding: 10px; width: 100%;">
-                  Last 12 Hours
-                </button>
-                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '1d')" style="padding: 10px; width: 100%;">
-                  Last 1 Day
-                </button>
-                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '7d')" style="padding: 10px; width: 100%;">
-                  Last 7 Days
-                </button>
-                <button class="w98-button" onclick="loadPriceGraph(${itemId}, '${escapeHtml(itemName).replace(/'/g, "\\'")}', '1m')" style="padding: 10px; width: 100%;">
-                  Last 1 Month
-                </button>
-              </div>
-              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
-                <label style="display: block; margin-bottom: 5px; font-size: 12px;">Data Type:</label>
-                <select id="table-type-${itemId}" class="w98-input" style="width: 100%; padding: 5px;">
-                  <option value="5min">5-Minute Average</option>
-                  <option value="1h">1-Hour Average</option>
-                  <option value="latest">Latest (Real-time)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        `;
 
-        new window.WindowInitializer(
-          window.windowManager,
-          `priceDataSelector${itemId}`,
-          `price-data-selector-window-${itemId}`,
-          `price-data-selector-container-${itemId}`,
-          `price-data-button-${itemId}`,
-          `price-data-selector-title-bar-${itemId}`,
-          `price-data-selector-close-button-${itemId}`,
-          windowHtml,
-          true,
-        );
+          // Create window initializer for this item's price data selector
+          const windowHtml = `
+            <div class="window-content" id="price-data-selector-container-${item.id}" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; z-index: 10001; background: white; border: 2px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,0.2);">
+              <div class="title-bar" id="price-data-selector-title-bar-${item.id}" style="background: linear-gradient(to bottom, #000080, #1084d0); color: white; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center; cursor: move;">
+                <h4 style="margin: 0; font-size: 14px;">Price Data - ${escapeHtml(item.name)}</h4>
+                <button class="w98-button" id="price-data-selector-close-button-${item.id}" style="padding: 2px 8px; font-size: 12px;">X</button>
+              </div>
+              <div style="padding: 20px;">
+                <h3 style="margin-top: 0; font-size: 16px;">Select Time Range</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <button class="w98-button" onclick="loadPriceGraph(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}', '12h')" style="padding: 10px; width: 100%;">
+                    Last 12 Hours
+                  </button>
+                  <button class="w98-button" onclick="loadPriceGraph(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}', '1d')" style="padding: 10px; width: 100%;">
+                    Last 1 Day
+                  </button>
+                  <button class="w98-button" onclick="loadPriceGraph(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}', '7d')" style="padding: 10px; width: 100%;">
+                    Last 7 Days
+                  </button>
+                  <button class="w98-button" onclick="loadPriceGraph(${item.id}, '${escapeHtml(item.name).replace(/'/g, "\\'")}', '1m')" style="padding: 10px; width: 100%;">
+                    Last 1 Month
+                  </button>
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc;">
+                  <label style="display: block; margin-bottom: 5px; font-size: 12px;">Data Type:</label>
+                  <select id="table-type-${item.id}" class="w98-input" style="width: 100%; padding: 5px;">
+                    <option value="5min">5-Minute Average</option>
+                    <option value="1h">1-Hour Average</option>
+                    <option value="latest">Latest (Real-time)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          `;
+
+          console.log(`[item_search.html] Creating WindowInitializer instance for item: ${item.id} - ${item.name}`);
+          new window.WindowInitializer(
+            window.windowManager,
+            `priceDataSelector${item.id}`,
+            `price-data-selector-window-${item.id}`,
+            `price-data-selector-container-${item.id}`,
+            `price-data-button-${item.id}`,
+            `price-data-selector-title-bar-${item.id}`,
+            `price-data-selector-close-button-${item.id}`,
+            windowHtml,
+            true
+          );
+          const priceButton = document.getElementById(`price-data-button-${item.id}`);
+          if (priceButton) {
+            priceButton.addEventListener("click", async function () {
+              console.log(`[item_search.html] Price Data button clicked for item: ${item.id} - ${item.name}`);
+              try {
+                await window[`priceDataSelector${item.id}Instance`].open();
+              } catch (error) {
+                console.error('Error opening price data selector:', error);
+              }
+            });
+          } else {
+            console.warn(`[item_search.html] Price Data button not found for item: ${item.id} - ${item.name}`);
+          }
+        });
 
         html += "</div>";
         searchResults.innerHTML = html;
@@ -227,11 +242,24 @@
         // Create time range selector window
         console.log('[item_search.html] Opening price data selector for item:', itemId, itemName);
         try {
-          await window.priceDataSelector${itemId}Instance.open();
+          const instanceName = `priceDataSelector${itemId}Instance`;
+          const instance = window[instanceName];
+          if (instance) {
+            await instance.open();
+          } else {
+            console.error(`Price data selector instance not found: ${instanceName}`);
+          }
         } catch (error) {
           console.error('Error opening price data selector:', error);
         }
+      };
 
+      window.closePriceDataSelector = function(itemId) {
+        const instanceName = `priceDataSelector${itemId}Instance`;
+        const instance = window[instanceName];
+        if (instance && typeof instance.close === 'function') {
+          instance.close();
+        }
       };
 
       window.loadPriceGraph = function (itemId, itemName, timeRange) {
