@@ -17,6 +17,10 @@
       "name": "Python Projects",
       "items": [
         {
+          "id": "flask-user-auth",
+          "title": "Flask User Authentication"
+        },
+        {
           "id": "sprite-pattern-generator",
           "title": "vec2 Sprite Pattern Painter"
         }
