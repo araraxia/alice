@@ -100,40 +100,6 @@ Best-case scenario where patient buying accumulates ingredients at low prices, t
 
 These multi-dimensional projections help players understand profit variance and risk—active traders might target average profits with high volume, while patient players might focus on slow buy strategies for maximum margins.
 
-## User Interface Design
-
-### Ingredient Cards
-
-The frontend displays each ingredient category (Super Attack, Super Strength, Super Defence, Torstol) as individual cards showing:
-
-- **Selected Item**: Name and ID of the optimal ingredient variant
-- **Dose Count**: For potions, indicates whether 1, 2, 3, or 4-dose bottles were selected
-- **15-Minute Metrics**: Recent high/low/average prices and trading volumes with timestamps
-- **3-Hour Metrics**: Longer-term price trends and volume data
-- **Latest Timestamps**: Precise timing of most recent high and low price transactions
-
-This granular presentation allows experienced players to assess data freshness and validate the calculator's recommendations against their own market knowledge.
-
-### Summary Cards
-
-Below ingredient details, summary cards present aggregated financial metrics:
-
-**Production Costs Card**:
-Shows total cost to produce one Super Combat potion (4) under various buying scenarios (15min/3hr, high/low/average), giving players clear targets for ingredient acquisition budgets.
-
-**Slow Buy Costs Card**:
-Highlights best-case ingredient costs, useful for planning long-term manufacturing operations where minimizing cost takes priority over speed.
-
-**Super Combat (4) Prices Card**:
-Current selling prices across timeframes, essential for evaluating whether current market conditions favor production or whether players should wait for better selling opportunities.
-
-**Profit Cards**:
-Color-coded profit projections (green background) showing expected returns per potion under different scenarios, allowing quick assessment of manufacturing viability.
-
-### Windows 98 Aesthetic
-
-Consistent with the broader Alice application design, the interface uses retro Windows 98 styling with bordered cards, classic button designs, and a nostalgic color palette. The draggable title bar and close button provide familiar desktop window interactions, making the tool feel like a native application rather than a web page.
-
 ## Technical Implementation
 
 ### Item Properties Integration
@@ -167,20 +133,6 @@ This separation of concerns keeps each calculation focused and testable, while t
 
 The `display()` method orchestrates the entire workflow, catching exceptions and providing graceful fallbacks. Successful calculations pass all computed data to the Jinja2 template, which renders the multi-card interface. If errors occur (database connectivity issues, incomplete data), users see a clear error message rather than a broken interface.
 
-## Use Cases
-
-### Active Manufacturing
-
-Players with 90+ Herblore can use this calculator before each production session to identify current optimal ingredients. By checking the 15-minute data and average profit margins, they can quickly assess whether conditions favor immediate production or whether waiting for better prices makes sense.
-
-### Ingredient Flipping
-
-The multi-dose analysis sometimes reveals pricing inefficiencies—for example, if Super Strength (2) potions sell below half the price of Super Strength (4), arbitrage opportunities emerge for players willing to decant potions. The calculator's detailed per-dose breakdowns make these opportunities visible.
-
-### Long-Term Planning
-
-The slow buy metrics help players planning large-scale operations (e.g., producing thousands of potions for skill training or selling). By understanding best-case costs, they can set realistic profit targets and structure their buying strategies to accumulate ingredients gradually at favorable prices.
-
 ## Future Enhancements
 
 Several improvements could extend the calculator's capabilities:
@@ -190,3 +142,7 @@ Several improvements could extend the calculator's capabilities:
 - **Batch Production Calculator**: Allow users to specify desired production quantities and calculate total ingredient requirements and expected profits
 - **Alert System**: Notify users when profit margins exceed specified thresholds, signaling favorable production windows
 - **API Access**: Expose calculator results via REST API for integration into external tools and Discord bots
+
+## Source Files
+
+- [super_combats.py](/files/showcase/super_combats.py)

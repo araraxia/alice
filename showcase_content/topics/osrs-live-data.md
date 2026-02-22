@@ -148,30 +148,13 @@ This automated collection process runs continuously in production, steadily buil
 
 ## Future Enhancements
 
-### Architecture Improvements
-
 - [ ] **Temporal Flexibility for `osrsItemProperties`**: The class is currently designed around the latest price data - it should be adapted to support queries for any time period while defaulting to latest. This would enable historical item snapshots at arbitrary timestamps.
-
 - [ ] **Table Consolidation Strategy**: The current per-item table approach (e.g., `2_latest`, `2_5min`, `2_1h`) creates thousands of small tables. Consider consolidating into partitioned tables (e.g., `prices_latest` with partitioning by item_id ranges) to reduce schema complexity and improve table management at scale.
-
 - [ ] **Caching Layer**: Implement Redis or similar caching for frequently accessed price data, especially for popular items. The `osrsItemProperties` class currently queries the database on every instantiation - caching recent data could significantly reduce database load during high-traffic periods.
-
 - [ ] **Data Retention Policies**: Establish automated archival strategies for old price data. Latest prices older than 30 days could be downsampled to 5-minute averages, and 5-minute data older than 90 days could be aggregated into hourly records, significantly reducing storage requirements while maintaining long-term trend visibility.
-
-### Feature Enhancements
-
 - [ ] **Predictive Price Analytics**: Leverage the extensive historical dataset to implement machine learning models that predict short-term price movements based on patterns like time-of-day effects, weekly cycles, and trading volume correlations.
-
 - [ ] **Market Volatility Indicators**: Calculate and expose volatility metrics (standard deviation, coefficient of variation) across different time windows to help users identify stable vs. volatile items for various investment strategies.
-
 - [ ] **Price Alert System**: Build a notification system that monitors price movements and alerts users when items cross specified thresholds or exhibit unusual trading patterns.
-
 - [ ] **Bulk Price Queries**: Extend `osrsItemProperties` to support batch item lookups, returning price data for multiple items in a single operation. This would optimize features that need prices for many items simultaneously.
-
-### Reliability and Monitoring
-
 - [ ] **Gap Backfilling**: Develop utilities to detect and fill gaps in historical data that might occur during server downtime or collection failures, potentially using the timeseries API endpoint to retrieve missed data points.
-
-### Performance Optimization
-
 - [ ] **Batch Insert Operations**: Modify the price collection script to accumulate records and insert them in batches rather than one-by-one, reducing database round-trips and transaction overhead.

@@ -17,6 +17,10 @@
       "name": "Python Projects",
       "items": [
         {
+          "id": "flask-user-auth",
+          "title": "Flask User Authentication"
+        },
+        {
           "id": "sprite-pattern-generator",
           "title": "vec2 Sprite Pattern Painter"
         }
@@ -49,6 +53,10 @@
         {
           "id": "super-combats",
           "title": "Super Combat Calculator"
+        },
+        {
+          "id": "herblore-potion-calc",
+          "title": "Herblore Potion Calculator"
         },
         {
           "id": "prayerregen-goading",
