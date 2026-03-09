@@ -25,6 +25,7 @@ VOW_ID = 227
 aoc_item = osrsItemProperties(AOC_ID)
 vow_item = osrsItemProperties(VOW_ID)
 
+
 def get_aoc_cost(aoc_low, aoc_avg):
     """Calculate the cost of Amulet of Chemistry proc"""
     raw_cost = aoc_low
@@ -80,8 +81,12 @@ class HerblorePotionCalc:
 
         # Fetch item properties
         self.product_item = osrsItemProperties(self.product_item_id)
-        self.primary_herb = osrsItemProperties(self.primary_herb_id)
-        self.primary_gherb = osrsItemProperties(self.primary_gherb_id)
+        self.primary_herb = (
+            osrsItemProperties(self.primary_herb_id) if self.primary_herb_id else None
+        )
+        self.primary_gherb = (
+            osrsItemProperties(self.primary_gherb_id) if self.primary_gherb_id else None
+        )
         self.primary_unf = osrsItemProperties(self.primary_unf_id)
         self.secondary_item = osrsItemProperties(self.secondary_item_id)
 
@@ -176,7 +181,7 @@ class HerblorePotionCalc:
 
     def _calculate_profit(self):
         net_mod = 1 - GE_TAX
-        
+
         self.profit_5min = (self.revenue_5min * net_mod) - self.production_cost_5min
         self.profit_15min = (self.revenue_15min * net_mod) - self.production_cost_15min
         self.profit_1h = (self.revenue_1h * net_mod) - self.production_cost_1h
@@ -195,7 +200,7 @@ class HerblorePotionCalc:
         price_15min = price_15min if price_15min is not None else inf
         price_1h = price_1h if price_1h is not None else inf
         price_3h = price_3h if price_3h is not None else inf
-        
+
         if make_unf:
             # Get vial of water price for each time bracket, defaulting to high price if low is unavailable
             vow_5min, vow_15min, vow_1h, vow_3h = self._get_low_price(vow_item)
@@ -240,6 +245,8 @@ class HerblorePotionCalc:
             (self.primary_gherb, True, True),
             (self.primary_unf, False, False),
         ]:
+            if item is None:
+                continue
             (
                 price_5min,
                 price_15min,

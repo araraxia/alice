@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 
+import sys
+
 import requests, json
 from pathlib import Path
-from src.util.independant_logger import Logger
-from src.util.sql_helper import log_error_to_db
 
 FILE_PATH = Path(__file__).resolve()
 OSRS_DIR = FILE_PATH.parent
 ROOT_DIR = OSRS_DIR.parent.parent
+
+if (str(ROOT_DIR) not in sys.path):
+    sys.path.append(str(ROOT_DIR))
+
+from src.util.independant_logger import Logger
+from src.util.sql_helper import log_error_to_db
+
 
 ENDPOINTS = {
     "latest_prices": "https://prices.runescape.wiki/api/v1/osrs/latest",
