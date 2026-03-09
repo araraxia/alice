@@ -9,3 +9,8 @@ tmp/*
 *_pycache_*
 .env
 .venv/*
+
+# PyInstaller build artifacts
+build/*
+dist/*
+*.spec
