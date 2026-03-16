@@ -23,3 +23,7 @@ email_validator
 pygments
 markdown-checklist
 python-dotenv
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-cloud-storage
