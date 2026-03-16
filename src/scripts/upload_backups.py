@@ -6,7 +6,7 @@ sys.path.insert(0, project_root)
 
 from src.util.gcloud_helper import GCloudBucket
 
-BACKUP_PATH = "/home/aria/Backups_Local/"
+BACKUP_PATH = "/mnt/ssd/backups"
 BUCKET_NAME = "alice-api-backups"
 
 files = [
