@@ -1,0 +1,31 @@
+{% if posts %}
+<ul class="blog-post-list">
+  {% for post in posts %}
+  <li class="blog-post-item">
+    <a class="blog-post-title-link"
+       href="#"
+       data-post-id="{{ post.id }}">{{ post.title }}</a>
+    <div class="blog-post-meta">
+      <span>{{ post.author_name or 'Unknown' }}</span>
+      <span>{{ post.post_datetime.strftime('%Y-%m-%d') if post.post_datetime else 'Draft' }}</span>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="blog-pagination">
+  <button class="w98-button"
+          {% if page <= 1 %}disabled{% endif %}
+          data-page="{{ page - 1 }}">&#8249; Prev</button>
+  <span class="page-info">Page {{ page }} / {{ total_pages }}</span>
+  <button class="w98-button"
+          {% if page >= total_pages %}disabled{% endif %}
+          data-page="{{ page + 1 }}">Next &#8250;</button>
+</div>
+{% endif %}
+
+{% else %}
+<p class="blog-empty">No posts found.</p>
+{% endif %}

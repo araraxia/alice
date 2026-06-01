@@ -1,0 +1,51 @@
+{% if window_mode %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/blog.css') }}"
+/>
+{% endif %}
+
+<div style="padding: 10px 14px">
+  <button class="w98-button blog-back-btn" id="blog-back-to-list">
+    &#8592; Back
+  </button>
+
+  <div class="blog-post-header">
+    <h1 class="blog-post-heading">{{ post.title }}</h1>
+    <div class="blog-post-meta">
+      <span>{{ post.author_name or 'Unknown' }}</span>
+      <span
+        >{{ post.post_datetime.strftime('%Y-%m-%d %H:%M') if post.post_datetime
+        else '' }}</span
+      >
+      {% if post.last_updated_datetime and post.last_updated_datetime !=
+      post.post_datetime %}
+      <span>Updated {{ post.last_updated_datetime.strftime('%Y-%m-%d') }}</span>
+      {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated and current_user.id|string ==
+    post.author_uuid|string %}
+    <div class="blog-post-actions">
+      <button
+        class="w98-button"
+        id="blog-edit-btn"
+        data-post-id="{{ post.id }}"
+        data-edit-url="{{ url_for('blog.edit', post_id=post.id) }}"
+      >
+        Edit
+      </button>
+      <button
+        class="w98-button"
+        id="blog-delete-btn"
+        data-post-id="{{ post.id }}"
+        data-delete-url="{{ url_for('blog.delete_post', post_id=post.id) }}"
+      >
+        Delete
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+  <article class="blog-post-body">{{ rendered_body | safe }}</article>
+</div>

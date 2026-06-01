@@ -1,0 +1,63 @@
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/blog.css') }}"
+/>
+
+<div class="title-bar" id="blog-editor-title-bar">
+  <h4>{{ 'Edit Post' if post else 'New Post' }}</h4>
+  <div>
+    <button id="close-blog-editor-button" class="w98-button title-button">
+      X
+    </button>
+  </div>
+</div>
+
+<div
+  class="blog-editor-container"
+  data-post-id="{{ post.id if post else '' }}"
+  data-write-url="{{ url_for('blog.write_post') }}"
+  data-edit-url="{{ url_for('blog.edit_post', post_id=post.id) if post else '' }}"
+  data-draft-url="{{ url_for('blog.save_draft', post_id=post.id) if post else '' }}"
+  data-preview-url="{{ url_for('blog.preview_markdown') }}"
+>
+  <!-- Title field -->
+  <div class="blog-editor-fields">
+    <input
+      type="text"
+      class="blog-editor-title"
+      id="blog-editor-title"
+      placeholder="Post title…"
+      maxlength="255"
+      value="{{ post.title if post else '' }}"
+    />
+  </div>
+
+  <!-- Body + Preview panes -->
+  <div class="blog-editor-panes">
+    <div>
+      <div class="blog-editor-label">Markdown</div>
+      <textarea
+        class="blog-editor-textarea"
+        id="blog-editor-body"
+        placeholder="Write your post in markdown…"
+      >
+{{ post.body if post else '' }}</textarea
+      >
+    </div>
+    <div>
+      <div class="blog-editor-label">Preview</div>
+      <div class="blog-editor-preview blog-post-body" id="blog-editor-preview">
+        <em style="color: #888">Preview will appear here as you type…</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="blog-editor-toolbar">
+    <button class="w98-button" id="blog-save-draft-btn">Save Draft</button>
+    <button class="w98-button" id="blog-publish-btn">
+      {{ 'Update' if post and post.status == 'published' else 'Publish' }}
+    </button>
+    <span class="blog-editor-status" id="blog-editor-status"></span>
+  </div>
+</div>

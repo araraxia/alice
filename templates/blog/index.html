@@ -1,0 +1,83 @@
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/blog.css') }}"
+/>
+
+{% if window_mode %}
+<div class="title-bar" id="blog-title-bar">
+  <h4>Blog</h4>
+  <div>
+    <button id="close-blog-button" class="w98-button title-button">X</button>
+  </div>
+</div>
+{% endif %}
+
+<div class="blog-container" id="blog-container">
+  <!-- Sidebar -->
+  <nav class="blog-sidebar">
+    <div class="blog-sidebar-header">Navigation</div>
+
+    {% if current_user.is_authenticated %}
+    <button
+      class="w98-button blog-write-btn"
+      id="blog-write-btn"
+      data-write-url="{{ url_for('blog.write') }}"
+    >
+      + New Post
+    </button>
+    {% endif %}
+
+    <!-- Month filter -->
+    {% if months %}
+    <div class="blog-sidebar-section">
+      <div class="blog-sidebar-section-title">By Month</div>
+      <a
+        class="blog-sidebar-link {% if not year and not month %}active{% endif %}"
+        href="#"
+        data-filter-year=""
+        data-filter-month=""
+        >All Posts</a
+      >
+      {% for m in months %}
+      <a
+        class="blog-sidebar-link {% if year == m.year and month == m.month %}active{% endif %}"
+        href="#"
+        data-filter-year="{{ m.year }}"
+        data-filter-month="{{ m.month }}"
+      >
+        {{ '%04d-%02d' | format(m.year, m.month) }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Author filter -->
+    {% if authors %}
+    <div class="blog-sidebar-section">
+      <div class="blog-sidebar-section-title">By Author</div>
+      {% for a in authors %}
+      <a
+        class="blog-sidebar-link {% if author_uuid == a.author_uuid|string %}active{% endif %}"
+        href="#"
+        data-filter-author="{{ a.author_uuid }}"
+      >
+        {{ a.author_name or 'Unknown' }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </nav>
+
+  <!-- Main content -->
+  <main class="blog-main" id="blog-main">
+    <div id="blog-content-area">{% include 'blog/_post_list.html' %}</div>
+  </main>
+</div>
+
+{% if window_mode %}
+<script>
+  if (typeof BlogManager !== "undefined") {
+    window.blogManagerInstance = new BlogManager();
+  }
+</script>
+{% endif %}

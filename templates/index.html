@@ -21,6 +21,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/index.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/blog.css') }}"
+    />
   </head>
   <body>
     <canvas id="background"></canvas>
@@ -59,7 +63,7 @@
               <button class="w98-button" id="showcase-button">
                 Showcase
               </button>
-              <button class="w98-button" id="blog-button" disabled=true>Blog</button>
+              <button class="w98-button" id="blog-button">Blog</button>
               <button class="w98-button" id="about-me-button" disabled=true>Bio</button>
               <a href="https://github.com/araraxia">
                 <button class="w98-button" id="github-button">
@@ -125,6 +129,7 @@
       const SUPERCOMBATSENDPOINT = "{{ url_for('osrs.super_combats') }}";
       const GOADINGREGENSENDPOINT = "{{ url_for('osrs.goading_regens') }}";
       const ITEMSEARCHENDPOINT = "{{ url_for('osrs.item_search') }}";
+      const BLOGENDPOINT = "{{ url_for('blog.blog_window') }}";
       // Set global variables
       window.openStates = {};
     </script>
@@ -133,6 +138,7 @@
     <script src="{{ url_for('static', filename='js/window_manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_initializer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/blog.js') }}"></script>
     <script>
       function loadScript(url) {
         return new Promise((resolve, reject) => {
@@ -352,6 +358,32 @@
               await window.showcaseWindowInstance.open();
             } catch (error) {
               console.error("Failed to open showcase window:", error);
+              alert(
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later."
+              );
+            }
+          });
+        }
+
+        if (blogButton) {
+          const blogInstance = new window.WindowInitializer(
+            windowManager,
+            "blogWindow",
+            "blog-window",
+            "blog-container",
+            "blog-button",
+            "blog-title-bar",
+            "close-blog-button",
+            BLOGENDPOINT,
+            true,
+            "960px",
+            "680px",
+          );
+          blogButton.addEventListener("click", async function () {
+            try {
+              await window.blogWindowInstance.open();
+            } catch (error) {
+              console.error("Failed to open blog window:", error);
               alert(
                 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later."
               );

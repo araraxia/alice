@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import sys
 
@@ -8,11 +7,12 @@ SRC_PATH = ROOT_PATH / "src"
 
 if SRC_PATH not in sys.path:
     sys.path.append(str(SRC_PATH))
-    
+
 from website.site_router import fort_route
 from website.wiki_router import wiki_route
 from website.osrs_router import osrs_route
 from website.showcase_router import showcase_route
+from website.blog_router import blog_route
 from discord.discord_router import discord_route
 
 ROUTE_LIST = [
@@ -20,8 +20,10 @@ ROUTE_LIST = [
     wiki_route,
     osrs_route,
     showcase_route,
+    blog_route,
     discord_route,
 ]
+
 
 def register_blueprints(app):
     for route in ROUTE_LIST:
