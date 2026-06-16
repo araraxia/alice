@@ -1,0 +1,193 @@
+/* OSRS Interactive Graph Library */
+
+.osrs-graph-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Controls ── */
+
+.osrs-graph-ctrls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 6px 4px;
+  border-bottom: 1px solid #808080;
+  margin-bottom: 4px;
+}
+
+.osrs-graph-ctrl-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 24px;
+}
+
+.osrs-graph-ctrl-lbl {
+  font-size: 11px;
+  color: #444;
+  min-width: 46px;
+  text-align: right;
+  padding-right: 4px;
+}
+
+.osrs-graph-ctrl-grp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.osrs-ctrl-btn {
+  font-size: 11px;
+  padding: 2px 7px;
+  min-width: 40px;
+  cursor: pointer;
+}
+
+.osrs-ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Depressed (active) W98 button look */
+.w98-button-active {
+  border-color: #808080 #ffffff #ffffff #808080 !important;
+  box-shadow: inset 1px 1px 0 #000 !important;
+  padding-top: 3px  !important;
+  padding-left: 8px !important;
+  background-color: #bdbdbd !important;
+}
+
+/* Custom date row */
+.osrs-custom-row {
+  align-items: center;
+  gap: 8px;
+}
+
+.osrs-dt-lbl {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.osrs-dt-in {
+  font-size: 11px;
+  padding: 1px 3px;
+  width: 148px;
+}
+
+/* ── Canvas wrapper ── */
+
+.osrs-graph-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.osrs-graph-canvas {
+  display: block;
+  width: 100%;
+}
+
+/* ── Tooltip ── */
+
+.osrs-tip {
+  position: absolute;
+  pointer-events: none;
+  background: #fff;
+  border: 1px solid #888;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.18);
+  font: 11px/1.4 'Courier New', monospace;
+  padding: 5px 8px;
+  z-index: 10100;
+  min-width: 200px;
+  display: none;
+}
+
+.osrs-tip.pinned {
+  pointer-events: auto;
+}
+
+.osrs-tip-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 3px;
+}
+
+.osrs-tip-bucket {
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.osrs-tip-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 2px;
+  line-height: 1;
+  color: #555;
+}
+
+.osrs-tip-x:hover { color: #c00; }
+
+.osrs-tip-sorts {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.osrs-tip-sort {
+  font-size: 10px;
+  padding: 1px 5px;
+  cursor: pointer;
+  background: #ddd;
+  border: 1px solid #999;
+}
+
+.osrs-tip-sort.active {
+  background: #bbb;
+  border-color: #555;
+  font-weight: bold;
+}
+
+.osrs-tip-body {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.osrs-tip-row-hdr {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-weight: bold;
+  font-size: 10px;
+  color: #555;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 2px;
+  padding-bottom: 2px;
+}
+
+.osrs-tip-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.osrs-tip-row:nth-child(even) {
+  background: #f7f7f7;
+}
+
+/* ── Graph window container (created dynamically) ── */
+
+.osrs-graph-window-inner {
+  padding: 8px 10px;
+  overflow: auto;
+  max-height: 85vh;
+}

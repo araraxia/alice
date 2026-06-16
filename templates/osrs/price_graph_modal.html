@@ -1,30 +1,51 @@
-<div class="modal-overlay" id="{{ modal_id }}" onclick="if(event.target === this) closePriceGraphModal('{{ modal_id }}')">
-    <div class="modal-content price-graph-modal">
-        <div class="modal-header">
-            <h2>{{ item_name }} - Price History</h2>
-            <button class="modal-close" onclick="closePriceGraphModal('{{ modal_id }}')" aria-label="Close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <canvas id="{{ canvas_id }}" style="max-width: 100%; height: 400px;"></canvas>
-        </div>
-        <div class="modal-footer">
-            <p><strong>Data Type:</strong> {{ table_type }} | <strong>Start:</strong> {{ start_date }} | <strong>End:</strong> {{ end_date_display }}</p>
-        </div>
+<div id="price-graph-outer-{{ item_id }}" style="position:fixed;z-index:100;">
+  <div class="window-content" style="min-width:900px;max-width:960px;">
+    <div class="title-bar" id="price-graph-title-{{ item_id }}">
+      <h4>{{ item_name }} &mdash; Price History</h4>
+      <button id="price-graph-close-{{ item_id }}" class="w98-button title-button">X</button>
     </div>
-</div>
+    <div class="osrs-graph-window-inner">
+      <div id="osrs-ctrls-{{ item_id }}"></div>
+      <div id="osrs-price-{{ item_id }}" style="width:100%;"></div>
+      <div id="osrs-volume-{{ item_id }}" style="width:100%;margin-top:8px;border-top:1px solid #808080;padding-top:6px;"></div>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var outer = document.getElementById('price-graph-outer-{{ item_id }}');
+    if (!outer) return;
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/price_graph_modal.css') }}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-<script src="{{ url_for('static', filename='js/price_graph_modal.js') }}"></script>
-<script>
-    // Initialize chart with data for this specific modal
-    console.log('Initializing price chart for modal:', '{{ modal_id }}');
-    initializePriceChart({
-        modalId: '{{ modal_id }}',
-        canvasId: '{{ canvas_id }}',
-        timestamps: {{ timestamps_json | safe }},
-        highPrices: {{ high_prices_json | safe }},
-        lowPrices: {{ low_prices_json | safe }}
+    if (window.windowManager) {
+      window.windowManager.registerWindow(
+        'price-graph-outer-{{ item_id }}',
+        outer,
+        '#price-graph-title-{{ item_id }}'
+      );
+      window.windowManager.centerWindow('price-graph-outer-{{ item_id }}');
+      window.windowManager.bringToFront('price-graph-outer-{{ item_id }}');
+    }
+
+    document.getElementById('price-graph-close-{{ item_id }}').addEventListener('click', function () {
+      if (outer._graphPair) outer._graphPair.destroy();
+      var wrapper = outer.closest('.open-window-content') || outer;
+      wrapper.remove();
     });
-</script>
+
+    if (typeof OSRSGraphPair !== 'undefined') {
+      try {
+        outer._graphPair = new OSRSGraphPair(
+          'osrs-ctrls-{{ item_id }}',
+          'osrs-price-{{ item_id }}',
+          'osrs-volume-{{ item_id }}',
+          {{ item_id }}
+        );
+      } catch (e) {
+        console.error('[price_graph_modal] Graph init error:', e);
+      }
+    } else {
+      console.error('[price_graph_modal] OSRSGraphPair not loaded');
+      document.getElementById('osrs-price-{{ item_id }}').textContent = 'Graph library not loaded.';
+    }
+  })();
+  </script>
+</div>
