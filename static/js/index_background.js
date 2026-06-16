@@ -4,9 +4,18 @@ class BackgroundWave {
     constructor () {
         this.canvas = document.getElementById("background");
         this.body = document.body;
-        this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+        this.gl = this.canvas
+            ? (this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl'))
+            : null;
         this.isEnabled = true;
         this.animationId = null;
+
+        if (!this.gl) {
+            console.warn('[BackgroundWave] WebGL unavailable — background disabled');
+            this.body.style.visibility = 'visible';
+            return;
+        }
+
         this.vertexShaderSource = `
             attribute vec4 a_position;
             void main() {
@@ -110,6 +119,7 @@ class BackgroundWave {
     }
 
     toggle() {
+        if (!this.gl) return this.isEnabled;
         this.isEnabled = !this.isEnabled;
         if (this.isEnabled) {
             this.canvas.style.display = 'block';
