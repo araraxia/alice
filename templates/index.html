@@ -25,6 +25,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/blog.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/osrs_graphs.css') }}"
+    />
   </head>
   <body>
     <canvas id="background"></canvas>
@@ -40,6 +44,7 @@
               id="bg-control-button"
               class="w98-button title-button"
               title="Background Control"
+              style="max-width: 80px; padding: 0 6px;"
             >
               BG
             </button>
@@ -328,6 +333,9 @@
               return;
             }
             console.log("Loading osrs_index.js");
+            await loadScript(
+              "{{ url_for('static', filename='js/osrs_graphs.js') }}"
+            );
             await loadScript(
               "{{ url_for('static', filename='js/osrs_index.js') }}"
             );
