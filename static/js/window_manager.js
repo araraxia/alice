@@ -152,10 +152,6 @@ class WindowManager {
             buttons.forEach(buttonInfo => {
                 buttonInfo.element.disabled = true;
                 buttonInfo.element.classList.add('window-open');
-                // Optionally change button text to indicate window is open
-                if (buttonInfo.element.textContent && !buttonInfo.element.textContent.includes('(Open)')) {
-                    buttonInfo.element.textContent = buttonInfo.originalText + ' (Open)';
-                }
             });
             console.log(`Disabled ${buttons.length} button(s) for window '${windowId}'`);
         } else {
@@ -173,7 +169,6 @@ class WindowManager {
             buttons.forEach(buttonInfo => {
                 buttonInfo.element.disabled = buttonInfo.originalDisabled;
                 buttonInfo.element.classList.remove('window-open');
-                buttonInfo.element.textContent = buttonInfo.originalText;
             });
             console.log(`Enabled ${buttons.length} button(s) for window '${windowId}'`);
         } else {
