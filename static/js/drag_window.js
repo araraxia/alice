@@ -144,28 +144,19 @@ class DragWindow {
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         const containerRect = this.container.getBoundingClientRect();
-        
-        console.log(`Viewport: ${viewportWidth}x${viewportHeight}`);
-        console.log(`Container: ${containerRect.width}x${containerRect.height}`);
-        
-        // Check if the container height is unrealistic (likely not fully rendered)
-        if (containerRect.height > viewportHeight * 1.5) {
-            console.warn(`Container height (${containerRect.height}px) seems too large. Waiting for proper rendering...`);
-            
-            // Try again after a short delay
-            setTimeout(() => {
-                this.center();
-            }, 50);
+
+        // Retry if layout hasn't completed yet (height 0) or is unrealistically large
+        if (containerRect.height === 0 || containerRect.height > viewportHeight * 1.5) {
+            setTimeout(() => { this.center(); }, 50);
             return;
         }
-        
+
         const centerX = Math.max(0, (viewportWidth - containerRect.width) / 2);
         const centerY = Math.max(0, (viewportHeight - containerRect.height) / 2);
-        
-        console.log(`Centering window to (${centerX}, ${centerY})`);
-        
+
         this.container.style.left = centerX + 'px';
-        this.container.style.top = centerY + 'px';
+        this.container.style.top  = centerY + 'px';
+        this.container.style.visibility = '';
     }
 }
 

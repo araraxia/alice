@@ -11,7 +11,7 @@ const C = {
   zero: '#222222',
 };
 
-const PAD = { left: 78, right: 22, top: 22, bottom: 42 };
+const PAD = { left: 92, labelRight: 73, right: 22, top: 22, bottom: 42 };
 
 const PERIOD_MS = {
   '1h':  3_600_000,
@@ -224,6 +224,12 @@ class OSRSGraphBase {
     this._toY = val => gy + gh - (val - yMin) / (yMax - yMin) * gh;
   }
 
+  _clipToGraph(ctx, pad = 8) {
+    ctx.beginPath();
+    ctx.rect(this._gx - pad, this._gy - pad, this._gw + pad * 2, this._gh + pad * 2);
+    ctx.clip();
+  }
+
   // ── Grid / labels ─────────────────────────────────────────────────────────
 
   _drawGrid(ctx, yLines, ticks) {
@@ -246,7 +252,7 @@ class OSRSGraphBase {
     ctx.save();
     ctx.fillStyle = C.text; ctx.font = '11px sans-serif';
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    for (const y of yLines) ctx.fillText(fmt(y), this._gx - 5, this._toY(y));
+    for (const y of yLines) ctx.fillText(fmt(y), PAD.labelRight, this._toY(y));
     ctx.restore();
   }
 
@@ -543,6 +549,7 @@ class OSRSGraphBase {
 class OSRSPriceLineGraph extends OSRSGraphBase {
   constructor(containerId, itemId, opts = {}) {
     super(containerId, itemId, {
+      noControls: opts.noControls || false,
       tableType:  opts.tableType  || '5min',
       timePeriod: opts.timePeriod || '1d',
       avgKey:     opts.avgKey     || '1h',
@@ -618,8 +625,11 @@ class OSRSPriceLineGraph extends OSRSGraphBase {
     this._drawGrid(ctx, yLines, ticks);
     this._drawYLbls(ctx, yLines, v => v.toLocaleString() + ' gp');
     this._drawXLbls(ctx, ticks, interval);
-    this._drawLine(ctx, pts, p => this._toX(p.timestampMs), p => this._toY(p.high), C.high);
-    this._drawLine(ctx, pts, p => this._toX(p.timestampMs), p => this._toY(p.low),  C.low);
+    ctx.save();
+    this._clipToGraph(ctx);
+    this._drawLine(ctx, pts, p => this._toX(p.timestampMs), p => p.high ? this._toY(p.high) : null, C.high);
+    this._drawLine(ctx, pts, p => this._toX(p.timestampMs), p => p.low  ? this._toY(p.low)  : null, C.low);
+    ctx.restore();
   }
 }
 
@@ -629,6 +639,7 @@ class OSRSVolumeBarGraph extends OSRSGraphBase {
   constructor(containerId, itemId, opts = {}) {
     const ttype = opts.tableType === 'latest' ? '5min' : (opts.tableType || '5min');
     super(containerId, itemId, {
+      noControls: opts.noControls || false,
       tableType:  ttype,
       timePeriod: opts.timePeriod || '1d',
       avgKey:     opts.avgKey     || '1h',
@@ -705,12 +716,13 @@ class OSRSVolumeBarGraph extends OSRSGraphBase {
     this._drawYLbls(ctx, yLines, v => Math.abs(v).toLocaleString());
     this._drawXLbls(ctx, ticks, interval);
 
+    ctx.save();
+    this._clipToGraph(ctx);
+
     // Zero line
     const zeroY = this._toY(0);
-    ctx.save();
     ctx.strokeStyle = C.zero; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(gx, zeroY); ctx.lineTo(gx + gw, zeroY); ctx.stroke();
-    ctx.restore();
 
     // Bars
     const barW = pts.length > 1
@@ -723,6 +735,8 @@ class OSRSVolumeBarGraph extends OSRSGraphBase {
       if (p.highVol > 0) { const t = this._toY(p.highVol);   ctx.fillStyle = C.high; ctx.fillRect(cx - hw, t,     barW, zeroY - t);    }
       if (p.lowVol  > 0) { const b = this._toY(-p.lowVol);   ctx.fillStyle = C.low;  ctx.fillRect(cx - hw, zeroY, barW, b - zeroY); }
     }
+
+    ctx.restore();
   }
 
   // Volume tooltip sorts by vol, not price

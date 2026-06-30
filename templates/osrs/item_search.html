@@ -102,6 +102,7 @@
             if (data.status === "success") displayResults(data.items);
             else searchResults.innerHTML =
               `<p style="color:red;text-align:center;">Error: ${data.message}</p>`;
+            if (window.windowManager) window.windowManager.centerWindow("item-search-window");
           })
           .catch(() => {
             searchResults.innerHTML =
@@ -185,6 +186,10 @@
               return;
             }
             new window.OpenWindow(data.html).open(false);
+            // Center after OpenWindow's 50ms injection delay; center() retries until layout is ready
+            setTimeout(function () {
+              if (window.windowManager) window.windowManager.centerWindow("price-graph-outer-" + itemId);
+            }, 100);
           })
           .catch(function (e) { console.error("[OSRSGraphs] Network error:", e); });
       };

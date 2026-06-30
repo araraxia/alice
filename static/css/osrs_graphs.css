@@ -90,6 +90,13 @@
 .osrs-graph-canvas {
   display: block;
   width: 100%;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border: 2px solid;
+  border-color: #808080 #dfdfdf #dfdfdf #808080;
+  box-shadow:
+    inset 1px 1px 0px #404040,
+    inset -1px -1px 0px #ffffff;
 }
 
 /* ── Tooltip ── */

@@ -1,51 +1,50 @@
-<div id="price-graph-outer-{{ item_id }}" style="position:fixed;z-index:100;">
-  <div class="window-content" style="min-width:900px;max-width:960px;">
-    <div class="title-bar" id="price-graph-title-{{ item_id }}">
-      <h4>{{ item_name }} &mdash; Price History</h4>
-      <button id="price-graph-close-{{ item_id }}" class="w98-button title-button">X</button>
-    </div>
-    <div class="osrs-graph-window-inner">
-      <div id="osrs-ctrls-{{ item_id }}"></div>
-      <div id="osrs-price-{{ item_id }}" style="width:100%;"></div>
-      <div id="osrs-volume-{{ item_id }}" style="width:100%;margin-top:8px;border-top:1px solid #808080;padding-top:6px;"></div>
-    </div>
+<div id="price-graph-outer-{{ item_id }}" class="window-content"
+     style="position:fixed;z-index:100;visibility:hidden;min-width:900px;max-width:960px;margin:0;">
+  <div class="title-bar" id="price-graph-title-{{ item_id }}">
+    <h4>{{ item_name }} &mdash; Price History</h4>
+    <button id="price-graph-close-{{ item_id }}" class="w98-button title-button">X</button>
   </div>
-  <script>
-  (function () {
-    var outer = document.getElementById('price-graph-outer-{{ item_id }}');
-    if (!outer) return;
-
-    if (window.windowManager) {
-      window.windowManager.registerWindow(
-        'price-graph-outer-{{ item_id }}',
-        outer,
-        '#price-graph-title-{{ item_id }}'
-      );
-      window.windowManager.centerWindow('price-graph-outer-{{ item_id }}');
-      window.windowManager.bringToFront('price-graph-outer-{{ item_id }}');
-    }
-
-    document.getElementById('price-graph-close-{{ item_id }}').addEventListener('click', function () {
-      if (outer._graphPair) outer._graphPair.destroy();
-      var wrapper = outer.closest('.open-window-content') || outer;
-      wrapper.remove();
-    });
-
-    if (typeof OSRSGraphPair !== 'undefined') {
-      try {
-        outer._graphPair = new OSRSGraphPair(
-          'osrs-ctrls-{{ item_id }}',
-          'osrs-price-{{ item_id }}',
-          'osrs-volume-{{ item_id }}',
-          {{ item_id }}
-        );
-      } catch (e) {
-        console.error('[price_graph_modal] Graph init error:', e);
-      }
-    } else {
-      console.error('[price_graph_modal] OSRSGraphPair not loaded');
-      document.getElementById('osrs-price-{{ item_id }}').textContent = 'Graph library not loaded.';
-    }
-  })();
-  </script>
+  <div class="osrs-graph-window-inner">
+    <div id="osrs-ctrls-{{ item_id }}"></div>
+    <div id="osrs-price-{{ item_id }}" style="width:100%;"></div>
+    <div id="osrs-volume-{{ item_id }}" style="width:100%;margin-top:8px;border-top:1px solid #808080;padding-top:6px;"></div>
+  </div>
 </div>
+<script>
+(function () {
+  var outer = document.getElementById('price-graph-outer-{{ item_id }}');
+  if (!outer) return;
+
+  if (window.windowManager) {
+    window.windowManager.registerWindow(
+      'price-graph-outer-{{ item_id }}',
+      outer,
+      '#price-graph-title-{{ item_id }}'
+    );
+    window.windowManager.bringToFront('price-graph-outer-{{ item_id }}');
+    // Centering is triggered by openItemGraphWindow after injection completes
+  }
+
+  document.getElementById('price-graph-close-{{ item_id }}').addEventListener('click', function () {
+    if (outer._graphPair) outer._graphPair.destroy();
+    var wrapper = outer.closest('.open-window-content') || outer;
+    wrapper.remove();
+  });
+
+  if (typeof OSRSGraphPair !== 'undefined') {
+    try {
+      outer._graphPair = new OSRSGraphPair(
+        'osrs-ctrls-{{ item_id }}',
+        'osrs-price-{{ item_id }}',
+        'osrs-volume-{{ item_id }}',
+        {{ item_id }}
+      );
+    } catch (e) {
+      console.error('[price_graph_modal] Graph init error:', e);
+    }
+  } else {
+    console.error('[price_graph_modal] OSRSGraphPair not loaded');
+    document.getElementById('osrs-price-{{ item_id }}').textContent = 'Graph library not loaded.';
+  }
+})();
+</script>
