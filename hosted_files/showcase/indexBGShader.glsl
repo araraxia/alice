@@ -99,31 +99,39 @@ void main() {
     vec2 tileUV = floor(uv / SPR_SIZE) / minResolution;
 
     // Add vertical wave motion
-    float verticalWaveFreq = 3.5;
-    float verticalWaveSpeed = 0.05;
-    float verticalWaveAmount = 0.2;
+    float verticalWaveFreq = 0.05;
+    float verticalWaveSpeed = 0.005;
+    float verticalWaveAmount = 0.005;
     tileUV.y += sin(time * verticalWaveSpeed + tileUV.x * verticalWaveFreq) * verticalWaveAmount;
 
     // === COMPLEX PATTERN CALCULATION ===
     // Primary wave components
     float wave1Freq = 1.0;
     float wave1Speed = 0.005;
-    float innerWave1 = sin(tileUV.x + tileUV.y * 7.0 + time * 0.3);
+    float wave1a = 7.0;
+    float wave1b = 0.3;
+    float innerWave1 = sin(tileUV.x + (tileUV.y * wave1a) + (time * wave1b));
     float wave1 = sin(tileUV.x * wave1Freq + innerWave1 + time * wave1Speed);
 
     float wave2Freq = 3.0;
     float wave2Speed = 0.005;
-    float innerWave2 = cos(tileUV.x - tileUV.y * 9.0 + time * wave2Speed);
+    float wave2a = 0.9;
+    float innerWave2 = cos(tileUV.x * tileUV.y * wave2a + time * wave2Speed);
     float wave2 = cos(tileUV.y * wave2Freq + innerWave2);
 
     // Combine primary waves
-    float combinedWaves = wave1 + wave2;
+    float combinedWaves = wave1 * wave2;
 
     // Apply secondary modulation
-    float timeOffset = -0.1 * time;
-    float slowOscillation = sin(time * 0.25) * 2.0;
-    float modulation = -5.0 * (timeOffset + slowOscillation);
-    float finalPattern = sin(combinedWaves * 2.0 + modulation);
+    float offsetVar = -0.1;
+    float timeOffset = offsetVar * time;
+    float oscillationFrequency = 0.25;
+    float oscillationStrength = 2.0;
+    float slowOscillation = sin(time * oscillationFrequency) * oscillationStrength;
+    float modA = -5.0;
+    float modulation = modA * (timeOffset + slowOscillation);
+    float finalA = 2.0;
+    float finalPattern = sin(combinedWaves * finalA + modulation);
 
     // Normalize pattern to [0, 1] range
     float plm = (finalPattern / 2.0 + 0.4);
@@ -147,11 +155,11 @@ void main() {
     pixelValue *= inRange ? 1.0 : 0.0;
 
     // === COLOR WAVE CONTROLS ===
-    float waveSpeed = 0.5;        // Controls animation speed
+    float waveSpeed = 0.01;        // Controls animation speed
     float waveScale = 0.005;      // Controls wave frequency/size
-    float waveAmplitude = 0.8;    // Controls wave intensity (0.0-1.0)
-    float baseIntensity = 0.15;    // Minimum brightness to prevent black
-    float separation = 0.2;       // Controls color separation (higher = less overlap)
+    float waveAmplitude = 3;    // Controls wave intensity (0.0-1.0)
+    float baseIntensity = -0.5;    // Minimum brightness to prevent black
+    float separation = -0.5;       // Controls color separation (higher = less overlap)
 
     // === WAVE PATTERN GENERATION ===
     // Purple wave - vertical bias with texture influence
@@ -185,15 +193,15 @@ void main() {
 
     // === FINAL COLOR MIXING ===
     // Define color palettes
-    vec3 purpleColor = vec3(0.5, 0.15, 0.5);  // RGB purple
-    vec3 goldColor = vec3(1.0, 0.87, 0.11);    // More saturated gold (reduced green, removed blue)
+    vec3 purpleColor = vec3(0.3, 0.15, 0.5);  // RGB purple
+    vec3 goldColor = vec3(0.5, 0.3, 0.6);    // More saturated gold (reduced green, removed blue)
 
     // Apply intensities to colors
     vec3 purple = purpleColor * purpleIntensity;
     vec3 gold = goldColor * goldIntensity;
 
     // Combine colors with gold slightly dimmed
-    float goldMixAmount = 0.5;
+    float goldMixAmount = 0.6;
     vec3 finalColor = purple + gold * goldMixAmount;
 
     gl_FragColor = vec4(finalColor, 1.0);

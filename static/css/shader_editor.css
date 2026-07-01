@@ -1,0 +1,89 @@
+/* Shader Editor — Background Control window */
+
+.sed-section {
+    margin-bottom: 8px;
+}
+
+.sed-section-title {
+    font-weight: bold;
+    font-size: 11px;
+    background-color: #000080;
+    color: #ffffff;
+    padding: 1px 4px;
+    margin-bottom: 3px;
+}
+
+.sed-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+    min-height: 20px;
+}
+
+.sed-row-eq {
+    align-items: flex-start;
+}
+
+.sed-lbl {
+    font-size: 11px;
+    min-width: 148px;
+    text-align: right;
+    padding-right: 4px;
+    flex-shrink: 0;
+    color: #000;
+    white-space: nowrap;
+}
+
+.sed-num {
+    width: 72px !important;
+    font-size: 11px;
+    padding: 1px 3px !important;
+}
+
+.sed-hex {
+    width: 72px !important;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    padding: 1px 3px !important;
+}
+
+.sed-rgb-group {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.sed-rgb-lbl {
+    font-size: 10px;
+    color: #444;
+}
+
+.sed-rgb-in {
+    width: 48px !important;
+    font-size: 11px;
+    padding: 1px 3px !important;
+}
+
+.sed-eq {
+    flex: 1;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    padding: 2px 3px !important;
+    min-height: 28px;
+    line-height: 1.3;
+}
+
+#shader-editor-body {
+    font-size: 11px;
+    font-family: 'MS Sans Serif', sans-serif;
+}
+
+.sed-default-hint {
+    font-size: 10px;
+    font-family: 'Courier New', monospace;
+    color: #888;
+    white-space: nowrap;
+    flex-shrink: 0;
+}

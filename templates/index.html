@@ -29,6 +29,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/osrs_graphs.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/shader_editor.css') }}"
+    />
   </head>
   <body>
     <canvas id="background"></canvas>
@@ -109,20 +113,136 @@
       id="disable-bg-container"
       class="draggable-window small-window top-right disable-bg-container"
     >
-      <div class="window-content">
+      <div class="window-content" style="min-width:460px;max-width:500px;">
         <div class="title-bar" id="disable-bg-title-bar">
           <h4>Background Control</h4>
-          <button id="close-disable-bg-button" class="w98-button title-button">
-            X
-          </button>
+          <button id="close-disable-bg-button" class="w98-button title-button">X</button>
         </div>
-        <div style="padding: 15px">
-          <p style="margin: 0 0 10px 0; font-size: 11px">
-            Control the animated background:
-          </p>
-          <button id="toggle-bg-button" class="w98-button">
-            Disable Background
-          </button>
+        <div style="padding:5px 7px 4px;display:flex;gap:5px;border-bottom:1px solid #808080;">
+          <button id="toggle-bg-button" class="w98-button" style="flex:1;">Disable Background</button>
+          <button id="shader-apply-button" class="w98-button" style="flex:1;">Apply Changes</button>
+          <button id="shader-reset-button" class="w98-button" style="flex:1;">Reset Defaults</button>
+        </div>
+        <div id="shader-editor-body" style="padding:6px 8px;overflow-y:auto;max-height:72vh;">
+
+          <!-- General -->
+          <div class="sed-section">
+            <div class="sed-section-title">General</div>
+            <div class="sed-row">
+              <label class="sed-lbl">scale</label>
+              <input class="w98-input sed-num" id="sed-scale" type="number" step="any" value="2.5">
+            </div>
+          </div>
+
+          <!-- Sprite Tones -->
+          <div class="sed-section">
+            <div class="sed-section-title">Sprite Tones (even pixel · odd pixel)</div>
+            <div class="sed-row"><label class="sed-lbl">max_vibrant</label>
+              <input class="w98-input sed-hex" id="sed-spr-max_vibrant-0"     type="text" value="0xFFFFFF">
+              <input class="w98-input sed-hex" id="sed-spr-max_vibrant-1"     type="text" value="0xFFFFFF">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">brightest</label>
+              <input class="w98-input sed-hex" id="sed-spr-brightest-0"       type="text" value="0xEDFEDF">
+              <input class="w98-input sed-hex" id="sed-spr-brightest-1"       type="text" value="0xEDFEDF">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">brighter</label>
+              <input class="w98-input sed-hex" id="sed-spr-brighter-0"        type="text" value="0xDDDDDD">
+              <input class="w98-input sed-hex" id="sed-spr-brighter-1"        type="text" value="0xDDDDDD">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">bright</label>
+              <input class="w98-input sed-hex" id="sed-spr-bright-0"          type="text" value="0x7ADB52">
+              <input class="w98-input sed-hex" id="sed-spr-bright-1"          type="text" value="0x7ADB52">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">medium</label>
+              <input class="w98-input sed-hex" id="sed-spr-medium-0"          type="text" value="0xB524AD">
+              <input class="w98-input sed-hex" id="sed-spr-medium-1"          type="text" value="0x4ADB52">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">dark</label>
+              <input class="w98-input sed-hex" id="sed-spr-dark-0"            type="text" value="0xB52312">
+              <input class="w98-input sed-hex" id="sed-spr-dark-1"            type="text" value="0xB52312">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">darker</label>
+              <input class="w98-input sed-hex" id="sed-spr-darker-0"          type="text" value="0x912264">
+              <input class="w98-input sed-hex" id="sed-spr-darker-1"          type="text" value="0x489912">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">darkest</label>
+              <input class="w98-input sed-hex" id="sed-spr-darkest-0"         type="text" value="0x024480">
+              <input class="w98-input sed-hex" id="sed-spr-darkest-1"         type="text" value="0x012240">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">darkestest</label>
+              <input class="w98-input sed-hex" id="sed-spr-darkestest-0"      type="text" value="0x024000">
+              <input class="w98-input sed-hex" id="sed-spr-darkestest-1"      type="text" value="0x000240">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">more_darkestest</label>
+              <input class="w98-input sed-hex" id="sed-spr-more_darkestest-0" type="text" value="0x000400">
+              <input class="w98-input sed-hex" id="sed-spr-more_darkestest-1" type="text" value="0x000080">
+            </div>
+            <div class="sed-row"><label class="sed-lbl">empty</label>
+              <input class="w98-input sed-hex" id="sed-spr-empty-0"           type="text" value="0x000000">
+              <input class="w98-input sed-hex" id="sed-spr-empty-1"           type="text" value="0x000000">
+            </div>
+          </div>
+
+          <!-- Wave Parameters -->
+          <div class="sed-section">
+            <div class="sed-section-title">Wave Parameters</div>
+            <div class="sed-row"><label class="sed-lbl">verticalWaveFreq</label>   <input class="w98-input sed-num" id="sed-verticalWaveFreq"    type="number" step="any" value="3.5"></div>
+            <div class="sed-row"><label class="sed-lbl">verticalWaveSpeed</label>  <input class="w98-input sed-num" id="sed-verticalWaveSpeed"   type="number" step="any" value="0.05"></div>
+            <div class="sed-row"><label class="sed-lbl">verticalWaveAmount</label> <input class="w98-input sed-num" id="sed-verticalWaveAmount"  type="number" step="any" value="0.2"></div>
+            <div class="sed-row"><label class="sed-lbl">wave1Freq</label>          <input class="w98-input sed-num" id="sed-wave1Freq"           type="number" step="any" value="1.0"></div>
+            <div class="sed-row"><label class="sed-lbl">wave1Speed</label>         <input class="w98-input sed-num" id="sed-wave1Speed"          type="number" step="any" value="0.005"></div>
+            <div class="sed-row"><label class="sed-lbl">innerWave1YCoeff</label>   <input class="w98-input sed-num" id="sed-innerWave1YCoeff"    type="number" step="any" value="7.0"></div>
+            <div class="sed-row"><label class="sed-lbl">innerWave1TimeCoeff</label><input class="w98-input sed-num" id="sed-innerWave1TimeCoeff" type="number" step="any" value="0.3"></div>
+            <div class="sed-row"><label class="sed-lbl">wave2Freq</label>          <input class="w98-input sed-num" id="sed-wave2Freq"           type="number" step="any" value="3.0"></div>
+            <div class="sed-row"><label class="sed-lbl">wave2Speed</label>         <input class="w98-input sed-num" id="sed-wave2Speed"          type="number" step="any" value="0.005"></div>
+            <div class="sed-row"><label class="sed-lbl">innerWave2YCoeff</label>   <input class="w98-input sed-num" id="sed-innerWave2YCoeff"    type="number" step="any" value="9.0"></div>
+            <div class="sed-row"><label class="sed-lbl">modTimeMultiplier</label>  <input class="w98-input sed-num" id="sed-modTimeMultiplier"   type="number" step="any" value="-0.1"></div>
+            <div class="sed-row"><label class="sed-lbl">oscillationFrequency</label><input class="w98-input sed-num" id="sed-oscillationFrequency" type="number" step="any" value="0.25"></div>
+            <div class="sed-row"><label class="sed-lbl">oscillationStrength</label> <input class="w98-input sed-num" id="sed-oscillationStrength"  type="number" step="any" value="2.0"></div>
+            <div class="sed-row"><label class="sed-lbl">modA</label>               <input class="w98-input sed-num" id="sed-modA"                type="number" step="any" value="-5.0"></div>
+            <div class="sed-row"><label class="sed-lbl">finalA</label>             <input class="w98-input sed-num" id="sed-finalA"              type="number" step="any" value="2.0"></div>
+          </div>
+
+          <!-- Equations -->
+          <div class="sed-section">
+            <div class="sed-section-title">Equations (GLSL expressions)</div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">innerWave1</label>     <textarea class="w98-input sed-eq" id="sed-eq-innerWave1"      rows="2">sin(tileUV.x + tileUV.y * innerWave1YCoeff + time * innerWave1TimeCoeff)</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">wave1</label>          <textarea class="w98-input sed-eq" id="sed-eq-wave1"           rows="2">sin(tileUV.x * wave1Freq + innerWave1 + time * wave1Speed)</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">innerWave2</label>     <textarea class="w98-input sed-eq" id="sed-eq-innerWave2"      rows="2">cos(tileUV.x - tileUV.y * innerWave2YCoeff + time * wave2Speed)</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">wave2</label>          <textarea class="w98-input sed-eq" id="sed-eq-wave2"           rows="2">cos(tileUV.y * wave2Freq + innerWave2)</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">combinedWaves</label>  <textarea class="w98-input sed-eq" id="sed-eq-combinedWaves"   rows="2">wave1 + wave2</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">slowOscillation</label><textarea class="w98-input sed-eq" id="sed-eq-slowOscillation" rows="2">sin(time * oscillationFrequency) * oscillationStrength</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">modulation</label>     <textarea class="w98-input sed-eq" id="sed-eq-modulation"      rows="2">modA * (modTimeMultiplier * time + slowOscillation)</textarea></div>
+            <div class="sed-row sed-row-eq"><label class="sed-lbl">finalPattern</label>   <textarea class="w98-input sed-eq" id="sed-eq-finalPattern"    rows="2">sin(combinedWaves * finalA + modulation)</textarea></div>
+          </div>
+
+          <!-- Color Controls -->
+          <div class="sed-section">
+            <div class="sed-section-title">Color Wave Controls</div>
+            <div class="sed-row"><label class="sed-lbl">waveSpeed</label>     <input class="w98-input sed-num" id="sed-waveSpeed"     type="number" step="any" value="0.5"></div>
+            <div class="sed-row"><label class="sed-lbl">waveScale</label>     <input class="w98-input sed-num" id="sed-waveScale"     type="number" step="any" value="0.005"></div>
+            <div class="sed-row"><label class="sed-lbl">waveAmplitude</label> <input class="w98-input sed-num" id="sed-waveAmplitude" type="number" step="any" value="0.8"></div>
+            <div class="sed-row"><label class="sed-lbl">baseIntensity</label> <input class="w98-input sed-num" id="sed-baseIntensity" type="number" step="any" value="0.15"></div>
+            <div class="sed-row"><label class="sed-lbl">separation</label>    <input class="w98-input sed-num" id="sed-separation"    type="number" step="any" value="0.2"></div>
+            <div class="sed-row"><label class="sed-lbl">color2MixAmount</label> <input class="w98-input sed-num" id="sed-color2MixAmount" type="number" step="any" value="0.5"></div>
+            <div class="sed-row">
+              <label class="sed-lbl">color1Color (R·G·B)</label>
+              <div class="sed-rgb-group">
+                <span class="sed-rgb-lbl">R</span><input class="w98-input sed-rgb-in" id="sed-color1R" type="number" step="any" value="0.5">
+                <span class="sed-rgb-lbl">G</span><input class="w98-input sed-rgb-in" id="sed-color1G" type="number" step="any" value="0.15">
+                <span class="sed-rgb-lbl">B</span><input class="w98-input sed-rgb-in" id="sed-color1B" type="number" step="any" value="0.5">
+              </div>
+            </div>
+            <div class="sed-row">
+              <label class="sed-lbl">color2Color (R·G·B)</label>
+              <div class="sed-rgb-group">
+                <span class="sed-rgb-lbl">R</span><input class="w98-input sed-rgb-in" id="sed-color2R" type="number" step="any" value="1.0">
+                <span class="sed-rgb-lbl">G</span><input class="w98-input sed-rgb-in" id="sed-color2G" type="number" step="any" value="0.87">
+                <span class="sed-rgb-lbl">B</span><input class="w98-input sed-rgb-in" id="sed-color2B" type="number" step="any" value="0.11">
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -139,6 +259,7 @@
       window.openStates = {};
     </script>
     <script src="{{ url_for('static', filename='js/index_background.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/shader_editor.js') }}"></script>
     <script src="{{ url_for('static', filename='js/drag_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
@@ -218,6 +339,9 @@
         const loginButton = document.getElementById("index-login-btn");
         const registerButton = document.getElementById("index-register-btn");
         const logoutButton = document.getElementById("index-logout-btn");
+
+        // Shader editor
+        if (typeof ShaderEditor !== 'undefined') new ShaderEditor();
 
         // Background toggle functionality
         if (toggleBgButton) {
