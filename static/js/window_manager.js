@@ -16,6 +16,23 @@ class WindowManager {
         // Automatically discover and register all draggable windows on page load
         document.addEventListener('DOMContentLoaded', () => {
             this.autoDiscoverWindows();
+
+            // Auto-unregister any window whose container is removed from the DOM
+            const observer = new MutationObserver(mutations => {
+                const toUnregister = [];
+                mutations.forEach(mutation => {
+                    mutation.removedNodes.forEach(node => {
+                        if (node.nodeType !== 1) return;
+                        this.windows.forEach((win, windowId) => {
+                            if (node === win.container || node.contains(win.container)) {
+                                toUnregister.push(windowId);
+                            }
+                        });
+                    });
+                });
+                toUnregister.forEach(id => this.unregisterWindow(id));
+            });
+            observer.observe(document.body, { childList: true });
         });
     }
 
@@ -72,6 +89,13 @@ class WindowManager {
 
             // Set up automatic window activation for this window
             this._setupWindowActivation(windowId);
+
+            // Notify listeners (e.g. Taskbar) that a new window has been registered
+            const h4 = dragWindow.container.querySelector('.title-bar h4');
+            const label = h4 ? h4.textContent.trim() : windowId;
+            document.dispatchEvent(new CustomEvent('windowRegistered', {
+                detail: { windowId, label }
+            }));
 
             console.log(`Window '${windowId}' registered successfully`);
             return dragWindow;
@@ -174,6 +198,24 @@ class WindowManager {
         } else {
             console.log(`No buttons found for window '${windowId}'`);
         }
+    }
+
+    /**
+     * Remove a window from the registry and notify listeners
+     * @param {string} windowId - Window identifier
+     */
+    unregisterWindow(windowId) {
+        if (!this.windows.has(windowId)) return;
+        if (this.activeWindowId === windowId) {
+            this.activeWindowId = null;
+            this._findAndSetNextActiveWindow();
+        }
+        this.windows.delete(windowId);
+        this.windowButtons.delete(windowId);
+        document.dispatchEvent(new CustomEvent('windowUnregistered', {
+            detail: { windowId }
+        }));
+        console.log(`Window '${windowId}' unregistered`);
     }
 
     /**

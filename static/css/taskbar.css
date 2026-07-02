@@ -1,0 +1,73 @@
+#taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: #c0c0c0;
+    border-top: 1px solid #808080;
+    box-shadow: inset 0 1px 0 #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 3px;
+    z-index: 9999;
+    box-sizing: border-box;
+}
+
+#taskbar-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 8px;
+    height: 22px;
+    font-weight: bold;
+    flex-shrink: 0;
+    min-width: 0px;
+}
+
+.taskbar-start-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.taskbar-separator {
+    width: 2px;
+    height: 22px;
+    border-left: 1px solid #808080;
+    border-right: 1px solid #ffffff;
+    flex-shrink: 0;
+    margin: 0 2px;
+}
+
+.taskbar-window-btn {
+    height: 22px;
+    padding: 1px 8px;
+    max-width: 160px;
+    min-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    flex-shrink: 0;
+}
+
+/* Sunken look for the currently active/focused window */
+.taskbar-btn-active {
+    background: #c0c0c0 !important;
+    border-color: #808080 #dfdfdf #dfdfdf #808080 !important;
+    box-shadow:
+        inset -1px -1px 0px #ffffff,
+        inset -2px -2px 0px #dfdfdf,
+        inset 1px 1px 0px #808080,
+        inset 2px 2px 0px #808080 !important;
+    transform: none !important;
+}
+
+/* Italic tint for windows that are hidden/minimised */
+.taskbar-btn-minimized {
+    font-style: italic;
+    color: #555;
+}

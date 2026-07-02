@@ -110,15 +110,11 @@ class DragWindow {
         const newX = this.startLeft + deltaX;
         const newY = this.startTop + deltaY;
         
-        // Get viewport dimensions and container dimensions
-        const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        const containerWidth = this.container.offsetWidth;
-        const containerHeight = this.container.offsetHeight;
-        
-        // Constrain to viewport bounds (allow full left side)
-        const constrainedX = Math.max(0, Math.min(newX, viewportWidth - containerWidth));
-        const constrainedY = Math.max(0, Math.min(newY, viewportHeight - containerHeight));
+
+        // Only prevent dragging above the top of the screen
+        const constrainedX = newX;
+        const constrainedY = Math.max(0, newY);
         
         // Apply new position
         this.container.style.left = constrainedX + 'px';

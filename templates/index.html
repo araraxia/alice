@@ -33,6 +33,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/shader_editor.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/taskbar.css') }}"
+    />
   </head>
   <body>
     <canvas id="background"></canvas>
@@ -112,6 +116,7 @@
     <div
       id="disable-bg-container"
       class="draggable-window small-window top-right disable-bg-container"
+      data-taskbar-deferred
     >
       <div class="window-content" style="min-width:460px;max-width:500px;">
         <div class="title-bar" id="disable-bg-title-bar">
@@ -265,6 +270,7 @@
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_initializer.js') }}"></script>
     <script src="{{ url_for('static', filename='js/blog.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/taskbar.js') }}"></script>
     <script>
       function loadScript(url) {
         return new Promise((resolve, reject) => {
@@ -342,6 +348,9 @@
 
         // Shader editor
         if (typeof ShaderEditor !== 'undefined') new ShaderEditor();
+
+        // Taskbar
+        if (typeof Taskbar !== 'undefined') new Taskbar();
 
         // Background toggle functionality
         if (toggleBgButton) {
@@ -531,6 +540,12 @@
           alert("Help is on the way!");
         });
     </script>
+    <div id="taskbar">
+      <button id="taskbar-start" class="w98-button">
+        <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="" class="taskbar-start-icon">
+      </button>
+      <div class="taskbar-separator"></div>
+    </div>
     <script>
       let escapeWindowStack = []; // Stack to manage windows that can be closed with Escape key
       document.addEventListener("keydown", function (event) {
