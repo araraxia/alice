@@ -60,8 +60,9 @@ class WindowInitializer {
                 console.log(`Opening ${this.windowId}.`);
                 const titleBar = container.querySelector(`#${this.titleId}`);
                 if (titleBar) {
+                    container.style.visibility = 'hidden';
                     this.windowManager.registerWindow(this.windowId, container, `#${this.titleId}`);
-                    this.windowManager.centerWindow(this.windowId);
+                    this.windowManager.centerWindow(this.windowId); // clears visibility when done
                     this.windowManager.bringToFront(this.windowId);
                     this.initClose(newWindow);
                 } else {
