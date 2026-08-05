@@ -46,6 +46,27 @@ def goading_regens():
     return jsonify({"status": "success", "html": page_html})
 
 
+@osrs_route.route("/herblore", methods=["GET"])
+def herblore():
+    from src.osrs.calcs.herblore_step_calc import HerbloreStepCalc
+
+    hc = HerbloreStepCalc()
+    page_html = hc.display()
+    return jsonify({"status": "success", "html": page_html})
+
+
+@osrs_route.route("/herblore/data", methods=["GET"])
+def herblore_data():
+    from src.osrs.calcs.herblore_step_calc import HerbloreStepCalc
+
+    try:
+        hc = HerbloreStepCalc()
+        return jsonify({"status": "success", "data": hc.to_json()})
+    except Exception as e:
+        current_app.logger.error(f"Error computing herblore data: {e}")
+        return jsonify({"status": "error", "message": "An error occurred"}), 500
+
+
 @osrs_route.route("/item-search", methods=["GET"])
 def item_search():
     from src.osrs.item_search import ItemSearch

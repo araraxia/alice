@@ -1,0 +1,145 @@
+step_id,potion_family,step_label,input_1,input_2,output,output_extra_dose,output_doses,xp,level_req,zahur_clean,zahur_unf,wesley,dose_amulet,goggles
+clean_avantoe,fishing\|hunter\|super_energy,Clean Avantoe,Grimy avantoe,,Avantoe,,,10,48,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_cadantine,super_defence\|battlemage,Clean Cadantine,Grimy cadantine,,Cadantine,,,12.5,65,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_dwarf_weed,ancient_brew\|menaphite_remedy\|ranging,Clean Dwarf weed,Grimy dwarf weed,,Dwarf weed,,,13.8,70,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_guam_leaf,attack,Clean Guam leaf,Grimy guam leaf,,Guam leaf,,,2.5,3,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_harralander,combat\|compost\|energy\|goading\|restore,Clean Harralander,Grimy harralander,,Harralander,,,6.3,20,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_huasca,prayer_regen,Clean Huasca,Grimy huasca,,Huasca,,,11.8,58,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_irit_leaf,super_attack\|superantipoison\|antidote_pp,Clean Irit leaf,Grimy irit leaf,,Irit leaf,,,8.8,40,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_kwuarm,super_strength\|weapon_poison,Clean Kwuarm,Grimy kwuarm,,Kwuarm,,,11.3,54,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_lantadyme,antifire\|magic,Clean Lantadyme,Grimy lantadyme,,Lantadyme,,,13.1,67,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_marrentill,antipoison,Clean Marrentill,Grimy marrentill,,Marrentill,,,3.8,5,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_ranarr_weed,defence_potion\|prayer_potion,Clean Ranarr weed,Grimy ranarr weed,,Ranarr weed,,,7.5,25,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_snapdragon,super_restore,Clean Snapdragon,Grimy snapdragon,,Snapdragon,,,11.8,59,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_tarromin,strength,Clean Tarromin,Grimy tarromin,,Tarromin,,,5,11,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_toadflax,agility_potion\|saradomin_brew\|antidote_p,Clean Toadflax,Grimy toadflax,,Toadflax,,,8,30,TRUE,FALSE,FALSE,FALSE,FALSE
+clean_torstol,antivenom\|super_combat\|surge\|zamorak_brew,Clean Torstol,Grimy torstol,,Torstol,,,15,75,TRUE,FALSE,FALSE,FALSE,FALSE
+make_agility_potion,agility_potion,Make Agility Potion,Toadflax potion (unf),Toad's legs,Agility potion(3),4,3,80,34,FALSE,FALSE,FALSE,TRUE,TRUE
+make_ancient_brew,ancient_brew,Make Ancient Brew,Dwarf weed potion (unf),Nihil dust,Ancient brew(3),4,3,190,85,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antidote_p,antidote_p,Make Antidote+,Antidote+ (unf),Yew roots,Antidote+(3),4,3,155,68,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antidote_p_unf,antidote_p,Make Antidote+ (Unf),Toadflax,Coconut milk,Antidote+ (unf),,,0,68,FALSE,FALSE,FALSE,FALSE,FALSE
+make_antidote_pp,antidote_pp,Make Antidote++,Antidote++ (unf),Magic roots,Antidote++(3),4,3,177.5,79,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antidote_pp_unf,antidote_pp,Make Antidote++ (Unf),Irit leaf,Coconut milk,Antidote++ (unf),,,0,79,FALSE,FALSE,FALSE,FALSE,FALSE
+make_armadyl_brew,armadyl_brew,Make Armadyl Brew,Umbral coral potion (unf),Rainbow crab paste,Armadyl brew(3),4,3,205,89,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antifire,antifire,Make Antifire Potion,Lantadyme potion (unf),Dragon scale dust,Antifire potion(3),4,3,157.5,69,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antipoison,antipoison,Make Antipoison,Marrentill potion (unf),Unicorn horn dust,Antipoison(3),4,3,37.5,5,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antivenom_1,antivenom,Make Anti-venom(1),Antidote++(1),5x Zulrah's scales,Anti-venom(1),2,1,30,87,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antivenom_2,antivenom,Make Anti-venom(2),Antidote++(2),10x Zulrah's scales,Anti-venom(2),3,2,60,87,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antivenom_3,antivenom,Make Anti-venom(3),Antidote++(3),15x Zulrah's scales,Anti-venom(3),4,3,90,87,FALSE,FALSE,FALSE,TRUE,TRUE
+make_antivenom_4,antivenom,Make Anti-venom(4),Antidote++(4),20x Zulrah's scales,Anti-venom(4),,4,120,87,FALSE,FALSE,FALSE,FALSE,TRUE
+make_antivenom_p,antivenom,Make Anti-venom+,Anti-venom(4),Torstol,Anti-venom+,,4,125,94,FALSE,FALSE,FALSE,FALSE,TRUE
+make_attack,attack,Make Attack Potion,Guam potion (unf),Eye of newt,Attack potion(3),4,3,25,3,FALSE,FALSE,FALSE,TRUE,TRUE
+make_bastion,bastion,Make Bastion Potion,Cadantine blood potion (unf),Potato cactus,Bastion potion(3),4,3,155,80,FALSE,FALSE,FALSE,TRUE,TRUE
+make_battlemage,battlemage,Make Battlemage Potion,Cadantine blood potion (unf),Potato cactus,Battlemage potion(3),4,3,155,80,FALSE,FALSE,FALSE,TRUE,TRUE
+make_combat,combat,Make Combat Potion,Harralander potion (unf),Goat horn dust,Combat potion(3),4,3,84,36,FALSE,FALSE,FALSE,TRUE,TRUE
+make_crushed_superior_dragon_bones,super_antifire\|extended_super_antifire,Make Crushed Superior Dragon Bones,Superior dragon bones,,Crushed superior dragon bones,,,0,0,FALSE,FALSE,TRUE,FALSE,FALSE
+make_compost,compost,Make Compost Potion,Harralander potion (unf),Volcanic ash,Compost potion(3),4,3,60,22,FALSE,FALSE,FALSE,TRUE,TRUE
+make_defence_potion,defence_potion,Make Defence Potion,Ranarr potion (unf),White berries,Defence potion(3),4,3,75,30,FALSE,FALSE,FALSE,TRUE,TRUE
+make_energy,energy,Make Energy Potion,Harralander potion (unf),Chocolate dust,Energy potion(3),4,3,67.5,26,FALSE,FALSE,FALSE,TRUE,TRUE
+make_fishing,fishing,Make Fishing Potion,Avantoe potion (unf),Snape grass,Fishing potion(3),4,3,112.5,50,FALSE,FALSE,FALSE,TRUE,TRUE
+make_goading,goading,Make Goading Potion,Harralander potion (unf),Aldarium,Goading potion(3),4,3,132,54,FALSE,FALSE,FALSE,TRUE,TRUE
+make_guthix_rest,guthix_rest,Make Guthix Rest,Cup of hot water,Marrentill\|2x Guam leaf\|Harralander,Guthix rest,,3,59,18,FALSE,FALSE,FALSE,FALSE,FALSE
+make_haemostatic_dressing,haemostatic,Make Haemostatic Dressing,Haemostatic poultice,Cotton yarn,Haemostatic dressing(3),4,3,100,56,FALSE,FALSE,FALSE,TRUE,TRUE
+make_haemostatic_poultice,haemostatic,Make Haemostatic Poultice,Elkhorn coral potion (unf),Squid paste,Haemostatic poultice(3),4,3,27,56,FALSE,FALSE,FALSE,FALSE,TRUE
+make_hunter,hunter,Make Hunter Potion,Avantoe potion (unf),Kebbit teeth dust,Hunter potion(3),4,3,120,53,FALSE,FALSE,FALSE,TRUE,TRUE
+make_magic,magic,Make Magic Potion,Lantadyme potion (unf),Potato cactus,Magic potion(3),4,3,172.5,76,FALSE,FALSE,FALSE,TRUE,TRUE
+make_menaphite_remedy,menaphite_remedy,Make Menaphite Remedy,Dwarf weed potion (unf),Lily of the sands,Menaphite remedy(3),4,3,200,88,FALSE,FALSE,FALSE,TRUE,TRUE
+make_prayer_potion,prayer_potion,Make Prayer Potion,Ranarr potion (unf),Snape grass,Prayer potion(3),4,3,87.5,38,FALSE,FALSE,FALSE,TRUE,TRUE
+make_prayer_regen,prayer_regen,Make Prayer Regeneration Potion,Huasca potion (unf),Aldarium,Prayer regeneration potion(3),4,3,132,58,FALSE,FALSE,FALSE,TRUE,TRUE
+make_ranging,ranging,Make Ranging Potion,Dwarf weed potion (unf),Wine of zamorak,Ranging potion(3),4,3,162.5,72,FALSE,FALSE,FALSE,TRUE,TRUE
+make_restore,restore,Make Restore Potion,Harralander potion (unf),Red spiders' eggs,Restore potion(3),4,3,62.5,22,FALSE,FALSE,FALSE,TRUE,TRUE
+make_saradomin_brew,saradomin_brew,Make Saradomin Brew,Toadflax potion (unf),Crushed nest,Saradomin brew(3),4,3,180,81,FALSE,FALSE,FALSE,TRUE,TRUE
+make_squid_paste_jumbo,haemostatic,Make Squid Paste (Jumbo),Raw jumbo squid,,Squid paste,,,0,0,FALSE,FALSE,FALSE,FALSE,FALSE
+make_squid_paste_swordtip,haemostatic,Make Squid Paste (Swordtip),Raw swordtip squid,,Squid paste,,,0,0,FALSE,FALSE,FALSE,FALSE,FALSE
+make_strength,strength,Make Strength Potion,Tarromin potion (unf),Limpwurt root,Strength potion(3),4,3,50,12,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_antifire,super_antifire,Make Super Antifire Potion,Antifire potion(4),Crushed superior dragon bones,Super antifire potion(4),,4,130,92,FALSE,FALSE,FALSE,FALSE,TRUE
+make_super_attack,super_attack,Make Super Attack,Irit potion (unf),Eye of newt,Super attack(3),4,3,100,45,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_defence,super_defence,Make Super Defence,Cadantine potion (unf),White berries,Super defence(3),4,3,150,66,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_energy,super_energy,Make Super Energy Potion,Avantoe potion (unf),Mort myre fungus,Super energy(3),4,3,117.5,52,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_fishing,super_fishing,Make Super Fishing Potion,Pillar coral potion (unf),Haddock eye,Super fishing potion(3),4,3,140.5,62,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_hunter,super_hunter,Make Super Hunter Potion,Pillar coral potion (unf),Crab paste,Super hunter potion(3),4,3,154,67,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_restore,super_restore,Make Super Restore,Snapdragon potion (unf),Red spiders' eggs,Super restore(3),4,3,142.5,63,FALSE,FALSE,FALSE,TRUE,TRUE
+make_super_strength,super_strength,Make Super Strength,Kwuarm potion (unf),Limpwurt root,Super strength(3),4,3,125,55,FALSE,FALSE,FALSE,TRUE,TRUE
+make_superantipoison,superantipoison,Make Superantipoison,Irit potion (unf),Unicorn horn dust,Superantipoison(3),4,3,106.3,48,FALSE,FALSE,FALSE,TRUE,TRUE
+make_surge,surge,Make Surge Potion,Torstol potion (unf),Demonic tallow,Surge potion(3),4,3,185,81,FALSE,FALSE,FALSE,TRUE,TRUE
+make_unf_avantoe_potion,fishing\|hunter\|super_energy,Make Unf Avantoe Potion,Avantoe,Vial of water,Avantoe potion (unf),,,0,50,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_cadantine_blood_potion,bastion\|battlemage,Make Unf Cadantine Blood Potion,Cadantine,Vial of blood,Cadantine blood potion (unf),,,0,80,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_umbral_coral_potion,armadyl_brew,Make Unf Umbral Coral Potion,Umbral coral,Vial of water,Umbral coral potion (unf),,,0,89,FALSE,FALSE,FALSE,FALSE,FALSE
+make_unf_cadantine_potion,super_defence,Make Unf Cadantine Potion,Cadantine,Vial of water,Cadantine potion (unf),,,0,66,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_elkhorn_coral_potion,haemostatic,Make Unf Elkhorn Coral Potion,Elkhorn coral,Vial of water,Elkhorn coral potion (unf),,,0,56,FALSE,FALSE,FALSE,FALSE,FALSE
+make_unf_dwarf_weed_potion,ancient_brew\|menaphite_remedy\|ranging,Make Unf Dwarf weed Potion,Dwarf weed,Vial of water,Dwarf weed potion (unf),,,0,72,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_guam_potion,attack,Make Unf Guam Potion,Guam leaf,Vial of water,Guam potion (unf),,,0,3,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_harralander_potion,combat\|compost\|energy\|goading\|restore,Make Unf Harralander Potion,Harralander,Vial of water,Harralander potion (unf),,,0,22,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_huasca_potion,prayer_regen,Make Unf Huasca Potion,Huasca,Vial of water,Huasca potion (unf),,,0,58,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_irit_potion,super_attack\|superantipoison,Make Unf Irit Potion,Irit leaf,Vial of water,Irit potion (unf),,,0,45,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_kwuarm_potion,super_strength\|weapon_poison,Make Unf Kwuarm Potion,Kwuarm,Vial of water,Kwuarm potion (unf),,,0,55,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_lantadyme_potion,antifire\|magic,Make Unf Lantadyme Potion,Lantadyme,Vial of water,Lantadyme potion (unf),,,0,69,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_marrentill_potion,antipoison,Make Unf Marrentill Potion,Marrentill,Vial of water,Marrentill potion (unf),,,0,5,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_pillar_coral_potion,super_fishing\|super_hunter,Make Unf Pillar Coral Potion,Pillar coral,Vial of water,Pillar coral potion (unf),,,0,62,FALSE,FALSE,FALSE,FALSE,FALSE
+make_unf_ranarr_potion,defence_potion\|prayer_potion,Make Unf Ranarr Potion,Ranarr weed,Vial of water,Ranarr potion (unf),,,0,30,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_snapdragon_potion,super_restore,Make Unf Snapdragon Potion,Snapdragon,Vial of water,Snapdragon potion (unf),,,0,63,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_tarromin_potion,strength,Make Unf Tarromin Potion,Tarromin,Vial of water,Tarromin potion (unf),,,0,12,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_toadflax_potion,agility_potion\|saradomin_brew,Make Unf Toadflax Potion,Toadflax,Vial of water,Toadflax potion (unf),,,0,34,FALSE,TRUE,FALSE,FALSE,FALSE
+make_unf_torstol_potion,antivenom\|super_combat\|surge\|zamorak_brew,Make Unf Torstol Potion,Torstol,Vial of water,Torstol potion (unf),,,0,78,FALSE,TRUE,FALSE,FALSE,FALSE
+make_weapon_poison,weapon_poison,Make Weapon Poison,Kwuarm potion (unf),Dragon scale dust,Weapon poison,,,137.5,60,FALSE,FALSE,FALSE,FALSE,TRUE
+make_weapon_poison_p,weapon_poison_p,Make Weapon Poison+,Weapon poison+ (unf),Red spiders' eggs,Weapon poison+(3),4,3,190,73,FALSE,FALSE,FALSE,TRUE,TRUE
+make_weapon_poison_p_unf,weapon_poison_p,Make Weapon Poison+ (Unf),Cactus spine,Coconut milk,Weapon poison+ (unf),,,0,73,FALSE,FALSE,FALSE,FALSE,FALSE
+make_weapon_poison_pp,weapon_poison_pp,Make Weapon Poison++,Weapon poison++ (unf),Poison ivy berries,Weapon poison++(3),4,3,190,82,FALSE,FALSE,FALSE,TRUE,TRUE
+make_weapon_poison_pp_unf_cave_nightshade,weapon_poison_pp,Make Weapon Poison++ (Unf) (Cave Nightshade),Cave nightshade,Coconut milk,Weapon poison++ (unf),,,0,82,FALSE,FALSE,FALSE,FALSE,FALSE
+make_weapon_poison_pp_unf_nightshade,weapon_poison_pp,Make Weapon Poison++ (Unf) (Nightshade),Nightshade,Coconut milk,Weapon poison++ (unf),,,0,82,FALSE,FALSE,FALSE,FALSE,FALSE
+make_zamorak_brew,zamorak_brew,Make Zamorak Brew,Torstol potion (unf),Jangerberries,Zamorak brew(3),4,3,175,78,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_antivenom_p,antivenom,Make Extended Anti-venom+,Anti-venom+(4),4x Araxyte venom sac,Extended anti-venom+,,4,80,94,FALSE,FALSE,FALSE,FALSE,TRUE
+make_extreme_energy_1,extreme_energy,Make Extreme Energy Potion(1),Super energy(1),Yellow fin,Extreme energy potion(1),2,1,21,66,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extreme_energy_2,extreme_energy,Make Extreme Energy Potion(2),Super energy(2),2x Yellow fin,Extreme energy potion(2),3,2,42,66,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extreme_energy_3,extreme_energy,Make Extreme Energy Potion(3),Super energy(3),3x Yellow fin,Extreme energy potion(3),4,3,63,66,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extreme_energy_4,extreme_energy,Make Extreme Energy Potion(4),Super energy(4),4x Yellow fin,Extreme energy potion(4),,4,84,66,FALSE,FALSE,FALSE,FALSE,TRUE
+make_stamina_1,stamina,Make Stamina Potion(1),Super energy(1),Amylase crystal,Stamina potion(1),2,1,25.5,77,FALSE,FALSE,FALSE,TRUE,TRUE
+make_stamina_2,stamina,Make Stamina Potion(2),Super energy(2),2x Amylase crystal,Stamina potion(2),3,2,51,77,FALSE,FALSE,FALSE,TRUE,TRUE
+make_stamina_3,stamina,Make Stamina Potion(3),Super energy(3),3x Amylase crystal,Stamina potion(3),4,3,76.5,77,FALSE,FALSE,FALSE,TRUE,TRUE
+make_stamina_4,stamina,Make Stamina Potion(4),Super energy(4),4x Amylase crystal,Stamina potion(4),,4,102,77,FALSE,FALSE,FALSE,FALSE,TRUE
+make_extended_antifire_1,extended_antifire,Make Extended Antifire(1),Antifire potion(1),Lava scale shard,Extended antifire(1),2,1,27.5,84,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_antifire_2,extended_antifire,Make Extended Antifire(2),Antifire potion(2),2x Lava scale shard,Extended antifire(2),3,2,55,84,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_antifire_3,extended_antifire,Make Extended Antifire(3),Antifire potion(3),3x Lava scale shard,Extended antifire(3),4,3,82.5,84,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_antifire_4,extended_antifire,Make Extended Antifire(4),Antifire potion(4),4x Lava scale shard,Extended antifire(4),,4,110,84,FALSE,FALSE,FALSE,FALSE,TRUE
+make_extended_stamina_1,extended_stamina,Make Extended Stamina Potion(1),Stamina potion(1),Marlin scales,Extended stamina potion(1),2,1,27.5,85,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_stamina_2,extended_stamina,Make Extended Stamina Potion(2),Stamina potion(2),2x Marlin scales,Extended stamina potion(2),3,2,55,85,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_stamina_3,extended_stamina,Make Extended Stamina Potion(3),Stamina potion(3),3x Marlin scales,Extended stamina potion(3),4,3,82.5,85,FALSE,FALSE,FALSE,TRUE,TRUE
+make_extended_stamina_4,extended_stamina,Make Extended Stamina Potion(4),Stamina potion(4),4x Marlin scales,Extended stamina potion(4),,4,110,85,FALSE,FALSE,FALSE,FALSE,TRUE
+make_forgotten_brew_1,forgotten_brew,Make Forgotten Brew(1),Ancient brew(1),20x Ancient essence,Forgotten brew(1),2,1,36.25,91,FALSE,FALSE,FALSE,TRUE,TRUE
+make_forgotten_brew_2,forgotten_brew,Make Forgotten Brew(2),Ancient brew(2),40x Ancient essence,Forgotten brew(2),3,2,72.5,91,FALSE,FALSE,FALSE,TRUE,TRUE
+make_forgotten_brew_3,forgotten_brew,Make Forgotten Brew(3),Ancient brew(3),60x Ancient essence,Forgotten brew(3),4,3,108.75,91,FALSE,FALSE,FALSE,TRUE,TRUE
+make_forgotten_brew_4,forgotten_brew,Make Forgotten Brew(4),Ancient brew(4),80x Ancient essence,Forgotten brew(4),,4,145,91,FALSE,FALSE,FALSE,FALSE,TRUE
+make_extended_super_antifire_a,extended_super_antifire,Make Extended Super Antifire (Shards),Super antifire potion(4),4x Lava scale shard,Extended super antifire(4),,4,160,98,FALSE,FALSE,FALSE,FALSE,TRUE
+make_extended_super_antifire_b,extended_super_antifire,Make Extended Super Antifire (Bones),Extended antifire(4),Crushed superior dragon bones,Extended super antifire(4),,4,180,98,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_super_attack_1,divine,Make Divine Super Attack(1),Super attack(1),Crystal dust,Divine super attack(1),2,1,0.5,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_attack_2,divine,Make Divine Super Attack(2),Super attack(2),2x Crystal dust,Divine super attack(2),3,2,1.0,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_attack_3,divine,Make Divine Super Attack(3),Super attack(3),3x Crystal dust,Divine super attack(3),4,3,1.5,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_attack_4,divine,Make Divine Super Attack(4),Super attack(4),4x Crystal dust,Divine super attack(4),,4,2.0,70,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_super_defence_1,divine,Make Divine Super Defence(1),Super defence(1),Crystal dust,Divine super defence(1),2,1,0.5,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_defence_2,divine,Make Divine Super Defence(2),Super defence(2),2x Crystal dust,Divine super defence(2),3,2,1.0,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_defence_3,divine,Make Divine Super Defence(3),Super defence(3),3x Crystal dust,Divine super defence(3),4,3,1.5,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_defence_4,divine,Make Divine Super Defence(4),Super defence(4),4x Crystal dust,Divine super defence(4),,4,2.0,70,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_super_strength_1,divine,Make Divine Super Strength(1),Super strength(1),Crystal dust,Divine super strength(1),2,1,0.5,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_strength_2,divine,Make Divine Super Strength(2),Super strength(2),2x Crystal dust,Divine super strength(2),3,2,1.0,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_strength_3,divine,Make Divine Super Strength(3),Super strength(3),3x Crystal dust,Divine super strength(3),4,3,1.5,70,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_strength_4,divine,Make Divine Super Strength(4),Super strength(4),4x Crystal dust,Divine super strength(4),,4,2.0,70,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_ranging_1,divine,Make Divine Ranging Potion(1),Ranging potion(1),Crystal dust,Divine ranging potion(1),2,1,0.5,74,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_ranging_2,divine,Make Divine Ranging Potion(2),Ranging potion(2),2x Crystal dust,Divine ranging potion(2),3,2,1.0,74,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_ranging_3,divine,Make Divine Ranging Potion(3),Ranging potion(3),3x Crystal dust,Divine ranging potion(3),4,3,1.5,74,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_ranging_4,divine,Make Divine Ranging Potion(4),Ranging potion(4),4x Crystal dust,Divine ranging potion(4),,4,2.0,74,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_magic_1,divine,Make Divine Magic Potion(1),Magic potion(1),Crystal dust,Divine magic potion(1),2,1,0.5,78,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_magic_2,divine,Make Divine Magic Potion(2),Magic potion(2),2x Crystal dust,Divine magic potion(2),3,2,1.0,78,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_magic_3,divine,Make Divine Magic Potion(3),Magic potion(3),3x Crystal dust,Divine magic potion(3),4,3,1.5,78,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_magic_4,divine,Make Divine Magic Potion(4),Magic potion(4),4x Crystal dust,Divine magic potion(4),,4,2.0,78,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_bastion_1,divine,Make Divine Bastion Potion(1),Bastion potion(1),Crystal dust,Divine bastion potion(1),2,1,0.5,86,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_bastion_2,divine,Make Divine Bastion Potion(2),Bastion potion(2),2x Crystal dust,Divine bastion potion(2),3,2,1.0,86,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_bastion_3,divine,Make Divine Bastion Potion(3),Bastion potion(3),3x Crystal dust,Divine bastion potion(3),4,3,1.5,86,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_bastion_4,divine,Make Divine Bastion Potion(4),Bastion potion(4),4x Crystal dust,Divine bastion potion(4),,4,2.0,86,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_battlemage_1,divine,Make Divine Battlemage Potion(1),Battlemage potion(1),Crystal dust,Divine battlemage potion(1),2,1,0.5,86,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_battlemage_2,divine,Make Divine Battlemage Potion(2),Battlemage potion(2),2x Crystal dust,Divine battlemage potion(2),3,2,1.0,86,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_battlemage_3,divine,Make Divine Battlemage Potion(3),Battlemage potion(3),3x Crystal dust,Divine battlemage potion(3),4,3,1.5,86,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_battlemage_4,divine,Make Divine Battlemage Potion(4),Battlemage potion(4),4x Crystal dust,Divine battlemage potion(4),,4,2.0,86,FALSE,FALSE,FALSE,FALSE,TRUE
+make_divine_super_combat_1,divine,Make Divine Super Combat Potion(1),Super combat potion(1),Crystal dust,Divine super combat potion(1),2,1,0.5,97,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_combat_2,divine,Make Divine Super Combat Potion(2),Super combat potion(2),2x Crystal dust,Divine super combat potion(2),3,2,1.0,97,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_combat_3,divine,Make Divine Super Combat Potion(3),Super combat potion(3),3x Crystal dust,Divine super combat potion(3),4,3,1.5,97,FALSE,FALSE,FALSE,TRUE,TRUE
+make_divine_super_combat_4,divine,Make Divine Super Combat Potion(4),Super combat potion(4),4x Crystal dust,Divine super combat potion(4),,4,2.0,97,FALSE,FALSE,FALSE,FALSE,TRUE

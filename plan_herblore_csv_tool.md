@@ -305,6 +305,75 @@ herblore_step_calc.py --csv potions.csv [--output results.json]
 
 ---
 
+## Database Storage
+
+The parsed/normalized CSV data (post field-normalisation, see Script Design step 2) is persisted
+to the `osrs` database under a new `herblore` schema, so the website tool can read steps without
+re-parsing the CSV on every request.
+
+### Schema
+
+- **Database:** `osrs`
+- **Schema:** `herblore`
+- **Table:** `herblore.action_step`
+
+```sql
+CREATE SCHEMA IF NOT EXISTS herblore;
+
+CREATE TABLE IF NOT EXISTS herblore.action_step (
+    step_id             VARCHAR(64)  PRIMARY KEY,
+    potion_family        TEXT[]       NOT NULL,
+    step_label           VARCHAR(128) NOT NULL,
+    input_1_item          VARCHAR(128) NOT NULL,
+    input_1_qty           INTEGER      NOT NULL DEFAULT 1,
+    input_2               JSONB        NOT NULL DEFAULT '[]'::jsonb,
+    output                VARCHAR(128) NOT NULL,
+    output_extra_dose     VARCHAR(128),
+    output_doses          SMALLINT,
+    xp                    NUMERIC(6,2) NOT NULL DEFAULT 0,
+    level_req             SMALLINT     NOT NULL,
+    zahur_clean           BOOLEAN      NOT NULL DEFAULT FALSE,
+    zahur_unf             BOOLEAN      NOT NULL DEFAULT FALSE,
+    wesley                BOOLEAN      NOT NULL DEFAULT FALSE,
+    dose_amulet           BOOLEAN      NOT NULL DEFAULT FALSE,
+    goggles                BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_datetime       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_datetime       TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_herblore_action_step_family
+    ON herblore.action_step USING GIN (potion_family);
+```
+
+Column notes:
+
+- `potion_family` — Postgres `TEXT[]`, the parsed form of the CSV's pipe-delimited
+  `potion_family` column. GIN-indexed so `'goading' = ANY(potion_family)` lookups (building a
+  family's step list) are fast.
+- `input_1_item` / `input_1_qty` — the parsed `{"name": str, "qty": int}` form of the CSV's
+  `input_1` column.
+- `input_2` — `JSONB` array of `{"name": str, "qty": int}` objects, the parsed form of the CSV's
+  pipe-delimited `input_2` column. Stored as JSONB rather than a second array pair since each
+  secondary carries its own qty.
+- `output_extra_dose` / `output_doses` — nullable; blank/absent for non-dose outputs and for
+  steps where the dosing behaviour isn't yet confirmed (e.g. `make_antivenom_p`,
+  `make_super_combat` — see CSV).
+
+### Migration
+
+Table creation lives in `migrations/002_herblore_schema.sql`, following the same convention as
+`migrations/001_blog_schema.sql` (idempotent `IF NOT EXISTS`, wrapped in a transaction).
+
+### Ingestion
+
+`herblore_step_calc.py` (or a small companion loader) re-parses `conf/herblore_action_table.csv`
+per the Step 2 field normalisations and upserts rows into `herblore.action_step` on `step_id`
+conflict, keeping the table in sync with the CSV as the source of truth. Price/XP/cost
+calculations still happen at request time against live GE prices — this table only stores the
+static recipe data, not computed economics.
+
+---
+
 ## Website Tool Design
 
 ### URL / Blueprint

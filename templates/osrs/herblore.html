@@ -1,0 +1,638 @@
+<div class="window-content" id="herblore-container">
+  <div class="title-bar" id="herblore-title-bar">
+    <h4>Herblore Action Table</h4>
+    <button id="close-herblore-button" class="w98-button title-button">X</button>
+  </div>
+
+  <div class="content-container">
+    {% if error %}
+    <div class="herblore-error">Error: {{ error }}</div>
+    {% else %}
+
+    <div class="herblore-controls-bar">
+      <div class="herblore-control-group">
+        <label for="herblore-timeframe-select">Timeframe:</label>
+        <div class="w98-select-wrapper">
+          <select id="herblore-timeframe-select">
+            <option value="5min">5 min</option>
+            <option value="15min">15 min</option>
+            <option value="1h">1 hour</option>
+            <option value="3h">3 hour</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="herblore-control-group">
+        <label for="herblore-family-filter">Family:</label>
+        <div class="w98-select-wrapper">
+          <select id="herblore-family-filter">
+            <option value="all">All families</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="herblore-control-group" id="herblore-toggle-goggles-group">
+        <label><input type="checkbox" id="herblore-toggle-goggles"> Prescription Goggles</label>
+      </div>
+
+      <div class="herblore-control-group" id="herblore-toggle-amulet-group">
+        <label><input type="radio" name="herblore-amulet" value="none" id="herblore-amulet-none" checked> No Amulet</label>
+        <label><input type="radio" name="herblore-amulet" value="chem" id="herblore-amulet-chem"> Amulet of Chemistry</label>
+        <label><input type="radio" name="herblore-amulet" value="alch" id="herblore-amulet-alch"> Alchemist's Amulet</label>
+      </div>
+
+      <div class="herblore-control-group" id="herblore-toggle-zahur-clean-group">
+        <label><input type="checkbox" id="herblore-toggle-zahur-clean"> Zahur (Cleaning)</label>
+      </div>
+
+      <div class="herblore-control-group" id="herblore-toggle-zahur-unf-group">
+        <label><input type="checkbox" id="herblore-toggle-zahur-unf"> Zahur (Unfinished)</label>
+      </div>
+
+      <div class="herblore-control-group" id="herblore-toggle-wesley-group">
+        <label><input type="checkbox" id="herblore-toggle-wesley"> Wesley</label>
+      </div>
+
+      <button id="herblore-refresh-button" class="w98-button">Refresh Prices</button>
+    </div>
+
+    <div class="herblore-filter-bar" id="herblore-filter-bar">
+      <button id="herblore-add-filter" class="w98-button">+ Filter</button>
+      <div id="herblore-filter-list"></div>
+    </div>
+
+    <div class="herblore-table-wrapper">
+      <table class="herblore-step-table" id="herblore-master-table">
+        <thead>
+          <tr>
+            <th data-col="label"     class="sortable">Step     <span class="sort-ind"></span></th>
+            <th data-col="level_req" class="sortable">Lvl      <span class="sort-ind"></span></th>
+            <th data-col="cost"      class="sortable">Cost     <span class="sort-ind"></span></th>
+            <th data-col="revenue"   class="sortable">Revenue  <span class="sort-ind"></span></th>
+            <th data-col="profit"    class="sortable">Profit   <span class="sort-ind"></span></th>
+            <th data-col="xp"        class="sortable">XP       <span class="sort-ind"></span></th>
+            <th data-col="gpPerXp"   class="sortable">GP/XP    <span class="sort-ind"></span></th>
+          </tr>
+        </thead>
+        <tbody id="herblore-table-body"></tbody>
+      </table>
+    </div>
+
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  #herblore-container * {
+    box-sizing: border-box;
+  }
+
+  #herblore-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-height: 900px;
+    overflow: hidden;
+    min-width: 700px;
+  }
+
+  #herblore-container .title-bar {
+    flex-shrink: 0;
+  }
+
+  #herblore-container .content-container {
+    padding: 8px;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .herblore-error {
+    background-color: #ffe6e6;
+    color: #cc0000;
+    padding: 10px;
+    border: 1px solid #ff9999;
+    margin: 10px 0;
+  }
+
+  .herblore-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    background-color: #e6f3ff;
+    border: 1px solid #b3d9ff;
+    margin-bottom: 8px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .herblore-control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .herblore-control-group label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+
+  #herblore-refresh-button {
+    margin-left: auto;
+    padding: 4px 10px;
+  }
+
+  .herblore-table-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid #808080;
+    background-color: white;
+  }
+
+  .herblore-step-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    table-layout: fixed;
+  }
+
+  .herblore-step-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .herblore-step-table th,
+  .herblore-step-table td {
+    border: 1px solid #ddd;
+    padding: 3px 5px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .herblore-step-table th {
+    background-color: #000080;
+    color: white;
+    user-select: none;
+  }
+
+  .herblore-step-table th.sortable {
+    cursor: pointer;
+  }
+
+  .herblore-step-table th.sortable:hover {
+    background-color: #0000b0;
+  }
+
+  .herblore-step-table th.sort-active {
+    background-color: #0000cc;
+  }
+
+  .herblore-step-table td {
+    background-color: #fff;
+    font-family: monospace;
+  }
+
+  .herblore-step-table td.herblore-step-label {
+    text-align: left;
+    font-family: inherit;
+    font-weight: bold;
+  }
+
+  .herblore-step-table .profit-pos {
+    color: #008000;
+    font-weight: bold;
+  }
+
+  .herblore-step-table .profit-neg {
+    color: #cc0000;
+    font-weight: bold;
+  }
+
+  .herblore-step-table tbody tr:hover td {
+    background-color: #f0f4ff;
+  }
+
+  .herblore-filter-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 8px;
+    background-color: #f5f5f5;
+    border: 1px solid #c0c0c0;
+    margin-bottom: 6px;
+    font-size: 11px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  #herblore-add-filter {
+    padding: 2px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #herblore-filter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .herblore-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: #e8e8e8;
+    border: 1px solid #a0a0a0;
+    padding: 2px 4px;
+  }
+
+  .herblore-filter-row select,
+  .herblore-filter-row input[type="number"] {
+    font-size: 11px;
+    border: 1px inset #808080;
+    padding: 1px 2px;
+    background: white;
+  }
+
+  .herblore-filter-row input[type="number"] {
+    width: 72px;
+  }
+
+  .herblore-filter-remove {
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 11px;
+    padding: 0 2px;
+    color: #800000;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .herblore-filter-remove:hover {
+    color: #cc0000;
+  }
+</style>
+
+<script>
+(function () {
+  const HERBLORE_DATA = {{ herblore_data_json|safe }};
+  if (!HERBLORE_DATA) return;
+
+  const CONST = HERBLORE_DATA._meta.constants;
+
+  const state = {
+    timeframe: "5min",
+    toggles: { goggles: false, zahurClean: false, zahurUnf: false, wesley: false, amulet: "none" },
+    familyFilter: "all",
+    sort: { col: "label", dir: 1 },
+    filters: [],
+    nextFilterId: 0,
+  };
+
+  const FILTER_COLS = [
+    { value: "level_req", label: "Level" },
+    { value: "cost",      label: "Cost" },
+    { value: "revenue",   label: "Revenue" },
+    { value: "profit",    label: "Profit" },
+    { value: "gpPerXp",   label: "GP/XP" },
+  ];
+
+  // ---- Data helpers ----
+
+  function familyIds() {
+    return Object.keys(HERBLORE_DATA).filter((k) => k !== "_meta");
+  }
+
+  function familiesSorted() {
+    return familyIds().sort((a, b) => HERBLORE_DATA[a].label.localeCompare(HERBLORE_DATA[b].label));
+  }
+
+  function buildFlatSteps() {
+    const map = new Map(); // step_id -> { step, families: Set }
+    familyIds().forEach((fid) => {
+      Object.entries(HERBLORE_DATA[fid].steps).forEach(([sid, step]) => {
+        if (!map.has(sid)) map.set(sid, { step, families: new Set() });
+        map.get(sid).families.add(fid);
+      });
+    });
+    return [...map.values()];
+  }
+
+  // ---- Economics ----
+
+  function computeEconomics(step, tf, toggles) {
+    const raw = step.timeframes[tf].raw;
+    const mods = step.available_modifiers;
+
+    let secTotal = raw.input_2.reduce((s, i) => s + i.price, 0);
+    if (toggles.goggles && mods.includes("goggles")) {
+      secTotal *= 1 - CONST.PRES_GOGGLES_CHANCE;
+    }
+
+    let cost = (raw.input_1_price || 0) + secTotal;
+    if (toggles.zahurClean && mods.includes("zahur_clean")) cost += CONST.ZAHUR_FEE;
+    if (toggles.zahurUnf   && mods.includes("zahur_unf"))   cost += CONST.ZAHUR_FEE;
+    if (toggles.wesley     && mods.includes("wesley"))       cost += CONST.WESLEY_FEE;
+    if (toggles.amulet !== "none" && mods.includes("dose_amulet")) {
+      cost += mods.includes("goggles") ? (raw.aoc_price / 10) * CONST.PRES_GOGGLES_CHANCE : 0;
+    }
+
+    let revenue = null;
+    if (raw.output_doses) {
+      const pricePerDose = raw.four_dose_price ? raw.four_dose_price / 4 : 0;
+      let doses = raw.output_doses;
+      if (toggles.amulet === "chem" && mods.includes("dose_amulet")) doses += CONST.CHEM_AMU_CHANCE;
+      if (toggles.amulet === "alch" && mods.includes("dose_amulet")) doses += CONST.ALC_AMUL_CHANCE;
+      revenue = pricePerDose * doses * (1 - CONST.GE_TAX);
+    } else if (raw.standalone_price) {
+      revenue = raw.standalone_price * (1 - CONST.GE_TAX);
+    }
+
+    const profit = revenue !== null ? revenue - cost : null;
+
+    // NPC performs the action — player earns 0 XP
+    const npcDoes =
+      (toggles.zahurClean && mods.includes("zahur_clean")) ||
+      (toggles.zahurUnf   && mods.includes("zahur_unf"))   ||
+      (toggles.wesley     && mods.includes("wesley"));
+    const effectiveXp = npcDoes ? 0 : (step.xp || 0);
+    const gpPerXp = effectiveXp && profit !== null ? profit / effectiveXp : null;
+
+    return { cost, revenue, profit, effectiveXp, gpPerXp };
+  }
+
+  // ---- Rendering ----
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text == null ? "" : String(text);
+    return div.innerHTML;
+  }
+
+  function fmtGp(n) {
+    return Math.round(n).toLocaleString() + " gp";
+  }
+
+  function computeAvailableModifiersGlobal() {
+    const set = new Set();
+    familyIds().forEach((fid) => {
+      Object.values(HERBLORE_DATA[fid].steps).forEach((step) => {
+        step.available_modifiers.forEach((m) => set.add(m));
+      });
+    });
+    return set;
+  }
+
+  function renderControlVisibility() {
+    const globalMods = computeAvailableModifiersGlobal();
+    document.getElementById("herblore-toggle-goggles-group").style.display    = globalMods.has("goggles")     ? "" : "none";
+    document.getElementById("herblore-toggle-amulet-group").style.display     = globalMods.has("dose_amulet") ? "" : "none";
+    document.getElementById("herblore-toggle-zahur-clean-group").style.display = globalMods.has("zahur_clean") ? "" : "none";
+    document.getElementById("herblore-toggle-zahur-unf-group").style.display  = globalMods.has("zahur_unf")   ? "" : "none";
+    document.getElementById("herblore-toggle-wesley-group").style.display     = globalMods.has("wesley")      ? "" : "none";
+  }
+
+  function populateFamilyFilter() {
+    const sel = document.getElementById("herblore-family-filter");
+    while (sel.options.length > 1) sel.remove(1);
+    familiesSorted().forEach((fid) => {
+      const opt = document.createElement("option");
+      opt.value = fid;
+      opt.textContent = HERBLORE_DATA[fid].label;
+      sel.appendChild(opt);
+    });
+    sel.value = state.familyFilter;
+  }
+
+  function renderFilterBar() {
+    const list = document.getElementById("herblore-filter-list");
+    const colOptions = FILTER_COLS.map((c) => `<option value="${c.value}">${c.label}</option>`).join("");
+    list.innerHTML = state.filters
+      .map(
+        (f) => `<div class="herblore-filter-row" data-filter-id="${f.id}">
+          <select class="f-col">
+            ${FILTER_COLS.map((c) => `<option value="${c.value}" ${c.value === f.col ? "selected" : ""}>${c.label}</option>`).join("")}
+          </select>
+          <select class="f-op">
+            <option value="gte" ${f.op === "gte" ? "selected" : ""}>&#8805;</option>
+            <option value="lte" ${f.op === "lte" ? "selected" : ""}>&#8804;</option>
+          </select>
+          <input type="number" class="f-val" value="${f.value}" step="any">
+          <button class="herblore-filter-remove" title="Remove filter">&#10005;</button>
+        </div>`
+      )
+      .join("");
+
+    list.querySelectorAll(".herblore-filter-row").forEach((row) => {
+      const id = Number(row.dataset.filterId);
+      row.querySelector(".f-col").addEventListener("change", (e) => {
+        const f = state.filters.find((x) => x.id === id);
+        if (f) { f.col = e.target.value; renderTable(); }
+      });
+      row.querySelector(".f-op").addEventListener("change", (e) => {
+        const f = state.filters.find((x) => x.id === id);
+        if (f) { f.op = e.target.value; renderTable(); }
+      });
+      row.querySelector(".f-val").addEventListener("change", (e) => {
+        const f = state.filters.find((x) => x.id === id);
+        if (f) { f.value = parseFloat(e.target.value) || 0; renderTable(); }
+      });
+      row.querySelector(".herblore-filter-remove").addEventListener("click", () => {
+        state.filters = state.filters.filter((x) => x.id !== id);
+        renderFilterBar();
+        renderTable();
+      });
+    });
+  }
+
+  function applyFilters(rows) {
+    if (state.filters.length === 0) return rows;
+    return rows.filter(({ step, econ }) =>
+      state.filters.every((f) => {
+        let val;
+        switch (f.col) {
+          case "level_req": val = step.level_req || 0; break;
+          case "cost":      val = econ.cost;           break;
+          case "revenue":   val = econ.revenue;        break;
+          case "profit":    val = econ.profit;         break;
+          case "gpPerXp":   val = econ.gpPerXp;        break;
+          default:          val = null;
+        }
+        if (val === null || val === undefined) return false;
+        return f.op === "gte" ? val >= f.value : val <= f.value;
+      })
+    );
+  }
+
+  function renderSortHeaders() {
+    document.querySelectorAll("#herblore-master-table th.sortable").forEach((th) => {
+      const ind = th.querySelector(".sort-ind");
+      if (th.dataset.col === state.sort.col) {
+        ind.textContent = state.sort.dir === 1 ? " ▲" : " ▼";
+        th.classList.add("sort-active");
+      } else {
+        ind.textContent = "";
+        th.classList.remove("sort-active");
+      }
+    });
+  }
+
+  function renderTable() {
+    const tf = state.timeframe;
+    const toggles = state.toggles;
+
+    let entries = buildFlatSteps();
+
+    if (state.familyFilter !== "all") {
+      entries = entries.filter((e) => e.families.has(state.familyFilter));
+    }
+
+    let rows = entries.map(({ step, families }) => ({
+      step,
+      econ: computeEconomics(step, tf, toggles),
+    }));
+
+    rows = applyFilters(rows);
+
+    const { col, dir } = state.sort;
+    rows.sort((a, b) => {
+      let av, bv;
+      switch (col) {
+        case "label":    av = a.step.label;           bv = b.step.label;           break;
+        case "level_req":av = a.step.level_req || 0;  bv = b.step.level_req || 0;  break;
+        case "cost":     av = a.econ.cost;             bv = b.econ.cost;            break;
+        case "revenue":  av = a.econ.revenue  ?? -Infinity; bv = b.econ.revenue  ?? -Infinity; break;
+        case "profit":   av = a.econ.profit   ?? -Infinity; bv = b.econ.profit   ?? -Infinity; break;
+        case "xp":       av = a.econ.effectiveXp;     bv = b.econ.effectiveXp;     break;
+        case "gpPerXp":  av = a.econ.gpPerXp ?? -Infinity; bv = b.econ.gpPerXp ?? -Infinity; break;
+        default:         av = 0; bv = 0;
+      }
+      if (typeof av === "string") return av.localeCompare(bv) * dir;
+      return (av < bv ? -1 : av > bv ? 1 : 0) * dir;
+    });
+
+    document.getElementById("herblore-table-body").innerHTML = rows
+      .map(({ step, econ }) => {
+        const inputSummary = [step.input_1, ...step.input_2].filter(Boolean).join(" + ");
+        const tooltip = `${inputSummary} → ${step.output || ""}`;
+        const profitClass = econ.profit === null ? "" : econ.profit >= 0 ? "profit-pos" : "profit-neg";
+        return `<tr>
+          <td class="herblore-step-label" title="${escapeHtml(tooltip)}">${escapeHtml(step.label)}</td>
+          <td>${step.level_req || "—"}</td>
+          <td>${fmtGp(econ.cost)}</td>
+          <td>${econ.revenue !== null ? fmtGp(econ.revenue) : "—"}</td>
+          <td class="${profitClass}">${econ.profit !== null ? fmtGp(econ.profit) : "—"}</td>
+          <td>${econ.effectiveXp || "—"}</td>
+          <td>${econ.gpPerXp !== null ? econ.gpPerXp.toFixed(2) : "—"}</td>
+        </tr>`;
+      })
+      .join("");
+
+    renderSortHeaders();
+  }
+
+  // ---- Controls ----
+
+  function wireControls() {
+    document.getElementById("herblore-timeframe-select").addEventListener("change", (e) => {
+      state.timeframe = e.target.value;
+      renderTable();
+    });
+
+    document.getElementById("herblore-family-filter").addEventListener("change", (e) => {
+      state.familyFilter = e.target.value;
+      renderTable();
+    });
+
+    document.getElementById("herblore-toggle-goggles").addEventListener("change", (e) => {
+      state.toggles.goggles = e.target.checked;
+      renderTable();
+    });
+
+    document.getElementById("herblore-toggle-zahur-clean").addEventListener("change", (e) => {
+      state.toggles.zahurClean = e.target.checked;
+      renderTable();
+    });
+
+    document.getElementById("herblore-toggle-zahur-unf").addEventListener("change", (e) => {
+      state.toggles.zahurUnf = e.target.checked;
+      renderTable();
+    });
+
+    document.getElementById("herblore-toggle-wesley").addEventListener("change", (e) => {
+      state.toggles.wesley = e.target.checked;
+      renderTable();
+    });
+
+    document.querySelectorAll('input[name="herblore-amulet"]').forEach((el) => {
+      el.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          state.toggles.amulet = e.target.value;
+          renderTable();
+        }
+      });
+    });
+
+    document.querySelectorAll("#herblore-master-table th.sortable").forEach((th) => {
+      th.addEventListener("click", () => {
+        const col = th.dataset.col;
+        if (state.sort.col === col) {
+          state.sort.dir *= -1;
+        } else {
+          state.sort.col = col;
+          state.sort.dir = 1;
+        }
+        renderTable();
+      });
+    });
+
+    document.getElementById("herblore-add-filter").addEventListener("click", () => {
+      state.filters.push({ id: state.nextFilterId++, col: "level_req", op: "gte", value: 0 });
+      renderFilterBar();
+      renderTable();
+    });
+
+    const refreshBtn = document.getElementById("herblore-refresh-button");
+    refreshBtn.addEventListener("click", () => {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = "Refreshing…";
+      fetch("/osrs/herblore/data", { headers: { Accept: "application/json" } })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.status === "success") {
+            Object.keys(HERBLORE_DATA).forEach((k) => delete HERBLORE_DATA[k]);
+            Object.assign(HERBLORE_DATA, data.data);
+            renderControlVisibility();
+            populateFamilyFilter();
+            renderTable();
+          }
+        })
+        .catch((e) => console.error("[herblore] refresh failed:", e))
+        .finally(() => {
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = "Refresh Prices";
+        });
+    });
+  }
+
+  document.getElementById("herblore-timeframe-select").value = state.timeframe;
+  renderControlVisibility();
+  populateFamilyFilter();
+  renderFilterBar();
+  wireControls();
+  renderTable();
+})();
+</script>
