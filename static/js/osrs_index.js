@@ -7,9 +7,10 @@ class OSRSIndex {
         this.titleId = "osrs-index-title-bar";
         this.closeBtnId = "close-osrs-index-button";
         this.endpoint = OSRSENDPOINT;
-        window.superCombatsOpenState = false; 
+        window.superCombatsOpenState = false;
         window.goadingRegensOpenState = false;
         window.itemSearchOpenState = false;
+        window.herbloreOpenState = false;
     }
 
     async openWindow() {
@@ -39,6 +40,7 @@ class OSRSIndex {
                 this.initSuperCombats();
                 this.initGoadingRegens();
                 this.initItemSearch();
+                this.initHerblore();
             },
             onClose: () => {
                 this.windowManager.enableWindowButtons(this.windowId);
@@ -121,6 +123,25 @@ class OSRSIndex {
             '1px'
         );
         itemSearchInitializer.assignOpenButton('item-search-button');
+    }
+
+    initHerblore() {
+        console.log("Initializing Herblore Action Table window.");
+        const herbloreInitializer = new window.WindowInitializer(
+            this.windowManager,
+            "herblore",
+            "herblore-window",
+            "herblore-container",
+            "herblore-button",
+            "herblore-title-bar",
+            "close-herblore-button",
+            HERBLOREENDPOINT,
+            true,
+            '1200px',
+            '900px',
+            '1px'
+        );
+        herbloreInitializer.assignOpenButton('herblore-button');
     }
 
     checkIfOpen() {

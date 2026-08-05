@@ -1,5 +1,5 @@
 html {
-    background: #e1e1e1;
+    background: var(--body-bg);
 }
 
 body {
@@ -14,20 +14,13 @@ body {
     margin: auto;
     padding: 0;
     text-align: center;
-    color: #000000;
-
-    background-color: #c0c0c0;
+    color: var(--text);
+    background-color: var(--face);
     font-family: "MS Sans Serif", sans-serif;
     font-size: 11px;
-
-    border-color: #dfdfdf #404040 #404040 #dfdfdf;
+    border-color: var(--highlight-alt) var(--shadow-dark) var(--shadow-dark) var(--highlight-alt);
     outline: none;
-    box-shadow:
-        inset 1px 1px 0px #ffffff,
-        inset 2px 2px 0px #dfdfdf,
-        inset -1px -1px 0px #808080,
-        inset -2px -2px 0px #707070;
-
+    box-shadow: var(--bevel-raised);
     min-width: 300px;
     display: flex;
     flex-direction: column;
@@ -38,14 +31,14 @@ body {
     display: flex !important;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%);
-    color: white;
+    background: var(--titlebar-bg);
+    color: var(--titlebar-text);
     padding: 0px 3px;
     margin: 3px;
     margin-bottom: 1rem;
     height: 24px;
     min-height: 24px;
-    border-bottom: 1px #c0c0c0 solid;
+    border-bottom: 1px var(--face) solid;
 }
 
 .title-bar h4 {
@@ -55,7 +48,6 @@ body {
     font-family: "MS Sans Serif", sans-serif;
 }
 
-/* Title bar help button */
 #help-me-button {
     min-width: 20px;
     padding: 2px 6px;
@@ -74,7 +66,7 @@ body {
     font-family: "MS Sans Serif", sans-serif;
     font-size: 11px;
     padding: 12px 16px;
-    color: #000000;
+    color: var(--text);
     text-decoration: none;
     cursor: pointer;
     display: block;
@@ -83,7 +75,7 @@ body {
 
 .tool-description {
     font-size: 10px;
-    color: #666666;
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
@@ -97,49 +89,41 @@ body {
     min-width: 20px;
     text-align: center;
     padding: .5rem 1rem;
-    color: #000000;
+    color: var(--text);
     text-decoration: none;
-    background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+    background: var(--btn-bg);
     border: 1px solid;
-    border-color: #dfdfdf #707070 #606060 #dfdfdf;
+    border-color: var(--highlight-alt) var(--shadow-mid) var(--shadow-border) var(--highlight-alt);
     outline: none;
-    box-shadow: 
-        inset 1px 1px 0px #ffffff,
-        inset 2px 2px 0px #dfdfdf,
-        inset -1px -1px 0px #808080,
-        inset -2px -2px 0px #707070;
+    box-shadow: var(--bevel-raised);
     text-shadow: none;
     cursor: pointer;
-    -webkit-user-select: none; /* Chrome/Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* IE/Edge legacy */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 
 .w98-button:hover {
-    background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+    background: var(--btn-bg-hover);
 }
 
 .w98-button:active {
-    background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
-    border-color: #808080 #dfdfdf #dfdfdf #808080;
-    box-shadow: 
-        inset -1px -1px 0px #ffffff,
-        inset -2px -2px 0px #dfdfdf,
-        inset 1px 1px 0px #808080,
-        inset 2px 2px 0px #808080;
+    background: var(--btn-bg-hover);
+    border-color: var(--shadow) var(--highlight-alt) var(--highlight-alt) var(--shadow);
+    box-shadow: var(--bevel-pressed);
     transform: translate(1px, 1px);
 }
 
 .w98-button:disabled {
-    background-color: #c0c0c0;
-    color: #808080;
-    border-color: #dfdfdf #808080 #808080 #dfdfdf;
-    box-shadow: 
-        inset 1px 1px 0px #ffffff,
-        inset -1px -1px 0px #808080;
+    background-color: var(--face);
+    color: var(--shadow);
+    border-color: var(--highlight-alt) var(--shadow) var(--shadow) var(--highlight-alt);
+    box-shadow:
+        inset 1px 1px 0px var(--highlight),
+        inset -1px -1px 0px var(--shadow);
     cursor: not-allowed;
-    text-shadow: 1px 1px 0px #ffffff;
+    text-shadow: 1px 1px 0px var(--highlight);
 }
 
 input[type="checkbox"] {
@@ -148,16 +132,43 @@ input[type="checkbox"] {
     width: 12px;
     height: 12px;
     cursor: pointer;
-    border-color: #606060 #dfdfdf #efefef #606060;
+    border-color: var(--shadow-border) var(--highlight-alt) #efefef var(--shadow-border);
     outline: none;
-    box-shadow:
-        inset -1px -1px 0px #ffffff,
-        inset -2px -2px 0px #dfdfdf,
-        inset 1px 1px 0px #808080,
-        inset 2px 2px 0px #707070;
+    box-shadow: var(--bevel-sunken);
     margin-bottom: 0;
 }
 
 input[type="checkbox"]:hover {
-    background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+    background: var(--btn-bg-hover);
+}
+
+input[type="checkbox"]:checked::after {
+    content: "✓";
+    display: block;
+    font-size: 9px;
+    line-height: 12px;
+    text-align: center;
+    color: var(--text);
+}
+
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    box-shadow: var(--bevel-sunken);
+    margin-bottom: 0;
+}
+
+input[type="radio"]:checked::after {
+    content: "";
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text);
+    margin: 3px auto 0;
 }

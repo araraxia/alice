@@ -30,23 +30,18 @@ canvas#background {
 }
 
 .draggable-window.dragging .window-content {
-  box-shadow:
-    inset 1px 1px 0px #ffffff,
-    inset 2px 2px 0px #dfdfdf,
-    inset -1px -1px 0px #808080,
-    inset -2px -2px 0px #707070,
-    0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--bevel-raised), 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Active window styling */
 .draggable-window.active-window .title-bar {
-  background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%) !important;
-  color: white !important;
+  background: var(--titlebar-bg) !important;
+  color: var(--titlebar-text) !important;
 }
 
 .draggable-window:not(.active-window) .title-bar {
-  background: linear-gradient(90deg, #808080 0%, #c0c0c0 100%) !important;
-  color: #000000 !important;
+  background: var(--titlebar-inactive-bg) !important;
+  color: var(--titlebar-inactive-text) !important;
 }
 
 /* Window size variants */
@@ -91,7 +86,7 @@ canvas#background {
   top: 20px;
   right: 20px;
   min-width: 200px;
-  display: none; /* Hidden by default */
+  display: none;
 }
 
 /* Predefined window positions */
@@ -128,28 +123,18 @@ canvas#background {
   margin: auto;
   padding: 0;
   text-align: center;
-  color: #000000;
-
+  color: var(--text);
   z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-  /* Windows 98 styling */
-  background-color: #c0c0c0;
+  background-color: var(--face);
   font-family: "MS Sans Serif", sans-serif;
   font-size: 11px;
-
-  /* Classic window appearance */
   border: 2px solid;
-  border-color: #dfdfdf #404040 #404040 #dfdfdf;
+  border-color: var(--highlight-alt) var(--shadow-dark) var(--shadow-dark) var(--highlight-alt);
   outline: none;
-  box-shadow:
-    inset 1px 1px 0px #ffffff,
-    inset 2px 2px 0px #dfdfdf,
-    inset -1px -1px 0px #808080,
-    inset -2px -2px 0px #707070;
-
+  box-shadow: var(--bevel-raised);
   min-width: 300px;
   max-width: 400px;
 }
@@ -159,13 +144,13 @@ canvas#background {
   display: flex !important;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #0000ff 0%, #8080ff 100%) !important;
-  color: white !important;
+  background: var(--titlebar-bg) !important;
+  color: var(--titlebar-text) !important;
   padding: 0px 3px;
   margin: 2px 3px 2px 2px;
   height: 20px;
   min-height: 20px;
-  border-bottom: 1px #c0c0c0 solid;
+  border-bottom: 1px var(--face) solid;
 }
 
 .title-bar h4 {
@@ -186,7 +171,7 @@ canvas#background {
   font-weight: bold;
   margin: 0;
   margin-top: 10px;
-  color: #000000;
+  color: var(--text);
   text-align: center;
 }
 
@@ -206,60 +191,48 @@ ul li {
   min-width: 80px;
   text-align: center;
   padding: 0.5rem 1rem;
-  color: #000000;
+  color: var(--text);
   text-decoration: none;
-  background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+  background: var(--btn-bg);
   border: 1px solid;
-  border-color: #dfdfdf #707070 #606060 #dfdfdf;
+  border-color: var(--highlight-alt) var(--shadow-mid) var(--shadow-border) var(--highlight-alt);
   outline: none;
-  box-shadow:
-    inset 1px 1px 0px #ffffff,
-    inset 2px 2px 0px #dfdfdf,
-    inset -1px -1px 0px #808080,
-    inset -2px -2px 0px #707070;
+  box-shadow: var(--bevel-raised);
   text-shadow: none;
   cursor: pointer;
-  -webkit-user-select: none; /* Chrome/Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE/Edge legacy */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 
 .w98-button:hover {
-  background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+  background: var(--btn-bg-hover);
 }
 
 .w98-button:active {
-  background: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
-  border-color: #808080 #dfdfdf #dfdfdf #808080;
-  box-shadow:
-    inset -1px -1px 0px #ffffff,
-    inset -2px -2px 0px #dfdfdf,
-    inset 1px 1px 0px #808080,
-    inset 2px 2px 0px #808080;
+  background: var(--btn-bg-hover);
+  border-color: var(--shadow) var(--highlight-alt) var(--highlight-alt) var(--shadow);
+  box-shadow: var(--bevel-pressed);
   transform: translate(1px, 1px);
 }
 
 .w98-button:disabled {
-  background-color: #c0c0c0;
-  color: #808080;
-  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  background-color: var(--face);
+  color: var(--shadow);
+  border-color: var(--highlight-alt) var(--shadow) var(--shadow) var(--highlight-alt);
   box-shadow:
-    inset 1px 1px 0px #ffffff,
-    inset -1px -1px 0px #808080;
+    inset 1px 1px 0px var(--highlight),
+    inset -1px -1px 0px var(--shadow);
   cursor: not-allowed;
-  text-shadow: 1px 1px 0px #ffffff;
+  text-shadow: 1px 1px 0px var(--highlight);
 }
 
 /* Special styling for buttons with open windows */
 .w98-button.window-open {
-  background: linear-gradient(135deg, #b0b0b0 0%, #a0a0a0 50%, #909090 100%);
-  color: #606060;
-  box-shadow:
-    inset -1px -1px 0px #ffffff,
-    inset -2px -2px 0px #dfdfdf,
-    inset 1px 1px 0px #808080,
-    inset 2px 2px 0px #707070;
+  background: var(--btn-bg-open);
+  color: var(--shadow-border);
+  box-shadow: var(--bevel-sunken);
 }
 
 /* Title bar help button */
@@ -272,12 +245,12 @@ ul li {
   font-size: 7px;
   font-weight: bold;
   border: 1px solid;
-  border-color: #dfdfdf #707070 #606060 #dfdfdf;
+  border-color: var(--highlight-alt) var(--shadow-mid) var(--shadow-border) var(--highlight-alt);
   box-shadow:
-    inset 1px 1px 0px #fff,
-    inset 1px 1px 0px #dfdfdf,
-    inset -1px -1px 0px #808080,
-    inset -1px -1px 0px #707030;
+    inset 1px 1px 0px var(--highlight),
+    inset 1px 1px 0px var(--highlight-alt),
+    inset -1px -1px 0px var(--shadow),
+    inset -1px -1px 0px var(--shadow-mid);
 }
 
 /* Title bar button container */
@@ -293,13 +266,6 @@ ul li {
   justify-content: center;
   align-items: center;
 }
-
-/* Center content in list items */
-ul li {
-  text-align: center;
-}
-
-/* Reset text alignment for log-reg-container */
 
 /* Draggable window enhancements */
 .title-bar {
@@ -318,7 +284,10 @@ ul li {
   text-align: initial;
 }
 
-/* Paragraph styling within list items */
+ul li {
+  text-align: center;
+}
+
 ul li p {
   margin: 0;
   padding: 10px;
@@ -341,13 +310,13 @@ ul li p {
   -webkit-appearance: none;
   width: 100%;
   padding: 2px 20px 2px 4px;
-  background-color: #fff;
+  background-color: var(--panel-bg);
   font-family: "MS Sans Serif", sans-serif;
   font-size: 10px;
-  color: #000;
+  color: var(--text);
   border: 2px solid;
-  border-color: #606060 #dfdfdf #dfdfdf #707070;
-  box-shadow: inset 1px 1px 0 #404040;
+  border-color: var(--shadow-border) var(--highlight-alt) var(--highlight-alt) var(--shadow-mid);
+  box-shadow: inset 1px 1px 0 var(--shadow-dark);
   border-radius: 0;
   cursor: pointer;
   outline: none;
@@ -363,29 +332,28 @@ ul li p {
   align-items: center;
   justify-content: center;
   font-size: 7px;
-  background: linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+  background: var(--btn-bg);
   border: 1px solid;
-  border-color: #dfdfdf #707070 #606060 #dfdfdf;
+  border-color: var(--highlight-alt) var(--shadow-mid) var(--shadow-border) var(--highlight-alt);
   box-shadow:
-    inset 1px 1px 0px #ffffff,
-    inset -1px -1px 0px #808080;
+    inset 1px 1px 0px var(--highlight),
+    inset -1px -1px 0px var(--shadow);
   pointer-events: none;
-  color: #000;
+  color: var(--text);
 }
 .w98-select-wrapper select option {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--panel-bg);
+  color: var(--text);
   font-family: "MS Sans Serif", sans-serif;
   font-size: 10px;
   padding: 2px 4px;
   border-radius: 0px;
 }
 .w98-select-wrapper select option:focus {
-  background-color: #000080;
-  color: #fff;
+  background-color: var(--accent);
+  color: var(--accent-text);
 }
-
 .w98-select-wrapper select option:hover {
-  background-color: #000080;
-  color: #fff;
+  background-color: var(--accent);
+  color: var(--accent-text);
 }

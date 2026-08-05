@@ -1,0 +1,69 @@
+<div id="theme-manager-container">
+  <div class="window-content" style="min-width:580px;max-width:740px;">
+    <div class="title-bar" id="theme-manager-title-bar">
+      <h4>Theme Manager</h4>
+      <button id="close-theme-manager-button" class="w98-button title-button">X</button>
+    </div>
+    <div class="tm-body">
+
+      <!-- Load from disk -->
+      <div class="tm-section">
+        <div class="tm-section-title">Load CSS Theme from File</div>
+        <div class="tm-load-row">
+          <input type="file" id="tm-file-input" accept=".css" style="font-size:11px;">
+          <button class="w98-button" id="tm-reset-btn" disabled>Reset to Default</button>
+        </div>
+        <div class="tm-load-row">
+          <button class="w98-button" onclick="window.themeManager.openPreview()">Open in Preview</button>
+          <a class="w98-button"
+             href="{{ url_for('static', filename='css/theme-default.css') }}"
+             download="theme-default.css"
+             style="text-decoration:none;">Download Default</a>
+        </div>
+        <div class="tm-file-info" id="tm-file-info">No file loaded.</div>
+        <div class="tm-status" id="tm-load-status"></div>
+      </div>
+
+      <!-- Save to account -->
+      {% if is_authenticated %}
+      <div class="tm-section">
+        <div class="tm-section-title">Save to Account (max {{ max_files }} files, {{ max_kb }} KB each)</div>
+        <div class="tm-save-row">
+          <input class="tm-save-input" type="text" id="tm-save-name"
+            placeholder="my-theme.css" maxlength="80">
+          <button class="w98-button" id="tm-save-btn" disabled>Save</button>
+        </div>
+        <div class="tm-status" id="tm-save-status"></div>
+      </div>
+
+      <!-- Saved file list -->
+      <div class="tm-section">
+        <div class="tm-section-title">Saved Themes</div>
+        <div id="tm-file-list-wrap">
+          <table class="tm-file-table">
+            <thead>
+              <tr>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tm-file-tbody">
+              <tr><td colspan="4" class="tm-empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tm-status" id="tm-list-status"></div>
+      </div>
+      {% else %}
+      <div class="tm-section">
+        <div class="tm-auth-notice">
+          Log in to save and manage custom themes on your account.
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>

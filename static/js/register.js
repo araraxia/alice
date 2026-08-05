@@ -67,7 +67,7 @@ class RegisterFormHandler {
                 errorContainer.classList.add("error-messages");
                 messages.forEach((message) => {
                     const errorMessage = document.createElement("p");
-                    errorMessage.style.color = "red";
+                    errorMessage.className = "form-error";
                     errorMessage.textContent = message;
                     errorContainer.appendChild(errorMessage);
                 });

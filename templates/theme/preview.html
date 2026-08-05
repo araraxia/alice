@@ -1,0 +1,211 @@
+<div id="theme-preview-container">
+  <div class="window-content">
+    <div class="title-bar" id="theme-preview-title-bar">
+      <h4>Theme Preview</h4>
+      <button id="close-theme-preview-button" class="w98-button title-button">X</button>
+    </div>
+
+    <!-- Action toolbar -->
+    <div class="tm-preview-toolbar">
+      <button class="w98-button"
+        data-default-url="{{ url_for('static', filename='css/theme-default.css') }}"
+        onclick="window.themeManager.downloadCurrent(this.dataset.defaultUrl)">
+        Download Current Theme
+      </button>
+      <span id="tp-dl-status" class="tm-status" style="margin-left:6px;"></span>
+    </div>
+
+    <div class="tm-body">
+
+      <!-- Bevel surfaces -->
+      <div class="tm-section">
+        <div class="tm-section-title">Bevel Surfaces</div>
+        <div class="tp-bevel-row">
+          <div class="tp-bevel-box tp-bevel-raised">raised</div>
+          <div class="tp-bevel-box tp-bevel-sunken">sunken</div>
+          <div class="tp-bevel-box tp-bevel-pressed">pressed</div>
+          <div class="tp-bevel-box tp-bevel-canvas">canvas</div>
+        </div>
+      </div>
+
+      <!-- Title bars -->
+      <div class="tm-section">
+        <div class="tm-section-title">Title Bars</div>
+        <div class="tp-bar-demo">
+          <div class="tp-titlebar">
+            <span>Active Window</span>
+            <div class="tp-titlebar-btns">
+              <button class="w98-button title-button" tabindex="-1">_</button>
+              <button class="w98-button title-button" tabindex="-1">□</button>
+              <button class="w98-button title-button" tabindex="-1">X</button>
+            </div>
+          </div>
+          <div class="tp-titlebar inactive">
+            <span>Inactive Window</span>
+            <div class="tp-titlebar-btns">
+              <button class="w98-button title-button" tabindex="-1">_</button>
+              <button class="w98-button title-button" tabindex="-1">□</button>
+              <button class="w98-button title-button" tabindex="-1">X</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="tm-section">
+        <div class="tm-section-title">Buttons</div>
+        <div class="tp-btn-row">
+          <button class="w98-button" tabindex="-1">Normal</button>
+          <button class="w98-button tp-btn-hover" tabindex="-1">Hover</button>
+          <button class="w98-button tp-btn-open" tabindex="-1">Open</button>
+          <button class="w98-button" disabled tabindex="-1">Disabled</button>
+        </div>
+      </div>
+
+      <!-- Form controls -->
+      <div class="tm-section">
+        <div class="tm-section-title">Form Controls</div>
+        <div class="tp-form-row">
+          <input class="tp-input-demo" type="text" value="Text input" readonly>
+          <div class="w98-select-wrapper" style="width:120px;">
+            <select tabindex="-1">
+              <option>Select item</option>
+              <option>Option 2</option>
+            </select>
+          </div>
+        </div>
+        <div class="tp-checkbox-row" style="margin-top:4px;">
+          <label class="tp-check-label">
+            <input type="checkbox" checked readonly> Checked
+          </label>
+          <label class="tp-check-label">
+            <input type="checkbox" readonly> Unchecked
+          </label>
+          <label class="tp-check-label">
+            <input type="radio" name="tp-radio" checked readonly> Radio on
+          </label>
+          <label class="tp-check-label">
+            <input type="radio" name="tp-radio" readonly> Radio off
+          </label>
+        </div>
+      </div>
+
+      <!-- Typography -->
+      <div class="tm-section">
+        <div class="tm-section-title">Typography</div>
+        <div class="tp-text-row">
+          <span style="color:var(--text);font-size:11px;">--text  Primary text</span>
+          <span style="color:var(--text-secondary);font-size:11px;">--text-secondary  Secondary text</span>
+          <span style="color:var(--text-muted);font-size:11px;">--text-muted  Muted / helper text</span>
+          <span style="color:var(--text-disabled);font-size:11px;">--text-disabled  Disabled text</span>
+          <span style="color:var(--accent);font-size:11px;font-weight:bold;">--accent  Accent / navy</span>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="tm-section">
+        <div class="tm-section-title">Status States</div>
+        <div class="tp-error-demo">Error — background: --error-bg, text: --error-text</div>
+        <div class="tp-success-demo">&#10003; Success — text: --success-text</div>
+        <div class="tp-info-demo">Info — background: --info-bg, text: --info-text</div>
+      </div>
+
+      <!-- Code -->
+      <div class="tm-section">
+        <div class="tm-section-title">Code Blocks</div>
+        <pre class="tp-pre-demo">pre { background: var(--code-bg); color: var(--code-text); }</pre>
+        <div style="margin-top:4px;font-size:11px;">
+          Inline: <code class="tp-code-demo">var(--code-inline-bg)</code> sample
+        </div>
+      </div>
+
+      <!-- Color token swatches — click any swatch to edit -->
+      <div class="tm-section">
+        <div class="tm-section-title">Color Tokens <span style="font-weight:normal;font-size:10px;">(click to edit)</span></div>
+        <div class="tp-swatch-grid" id="tp-swatch-grid">
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--face)" data-token="--face" title="Edit --face"></div>
+            <span>--face</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--highlight)" data-token="--highlight" title="Edit --highlight"></div>
+            <span>--highlight</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--highlight-alt)" data-token="--highlight-alt" title="Edit --highlight-alt"></div>
+            <span>--h-alt</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--shadow)" data-token="--shadow" title="Edit --shadow"></div>
+            <span>--shadow</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--shadow-dark)" data-token="--shadow-dark" title="Edit --shadow-dark"></div>
+            <span>--s-dark</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--accent)" data-token="--accent" title="Edit --accent"></div>
+            <span>--accent</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--body-bg)" data-token="--body-bg" title="Edit --body-bg"></div>
+            <span>--body-bg</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--panel-bg)" data-token="--panel-bg" title="Edit --panel-bg"></div>
+            <span>--panel-bg</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--titlebar-from)" data-token="--titlebar-from" title="Edit --titlebar-from"></div>
+            <span>--tb-from</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--titlebar-to)" data-token="--titlebar-to" title="Edit --titlebar-to"></div>
+            <span>--tb-to</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--titlebar-inactive-from)" data-token="--titlebar-inactive-from" title="Edit --titlebar-inactive-from"></div>
+            <span>--tb-i-from</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--titlebar-inactive-to)" data-token="--titlebar-inactive-to" title="Edit --titlebar-inactive-to"></div>
+            <span>--tb-i-to</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--titlebar-text)" data-token="--titlebar-text" title="Edit --titlebar-text"></div>
+            <span>--tb-text</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--titlebar-inactive-text)" data-token="--titlebar-inactive-text" title="Edit --titlebar-inactive-text"></div>
+            <span>--tb-i-text</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--error-bg)" data-token="--error-bg" title="Edit --error-bg"></div>
+            <span>--error-bg</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--error-text)" data-token="--error-text" title="Edit --error-text"></div>
+            <span>--error-text</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--success-text)" data-token="--success-text" title="Edit --success-text"></div>
+            <span>--success</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--info-bg)" data-token="--info-bg" title="Edit --info-bg"></div>
+            <span>--info-bg</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--code-bg)" data-token="--code-bg" title="Edit --code-bg"></div>
+            <span>--code-bg</span>
+          </div>
+          <div class="tp-swatch">
+            <div class="tp-swatch-box tp-swatch-clickable" style="background:var(--code-inline-bg)" data-token="--code-inline-bg" title="Edit --code-inline-bg"></div>
+            <span>--code-i</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

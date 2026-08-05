@@ -29,19 +29,19 @@
     font-family: 'MS Sans Serif', sans-serif;
     font-size: 11px;
     padding: 1px 3px;
-    background: white;
+    background: var(--panel-bg);
     border: 2px solid;
-    border-color: #808080 #dfdfdf #dfdfdf #808080;
-    box-shadow: inset 1px 1px 0 #404040;
+    border-color: var(--shadow) var(--highlight-alt) var(--highlight-alt) var(--shadow);
+    box-shadow: inset 1px 1px 0 var(--shadow-dark);
     outline: none;
     width: 100%;
     box-sizing: border-box;
 }
 .reg-in:focus {
-    border-color: #000080 #dfdfdf #dfdfdf #000080;
+    border-color: var(--accent) var(--highlight-alt) var(--highlight-alt) var(--accent);
 }
 .reg-err {
-    color: red;
+    color: var(--error-text);
     font-size: 10px;
 }
 </style>

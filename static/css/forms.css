@@ -78,10 +78,16 @@ button[type="submit"]:hover {
     background: #285bb5;
 }
 .flash-message {
-    background: #ffe0e0;
-    color: #ad2e2e;
+    background: var(--error-bg);
+    color: var(--error-text);
     padding: 0.6rem;
     border-radius: 4px;
     margin-bottom: 1rem;
     text-align: center;
+}
+
+.form-error {
+    color: var(--error-text);
+    font-size: 0.85rem;
+    margin: 0.2rem 0;
 }

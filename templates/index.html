@@ -13,6 +13,11 @@
         min-height: 100vh;
       }
     </style>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/theme-default.css') }}"
+    />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/main.css') }}"
@@ -37,6 +42,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/taskbar.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/theme_manager.css') }}"
+    />
   </head>
   <body>
     <canvas id="background"></canvas>
@@ -55,6 +64,30 @@
               style="max-width: 80px; padding: 0 6px;"
             >
               BG
+            </button>
+            <button
+              id="theme-preview-button"
+              class="w98-button title-button"
+              title="Theme Preview"
+              style="max-width: 80px; padding: 0 6px;"
+            >
+              Preview
+            </button>
+            <button
+              id="theme-manager-button"
+              class="w98-button title-button"
+              title="Theme Manager"
+              style="max-width: 80px; padding: 0 6px;"
+            >
+              Theme
+            </button>
+            <button
+              id="theme-gallery-button"
+              class="w98-button title-button"
+              title="Style Gallery"
+              style="max-width: 80px; padding: 0 6px;"
+            >
+              Gallery
             </button>
             <button id="help-me-button" class="w98-button title-button">
               ?
@@ -259,7 +292,11 @@
       const SUPERCOMBATSENDPOINT = "{{ url_for('osrs.super_combats') }}";
       const GOADINGREGENSENDPOINT = "{{ url_for('osrs.goading_regens') }}";
       const ITEMSEARCHENDPOINT = "{{ url_for('osrs.item_search') }}";
+      const HERBLOREENDPOINT = "{{ url_for('osrs.herblore') }}";
       const BLOGENDPOINT = "{{ url_for('blog.blog_window') }}";
+      const THEMEPREVIEWENDPOINT  = "{{ url_for('theme.preview') }}";
+      const THEMEMANAGERENDPOINT  = "{{ url_for('theme.manager') }}";
+      const THEMEGALLERYENDPOINT  = "{{ url_for('theme.gallery') }}";
       // Set global variables
       window.openStates = {};
     </script>
@@ -270,6 +307,7 @@
     <script src="{{ url_for('static', filename='js/open_window.js') }}"></script>
     <script src="{{ url_for('static', filename='js/window_initializer.js') }}"></script>
     <script src="{{ url_for('static', filename='js/blog.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme_manager.js') }}"></script>
     <script src="{{ url_for('static', filename='js/taskbar.js') }}"></script>
     <script>
       function loadScript(url) {
@@ -312,6 +350,18 @@
               "#bg-control-button",
               "disable-bg-container"
             );
+            windowManager.setupWindowButton(
+              "#theme-preview-button",
+              "theme-preview-window"
+            );
+            windowManager.setupWindowButton(
+              "#theme-manager-button",
+              "theme-manager-window"
+            );
+            windowManager.setupWindowButton(
+              "#theme-gallery-button",
+              "theme-gallery-window"
+            );
             console.log(
               "Initial window z-index order:",
               windowManager.getWindowZIndexOrder()
@@ -338,6 +388,9 @@
         const toggleBgButton = document.getElementById("toggle-bg-button");
         const closeBgButton = document.getElementById("close-disable-bg-button");
         const bgControlButton = document.getElementById("bg-control-button");
+        const themePreviewButton = document.getElementById("theme-preview-button");
+        const themeManagerButton = document.getElementById("theme-manager-button");
+        const themeGalleryButton = document.getElementById("theme-gallery-button");
         const osrsButton = document.getElementById("osrs-index-button");
         const showcaseButton = document.getElementById("showcase-button");
         const blogButton = document.getElementById("blog-button");
@@ -345,6 +398,55 @@
         const loginButton = document.getElementById("index-login-btn");
         const registerButton = document.getElementById("index-register-btn");
         const logoutButton = document.getElementById("index-logout-btn");
+
+        // Theme preview window
+        if (themePreviewButton) {
+          const themePreviewInstance = new window.WindowInitializer(
+            windowManager, "themePreviewWindow", "theme-preview-window",
+            "theme-preview-container", "theme-preview-button",
+            "theme-preview-title-bar", "close-theme-preview-button",
+            THEMEPREVIEWENDPOINT, true, "620px", "560px"
+          );
+          themePreviewButton.addEventListener("click", async () => {
+            try {
+              await window.themePreviewWindowInstance.open();
+              document.dispatchEvent(new CustomEvent("themePreviewInjected"));
+            }
+            catch (e) { console.error("Failed to open theme preview:", e); }
+          });
+        }
+
+        // Style gallery window
+        if (themeGalleryButton) {
+          const themeGalleryInstance = new window.WindowInitializer(
+            windowManager, "themeGalleryWindow", "theme-gallery-window",
+            "theme-gallery-container", "theme-gallery-button",
+            "theme-gallery-title-bar", "close-theme-gallery-button",
+            THEMEGALLERYENDPOINT, true, "760px", "540px"
+          );
+          themeGalleryButton.addEventListener("click", async () => {
+            try {
+              await window.themeGalleryWindowInstance.open();
+              document.dispatchEvent(new CustomEvent("themeGalleryInjected"));
+            } catch (e) { console.error("Failed to open gallery:", e); }
+          });
+        }
+
+        // Theme manager window
+        if (themeManagerButton) {
+          const themeManagerInstance = new window.WindowInitializer(
+            windowManager, "themeManagerWindow", "theme-manager-window",
+            "theme-manager-container", "theme-manager-button",
+            "theme-manager-title-bar", "close-theme-manager-button",
+            THEMEMANAGERENDPOINT, true, "700px", "500px"
+          );
+          themeManagerButton.addEventListener("click", async () => {
+            try {
+              await window.themeManagerWindowInstance.open();
+              document.dispatchEvent(new CustomEvent("themeManagerInjected"));
+            } catch (e) { console.error("Failed to open theme manager:", e); }
+          });
+        }
 
         // Shader editor
         if (typeof ShaderEditor !== 'undefined') new ShaderEditor();

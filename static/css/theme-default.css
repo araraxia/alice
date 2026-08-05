@@ -1,0 +1,88 @@
+:root {
+  /* Bevel chrome — the six base colors everything derives from */
+  --face:          #c0c0c0;
+  --highlight:     #ffffff;
+  --highlight-alt: #dfdfdf;
+  --shadow:        #808080;
+  --shadow-mid:    #707070;
+  --shadow-dark:   #404040;
+  --shadow-border: #606060;
+
+  /* Composite bevel box-shadows */
+  --bevel-raised:  inset  1px  1px 0px var(--highlight),     inset  2px  2px 0px var(--highlight-alt), inset -1px -1px 0px var(--shadow),  inset -2px -2px 0px var(--shadow-mid);
+  --bevel-sunken:  inset -1px -1px 0px var(--highlight),     inset -2px -2px 0px var(--highlight-alt), inset  1px  1px 0px var(--shadow),  inset  2px  2px 0px var(--shadow-mid);
+  --bevel-pressed: inset -1px -1px 0px var(--highlight),     inset -2px -2px 0px var(--highlight-alt), inset  1px  1px 0px var(--shadow),  inset  2px  2px 0px var(--shadow);
+  --bevel-canvas:  inset  1px  1px 0px var(--shadow-dark),   inset -1px -1px 0px var(--highlight);
+
+  /* Title bar gradient stops */
+  --titlebar-from:          #0000ff;
+  --titlebar-to:            #8080ff;
+  --titlebar-inactive-from: #808080;
+  --titlebar-inactive-to:   #c0c0c0;
+
+  /* Title bar composites */
+  --titlebar-bg:            linear-gradient(90deg, var(--titlebar-from) 0%, var(--titlebar-to) 100%);
+  --titlebar-inactive-bg:   linear-gradient(90deg, var(--titlebar-inactive-from) 0%, var(--titlebar-inactive-to) 100%);
+  --titlebar-text:          #ffffff;
+  --titlebar-inactive-text: #000000;
+
+  /* Accent (navy) */
+  --accent:      #0a0884;
+  --accent-text: #ffffff;
+
+  /* Text hierarchy */
+  --text:           #000000;
+  --text-dim:       #404040;
+  --text-secondary: #606060;
+  --text-muted:     #666666;
+  --text-disabled:  #808080;
+
+  /* Backgrounds */
+  --body-bg:      #e1e1e1;
+  --panel-bg:     #ffffff;
+  --panel-bg-alt: #f0f0f0;
+
+  /* Button gradients */
+  --btn-bg:       linear-gradient(135deg, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+  --btn-bg-hover: linear-gradient(135deg, #e8e8e8 0%, #d0d0d0 50%, #b0b0b0 100%);
+  --btn-bg-open:  linear-gradient(135deg, #b0b0b0 0%, #a0a0a0 50%, #909090 100%);
+
+  /* Status colors */
+  --error-text:   #ad2e2e;
+  --error-bg:     #ffe0e0;
+  --success-text: #008000;
+  --info-text:    #0066cc;
+  --info-bg:      #e7f3ff;
+
+  /* Code blocks */
+  --code-bg:          #1e1e1e;
+  --code-text:        #d4d4d4;
+  --code-inline-bg:   #e8e8e8;
+  --code-inline-text: #c7254e;
+
+  /* Tiled surface overlay — default theme has no tile, degrades to solid colors */
+  --tile-image:        none;
+  --tile-overlay-base: rgba(192, 192, 192, 0.85);
+  --tile-overlay-alt:  rgba(176, 176, 176, 0.85);
+}
+
+/* ── data-theme-surface semantic targeting ── */
+[data-theme-surface="striped"] {
+  background: var(--tile-image) repeat;
+}
+[data-theme-surface="striped"] td {
+  background: var(--tile-overlay-base);
+}
+[data-theme-surface="striped"] tr:nth-child(even) td {
+  background: var(--tile-overlay-alt);
+}
+[data-theme-surface="panel"] {
+  background: var(--tile-overlay-base) var(--tile-image) repeat;
+}
+[data-theme-surface="inset"] {
+  background: var(--panel-bg);
+}
+[data-theme-surface="header"] {
+  background: var(--titlebar-bg);
+  color: var(--titlebar-text);
+}

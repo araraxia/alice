@@ -1,0 +1,50 @@
+<div id="theme-gallery-container" data-auth="{{ 'true' if is_authenticated else 'false' }}">
+  <div class="window-content" style="min-width:580px;max-width:800px;">
+    <div class="title-bar" id="theme-gallery-title-bar">
+      <h4>Style Gallery</h4>
+      <button id="close-theme-gallery-button" class="w98-button title-button">X</button>
+    </div>
+    <div class="tm-body">
+
+      <!-- Sort controls -->
+      <div class="tm-gallery-toolbar">
+        <span class="tm-label">Sort:</span>
+        <button class="w98-button tm-sort-btn tm-sort-active" id="tg-sort-rating"
+          onclick="window.themeGallery.setSort('rating')">Rating</button>
+        <button class="w98-button tm-sort-btn" id="tg-sort-date"
+          onclick="window.themeGallery.setSort('date')">Date</button>
+        <button class="w98-button" id="tg-sort-order" title="Toggle sort direction"
+          onclick="window.themeGallery.toggleOrder()">&#9660;</button>
+        <button class="w98-button" style="margin-left:auto;" title="Refresh"
+          onclick="window.themeGallery.refresh()">&#8635;</button>
+      </div>
+
+      <!-- Status / loading indicator -->
+      <div id="tg-status" class="tm-status" style="min-height:1.2em; padding:0 4px;"></div>
+
+      <!-- Gallery table -->
+      <div class="tm-gallery-scroll">
+        <table class="tm-table">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Author</th>
+              <th class="tm-col-votes">&#9650; &#9660;</th>
+              <th class="tm-col-score">Detail</th>
+              <th class="tm-col-date">Date</th>
+              <th class="tm-col-actions"></th>
+            </tr>
+          </thead>
+          <tbody id="tg-tbody">
+            <tr><td colspan="6" class="tm-empty">Loading&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      {% if not is_authenticated %}
+      <p class="tm-hint">Log in to rate themes.</p>
+      {% endif %}
+
+    </div>
+  </div>
+</div>

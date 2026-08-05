@@ -31,7 +31,7 @@
     font-weight: bold;
     margin-bottom: 6px;
     text-transform: capitalize;
-    color: #000080;
+    color: var(--accent);
 }
 
 .item-info {
@@ -42,16 +42,16 @@
 .price {
     font-weight: bold;
     text-align: left;
-    color: #008000;
+    color: var(--success-text);
 }
 
 .error {
     text-align: left;
-    background-color: #ffcccc;
-    border: 1px solid #ff0000;
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-text);
     padding: 8px;
     margin: 16px 0;
-    color: #cc0000;
+    color: var(--error-text);
 }
 
 .back-link {

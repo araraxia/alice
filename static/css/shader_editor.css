@@ -7,8 +7,8 @@
 .sed-section-title {
     font-weight: bold;
     font-size: 11px;
-    background-color: #000080;
-    color: #ffffff;
+    background-color: var(--accent);
+    color: var(--accent-text);
     padding: 1px 4px;
     margin-bottom: 3px;
 }
