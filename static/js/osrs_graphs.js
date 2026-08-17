@@ -17,6 +17,8 @@ const PERIOD_MS = {
   '1h':  3_600_000,
   '6h':  21_600_000,
   '1d':  86_400_000,
+  '1w':  7 * 86_400_000,
+  '2w':  14 * 86_400_000,
   '1mo': 30 * 86_400_000,
   '1y':  365 * 86_400_000,
 };
@@ -580,7 +582,8 @@ class OSRSPriceLineGraph extends OSRSGraphBase {
     // Row 2 – time period
     const { row: r2 } = this._row('Period:', [
       { key: '1h',  label: '1 hr'    }, { key: '6h',     label: '6 hr'    },
-      { key: '1d',  label: '1 day'   }, { key: '1mo',    label: '1 month' },
+      { key: '1d',  label: '1 day'   }, { key: '1w',     label: '1 week'  },
+      { key: '2w',  label: '2 week'  }, { key: '1mo',    label: '1 month' },
       { key: '1y',  label: '1 year'  }, { key: 'custom', label: 'Custom…' },
     ], this.timePeriod, key => {
       this.timePeriod = key;
@@ -669,7 +672,8 @@ class OSRSVolumeBarGraph extends OSRSGraphBase {
     // Row 2 – time period
     const { row: r2 } = this._row('Period:', [
       { key: '1h',  label: '1 hr'    }, { key: '6h',     label: '6 hr'    },
-      { key: '1d',  label: '1 day'   }, { key: '1mo',    label: '1 month' },
+      { key: '1d',  label: '1 day'   }, { key: '1w',     label: '1 week'  },
+      { key: '2w',  label: '2 week'  }, { key: '1mo',    label: '1 month' },
       { key: '1y',  label: '1 year'  }, { key: 'custom', label: 'Custom…' },
     ], this.timePeriod, key => {
       this.timePeriod = key;
@@ -899,7 +903,8 @@ class OSRSGraphPair {
 
     const { row: r2 } = this._row('Period:', [
       { key: '1h',  label: '1 hr'    }, { key: '6h',     label: '6 hr'    },
-      { key: '1d',  label: '1 day'   }, { key: '1mo',    label: '1 month' },
+      { key: '1d',  label: '1 day'   }, { key: '1w',     label: '1 week'  },
+      { key: '2w',  label: '2 week'  }, { key: '1mo',    label: '1 month' },
       { key: '1y',  label: '1 year'  }, { key: 'custom', label: 'Custom…' },
     ], this.timePeriod, key => {
       this.timePeriod = key;
