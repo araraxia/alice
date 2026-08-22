@@ -30,6 +30,9 @@
   --accent:      #0a0884;
   --accent-text: #ffffff;
 
+  /* Desktop icon selection */
+  --icon-selection-border: #000000;
+
   /* Text hierarchy */
   --text:           #000000;
   --text-dim:       #404040;

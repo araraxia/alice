@@ -155,9 +155,20 @@ canvas#background {
 
 .title-bar h4 {
   margin: 0;
+  margin-right: auto;
+  margin-left: 4px;
   font-size: 12px;
   font-weight: bold;
   font-family: "MS Sans Serif", sans-serif;
+}
+
+.window-icon-image {
+  width: 16px;
+  outline: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Content area with proper padding */
@@ -298,6 +309,48 @@ ul li p {
   justify-content: center;
   flex-direction: row;
   gap: 10px;
+}
+
+/* Desktop icon (e.g. OSRS Tools) — sits on the desktop background itself,
+   not inside any draggable window */
+.desktop-icon {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 72px;
+  padding: 4px;
+  border: 2px dashed transparent;
+  cursor: pointer;
+  outline: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.desktop-icon.selected {
+  border-color: var(--icon-selection-border);
+}
+
+.desktop-icon-image {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.desktop-icon-label {
+  font-family: "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px var(--shadow-dark);
+  text-align: center;
+  line-height: 1.2;
+  pointer-events: none;
 }
 
 .w98-select-wrapper {

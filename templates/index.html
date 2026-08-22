@@ -50,6 +50,21 @@
   <body>
     <canvas id="background"></canvas>
     <div
+      class="desktop-icon"
+      id="osrs-index-button"
+      role="button"
+      tabindex="0"
+      aria-pressed="false"
+    >
+      <img
+        class="desktop-icon-image"
+        src="{{ url_for('static', filename='images/crt-osrs-128x128.png') }}"
+        alt=""
+        draggable="false"
+      />
+      <span class="desktop-icon-label">OSRS Tools</span>
+    </div>
+    <div
       id="index_container"
       class="draggable-window medium-window index_container"
     >
@@ -103,9 +118,6 @@
           </li>
           <li>
             <div class="index-window-navbuttons">
-              <button class="w98-button" id="osrs-index-button">
-                OSRS Tools
-              </button>
               <button class="w98-button" id="showcase-button">
                 Showcase
               </button>
@@ -561,24 +573,61 @@
         }
 
         if (osrsButton) {
-          osrsButton.addEventListener("mouseover", async () => {
-            console.log("OSRS Tools button hovered, preloading osrs_index.js");
-            if ("osrsIndex" in window) {
-              console.log("Preventing multiple loads of osrs_index.js");
+          // Lazily load the OSRS window scripts once, on first hover or focus
+          let osrsScriptsPromise = null;
+          const ensureOsrsScriptsLoaded = () => {
+            if (!osrsScriptsPromise) {
+              osrsScriptsPromise = (async () => {
+                if (!("osrsIndex" in window)) {
+                  console.log("Loading osrs_index.js");
+                  await loadScript(
+                    "{{ url_for('static', filename='js/osrs_graphs.js') }}"
+                  );
+                  await loadScript(
+                    "{{ url_for('static', filename='js/osrs_index.js') }}"
+                  );
+                  await window.osrsIndex.openWindow();
+                }
+              })();
+            }
+            return osrsScriptsPromise;
+          };
+
+          osrsButton.addEventListener("mouseover", ensureOsrsScriptsLoaded);
+
+          // Selecting the icon (click-to-focus or Tab) outlines it;
+          // losing focus (clicking elsewhere) deselects it
+          osrsButton.addEventListener("focus", () => {
+            osrsButton.classList.add("selected");
+            osrsButton.setAttribute("aria-pressed", "true");
+            ensureOsrsScriptsLoaded();
+          });
+          osrsButton.addEventListener("blur", () => {
+            osrsButton.classList.remove("selected");
+            osrsButton.setAttribute("aria-pressed", "false");
+          });
+
+          const openOsrsWindow = async () => {
+            await ensureOsrsScriptsLoaded();
+            if (window.osrsIndex.checkIfOpen()) {
+              console.log("OSRS tools window is already open");
               return;
             }
-            console.log("Loading osrs_index.js");
-            await loadScript(
-              "{{ url_for('static', filename='js/osrs_graphs.js') }}"
-            );
-            await loadScript(
-              "{{ url_for('static', filename='js/osrs_index.js') }}"
-            );
-            await window.osrsIndex.openWindow();
-            osrsButton.addEventListener("click", async () => {
-              console.log("osrsButton clicked, opening OSRS tools window");
-              await window.osrsWindow.open();
-            });
+            console.log("Opening OSRS tools window");
+            await window.osrsWindow.open();
+          };
+
+          osrsButton.addEventListener("dblclick", async (e) => {
+            e.preventDefault();
+            await openOsrsWindow();
+            osrsButton.blur();
+          });
+          osrsButton.addEventListener("keydown", async (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              await openOsrsWindow();
+              osrsButton.blur();
+            }
           });
         }
 
