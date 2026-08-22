@@ -1,0 +1,22 @@
+.cat-loader-window {
+    position: fixed;
+    z-index: 10000;
+    min-width: 0;
+    width: auto;
+}
+
+.cat-loader-window .title-bar {
+    cursor: move;
+}
+
+.cat-loader-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px 8px;
+}
+
+.cat-loader-image {
+    display: block;
+    image-rendering: pixelated;
+}

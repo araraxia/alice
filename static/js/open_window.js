@@ -200,27 +200,14 @@ class OpenWindow {
      */
     _showLoading() {
         if (this.options.showLoading === false) return;
-        
-        // Create or update loading indicator
-        let loader = document.getElementById('open-window-loader');
-        if (!loader) {
-            loader = document.createElement('div');
-            loader.id = 'open-window-loader';
-            loader.className = 'open-window-loader';
-            loader.innerHTML = '<div class="loader-spinner"></div><span>Loading...</span>';
-            document.body.appendChild(loader);
-        }
-        loader.style.display = 'block';
+        window.CatLoader?.show({ id: 'open-window' });
     }
 
     /**
      * Hide loading indicator
      */
     _hideLoading() {
-        const loader = document.getElementById('open-window-loader');
-        if (loader) {
-            loader.style.display = 'none';
-        }
+        window.CatLoader?.hide('open-window');
     }
 
     /**
@@ -247,37 +234,8 @@ class OpenWindow {
     }
 }
 
-// CSS styles for loading and error states
+// CSS styles for error state (loading indicator now comes from CatLoader)
 const openWindowStyles = `
-.open-window-loader {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 20px;
-    border-radius: 5px;
-    z-index: 10000;
-    display: none;
-    text-align: center;
-}
-
-.loader-spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 10px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 .open-window-error {
     position: fixed;
     top: 20px;

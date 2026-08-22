@@ -165,6 +165,7 @@ if (typeof ShowcaseManager === 'undefined') {
   }
 
   renderContent(htmlContent) {
+    window.CatLoader?.hide('showcase-topic');
     try {
       // Content is already rendered as HTML by the backend
       this.articleElement.innerHTML = htmlContent;
@@ -201,25 +202,13 @@ if (typeof ShowcaseManager === 'undefined') {
   }
 
   showLoading() {
-    // Capture current window dimensions to prevent resizing during load
-    const windowElement = document.getElementById('showcase-window');
-    if (windowElement) {
-      const currentWidth = windowElement.offsetWidth;
-      const currentHeight = windowElement.offsetHeight;
-      
-      // Fix dimensions during loading
-      windowElement.style.width = currentWidth + 'px';
-      windowElement.style.height = currentHeight + 'px';
-    }
-    
-    this.articleElement.innerHTML = `
-      <div class="loading-message">
-        <p>Loading content...</p>
-      </div>
-    `;
+    // Previous topic's content stays on screen underneath; the popup covers the wait instead of blanking it out
+    window.CatLoader?.show({ id: 'showcase-topic', title: 'Loading topic...' });
   }
 
   showError(message) {
+    window.CatLoader?.hide('showcase-topic');
+
     // Capture current window dimensions to prevent resizing during error display
     const windowElement = document.getElementById('showcase-window');
     if (windowElement) {
@@ -246,7 +235,10 @@ if (typeof ShowcaseManager === 'undefined') {
 
   destroy() {
     console.log('[showcase.js] Destroying ShowcaseManager instance');
-    
+
+    // In case the window was closed while a topic fetch was still in flight
+    window.CatLoader?.hide('showcase-topic');
+
     // Remove all tracked event listeners
     this.eventListeners.forEach(({ element, event, handler }) => {
       if (element) {

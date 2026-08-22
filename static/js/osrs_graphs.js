@@ -375,7 +375,8 @@ class OSRSGraphBase {
     if (this._abort) this._abort.abort();
     this._abort = new AbortController();
     this._canvas.style.height = this._graphH() + 'px';
-    this._msg('Loading…');
+    const loaderId = `osrs-graph-${this._cid}`;
+    window.CatLoader?.show({ id: loaderId, title: 'Loading graph...' });
     try {
       const tok = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
       const hdrs = { 'Content-Type': 'application/json' };
@@ -391,13 +392,18 @@ class OSRSGraphBase {
         signal: this._abort.signal,
       });
       const data = await resp.json();
+      window.CatLoader?.hide(loaderId);
       if (data.status !== 'success') { this._msg(data.message || 'No data.', '#c00'); return; }
       this._records = data.records || [];
       if (!this._records.length) { this._msg('No data for this range.', '#c00'); return; }
       this._pts = this._average(this._records, AVG_MS[this.avgKey]);
       this._draw();
     } catch (e) {
-      if (e.name !== 'AbortError') { this._msg('Failed to load data.', '#c00'); console.error('[OSRSGraphs]', e); }
+      // A newer render() call aborts and re-shows the loader for this same id;
+      // only the request that actually settles should touch its visibility.
+      if (e.name === 'AbortError') return;
+      window.CatLoader?.hide(loaderId);
+      this._msg('Failed to load data.', '#c00'); console.error('[OSRSGraphs]', e);
     }
   }
 
