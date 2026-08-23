@@ -16,6 +16,11 @@
     padding: 6px 8px 8px;
 }
 
+.cat-loader-image-container {
+    padding: 2px;
+    box-shadow: var(--bevel-sunken);
+}
+
 .cat-loader-image {
     display: block;
     image-rendering: pixelated;

@@ -112,7 +112,9 @@ class CatLoader {
                 ${closeable ? `<button type="button" class="w98-button title-button cat-loader-close">X</button>` : ''}
             </div>
             <div class="cat-loader-body">
-                <img class="cat-loader-image" src="${this.imageSrc}" alt="Loading" width="140" height="80" />
+                <div class="cat-loader-image-container">
+                    <img class="cat-loader-image" src="${this.imageSrc}" alt="Loading" width="140" height="80" />
+                </div>
             </div>
         `;
 
