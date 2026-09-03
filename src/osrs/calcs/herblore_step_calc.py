@@ -117,6 +117,10 @@ class _PriceData:
         "latest_15min_price_high", "latest_15min_price_low", "latest_15min_price_average",
         "latest_1h_price_high", "latest_1h_price_low", "latest_1h_price_average",
         "latest_3h_price_high", "latest_3h_price_low", "latest_3h_price_average",
+        "latest_5min_volume_high", "latest_5min_volume_low",
+        "latest_15min_volume_high", "latest_15min_volume_low",
+        "latest_1h_volume_high", "latest_1h_volume_low",
+        "latest_3h_volume_high", "latest_3h_volume_low",
     ]
 
     def __init__(self):
@@ -438,6 +442,10 @@ class HerbloreStepCalc:
             data.latest_15min_price_high = _weighted_avg(h_prices, h_vols)
             data.latest_15min_price_low = _weighted_avg(l_prices, l_vols)
             data.latest_15min_price_average = _weighted_avg(h_prices + l_prices, h_vols + l_vols)
+            data.latest_5min_volume_high = int(vh0)
+            data.latest_5min_volume_low = int(vl0)
+            data.latest_15min_volume_high = int(sum(h_vols))
+            data.latest_15min_volume_low = int(sum(l_vols))
 
         # 1h table → populates latest_1h_* and derived latest_3h_*
         try:
@@ -470,6 +478,10 @@ class HerbloreStepCalc:
             data.latest_3h_price_high = _weighted_avg(h_prices, h_vols)
             data.latest_3h_price_low = _weighted_avg(l_prices, l_vols)
             data.latest_3h_price_average = _weighted_avg(h_prices + l_prices, h_vols + l_vols)
+            data.latest_1h_volume_high = int(vh0)
+            data.latest_1h_volume_low = int(vl0)
+            data.latest_3h_volume_high = int(sum(h_vols))
+            data.latest_3h_volume_low = int(sum(l_vols))
 
         return data
 
@@ -507,6 +519,24 @@ class HerbloreStepCalc:
     def _price(self, name: str, timeframe: str, side: str) -> float:
         return self._price_from_props(self._get_props(name), timeframe, side)
 
+    @staticmethod
+    def _volume_from_props(props, timeframe: str, side: str) -> int:
+        if not props:
+            return 0
+        return int(getattr(props, f"latest_{timeframe}_volume_{side}", None) or 0)
+
+    def _item_meta(self, name: str, timeframe: str) -> dict:
+        """Item id + high/low price/volume for one item at one timeframe — powers the
+        frontend's per-step expand row (price/volume breakdown + link to that item's graph)."""
+        props = self._get_props(name)
+        return {
+            "item_id": self._resolve_item_id(name),
+            "price_high": round(self._price_from_props(props, timeframe, "high"), 2),
+            "price_low": round(self._price_from_props(props, timeframe, "low"), 2),
+            "volume_high": self._volume_from_props(props, timeframe, "high"),
+            "volume_low": self._volume_from_props(props, timeframe, "low"),
+        }
+
     # ------------------------------------------------------------------ #
     # Pricing logic (see plan_herblore_csv_tool.md "Pricing Logic")
     # ------------------------------------------------------------------ #
@@ -531,6 +561,16 @@ class HerbloreStepCalc:
 
         aoc_price = self._price_from_props(self._aoc_props(), timeframe, "low")
 
+        # Keyed by the same qty-prefixed display strings the frontend already carries in
+        # step.input_1 / step.input_2 / step.output, so it can look this up directly.
+        item_meta = {}
+        if step["input_1"]:
+            item_meta[self._display_item(step["input_1"])] = self._item_meta(step["input_1"]["name"], timeframe)
+        for i in step["input_2"]:
+            item_meta[self._display_item(i)] = self._item_meta(i["name"], timeframe)
+        if step["output"]:
+            item_meta[step["output"]] = self._item_meta(step["output"], timeframe)
+
         return {
             "input_1_name": step["input_1"]["name"] if step["input_1"] else None,
             "input_1_price": round(in1_price, 2),
@@ -539,6 +579,7 @@ class HerbloreStepCalc:
             "four_dose_price": round(four_dose_price, 2),
             "standalone_price": round(standalone_price, 2),
             "aoc_price": round(aoc_price, 2),
+            "item_meta": item_meta,
         }
 
     @staticmethod

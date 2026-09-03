@@ -31,14 +31,22 @@
         </div>
       </div>
 
+      <div class="herblore-control-group" id="herblore-hide-divine-group">
+        <label><input type="checkbox" id="herblore-hide-divine"> Hide Divine family</label>
+      </div>
+
+      <div class="herblore-control-group" id="herblore-hide-untradable-group">
+        <label><input type="checkbox" id="herblore-hide-untradable"> Hide 0-value (untradable)</label>
+      </div>
+
       <div class="herblore-control-group" id="herblore-toggle-goggles-group">
-        <label><input type="checkbox" id="herblore-toggle-goggles"> Prescription Goggles</label>
+        <label><input type="checkbox" id="herblore-toggle-goggles" checked> Prescription Goggles</label>
       </div>
 
       <div class="herblore-control-group" id="herblore-toggle-amulet-group">
-        <label><input type="radio" name="herblore-amulet" value="none" id="herblore-amulet-none" checked> No Amulet</label>
+        <label><input type="radio" name="herblore-amulet" value="none" id="herblore-amulet-none"> No Amulet</label>
         <label><input type="radio" name="herblore-amulet" value="chem" id="herblore-amulet-chem"> Amulet of Chemistry</label>
-        <label><input type="radio" name="herblore-amulet" value="alch" id="herblore-amulet-alch"> Alchemist's Amulet</label>
+        <label><input type="radio" name="herblore-amulet" value="alch" id="herblore-amulet-alch" checked> Alchemist's Amulet</label>
       </div>
 
       <div class="herblore-control-group" id="herblore-toggle-zahur-clean-group">
@@ -62,16 +70,16 @@
     </div>
 
     <div class="herblore-table-wrapper">
-      <table class="herblore-step-table" id="herblore-master-table">
+      <table class="herblore-step-table" id="herblore-master-table" data-theme-surface="striped">
         <thead>
           <tr>
             <th data-col="label"     class="sortable">Step     <span class="sort-ind"></span></th>
-            <th data-col="level_req" class="sortable">Lvl      <span class="sort-ind"></span></th>
-            <th data-col="cost"      class="sortable">Cost     <span class="sort-ind"></span></th>
-            <th data-col="revenue"   class="sortable">Revenue  <span class="sort-ind"></span></th>
-            <th data-col="profit"    class="sortable">Profit   <span class="sort-ind"></span></th>
-            <th data-col="xp"        class="sortable">XP       <span class="sort-ind"></span></th>
-            <th data-col="gpPerXp"   class="sortable">GP/XP    <span class="sort-ind"></span></th>
+            <th data-col="level_req" class="sortable col-narrow">Lvl      <span class="sort-ind"></span></th>
+            <th data-col="cost"      class="sortable col-wide">Cost     <span class="sort-ind"></span></th>
+            <th data-col="revenue"   class="sortable col-wide">Revenue  <span class="sort-ind"></span></th>
+            <th data-col="profit"    class="sortable col-wide">Profit   <span class="sort-ind"></span></th>
+            <th data-col="xp"        class="sortable col-narrow">XP       <span class="sort-ind"></span></th>
+            <th data-col="gpPerXp"   class="sortable col-wide">GP/XP    <span class="sort-ind"></span></th>
           </tr>
         </thead>
         <tbody id="herblore-table-body"></tbody>
@@ -199,8 +207,17 @@
   }
 
   .herblore-step-table td {
-    background-color: #fff;
     font-family: monospace;
+  }
+
+  .herblore-step-table th.col-narrow,
+  .herblore-step-table td.col-narrow {
+    width: 4em;
+  }
+
+  .herblore-step-table th.col-wide,
+  .herblore-step-table td.col-wide {
+    width: 8em;
   }
 
   .herblore-step-table td.herblore-step-label {
@@ -219,8 +236,75 @@
     font-weight: bold;
   }
 
-  .herblore-step-table tbody tr:hover td {
+  .herblore-step-table tbody tr.herblore-row {
+    cursor: pointer;
+  }
+
+  .herblore-step-table tbody tr.herblore-row:hover td {
     background-color: #f0f4ff;
+  }
+
+  .herblore-step-table tbody tr.herblore-row.expanded td {
+    background-color: #dbe8ff;
+  }
+
+  .herblore-expand-row td {
+    background-color: var(--panel-bg-alt, #f0f0f0);
+    text-align: left;
+    font-family: inherit;
+    padding: 8px 10px;
+    cursor: default;
+    white-space: normal;
+  }
+
+  .herblore-expand-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .herblore-expand-item {
+    display: grid;
+    grid-template-columns: 90px 1fr auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 6px;
+    border: 1px solid #c0c0c0;
+    background-color: var(--panel-bg, #fff);
+    font-size: 11px;
+  }
+
+  .herblore-expand-item .role-tag {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+
+  .herblore-expand-item .role-output .role-tag { color: var(--success-text, #008000); }
+  .herblore-expand-item .role-input .role-tag  { color: var(--info-text, #0066cc); }
+
+  .herblore-item-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--info-text, #0066cc);
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .herblore-item-link:hover {
+    color: var(--accent, #0a0884);
+  }
+
+  .herblore-expand-stat {
+    white-space: nowrap;
+  }
+
+  .herblore-expand-stat .stat-label {
+    color: var(--text-muted, #666666);
   }
 
   .herblore-filter-bar {
@@ -295,11 +379,14 @@
 
   const state = {
     timeframe: "5min",
-    toggles: { goggles: false, zahurClean: false, zahurUnf: false, wesley: false, amulet: "none" },
+    toggles: { goggles: true, zahurClean: false, zahurUnf: false, wesley: false, amulet: "alch" },
     familyFilter: "all",
+    hideDivine: false,
+    hideUntradable: false,
     sort: { col: "label", dir: 1 },
     filters: [],
     nextFilterId: 0,
+    expandedSteps: new Set(),
   };
 
   const FILTER_COLS = [
@@ -321,14 +408,29 @@
   }
 
   function buildFlatSteps() {
-    const map = new Map(); // step_id -> { step, families: Set }
+    const map = new Map(); // step_id -> { sid, step, families: Set }
     familyIds().forEach((fid) => {
       Object.entries(HERBLORE_DATA[fid].steps).forEach(([sid, step]) => {
-        if (!map.has(sid)) map.set(sid, { step, families: new Set() });
+        if (!map.has(sid)) map.set(sid, { sid, step, families: new Set() });
         map.get(sid).families.add(fid);
       });
     });
     return [...map.values()];
+  }
+
+  // A step is "0-value" if any priced part of it (an input item or the output item, at the
+  // current timeframe) has no GE high/low price at all — the usual signature of an untradable
+  // intermediate item (e.g. a 1/2/3-dose potion that only the 4-dose form can be sold as).
+  function hasZeroValuePart(step, raw) {
+    const meta = raw.item_meta || {};
+    const names = [];
+    if (step.input_1) names.push(step.input_1);
+    (step.input_2 || []).forEach((n) => names.push(n));
+    if (step.output) names.push(step.output);
+    return names.some((n) => {
+      const m = meta[n];
+      return !m || (!m.price_high && !m.price_low);
+    });
   }
 
   // ---- Economics ----
@@ -499,11 +601,20 @@
     if (state.familyFilter !== "all") {
       entries = entries.filter((e) => e.families.has(state.familyFilter));
     }
+    if (state.hideDivine) {
+      entries = entries.filter((e) => !e.families.has("divine"));
+    }
 
-    let rows = entries.map(({ step, families }) => ({
+    let rows = entries.map(({ sid, step, families }) => ({
+      sid,
       step,
+      raw: step.timeframes[tf].raw,
       econ: computeEconomics(step, tf, toggles),
     }));
+
+    if (state.hideUntradable) {
+      rows = rows.filter(({ step, raw }) => !hasZeroValuePart(step, raw));
+    }
 
     rows = applyFilters(rows);
 
@@ -525,11 +636,12 @@
     });
 
     document.getElementById("herblore-table-body").innerHTML = rows
-      .map(({ step, econ }) => {
+      .map(({ sid, step, raw, econ }) => {
         const inputSummary = [step.input_1, ...step.input_2].filter(Boolean).join(" + ");
         const tooltip = `${inputSummary} → ${step.output || ""}`;
         const profitClass = econ.profit === null ? "" : econ.profit >= 0 ? "profit-pos" : "profit-neg";
-        return `<tr>
+        const expanded = state.expandedSteps.has(sid);
+        const mainRow = `<tr class="herblore-row${expanded ? " expanded" : ""}" data-sid="${escapeHtml(sid)}">
           <td class="herblore-step-label" title="${escapeHtml(tooltip)}">${escapeHtml(step.label)}</td>
           <td>${step.level_req || "—"}</td>
           <td>${fmtGp(econ.cost)}</td>
@@ -538,10 +650,77 @@
           <td>${econ.effectiveXp || "—"}</td>
           <td>${econ.gpPerXp !== null ? econ.gpPerXp.toFixed(2) : "—"}</td>
         </tr>`;
+        return expanded ? mainRow + renderExpandRow(step, raw) : mainRow;
       })
       .join("");
 
     renderSortHeaders();
+  }
+
+  // ---- Expand row (per-step input/output breakdown) ----
+
+  function fmtVol(n) {
+    return (n || 0).toLocaleString();
+  }
+
+  function renderExpandPart(role, displayName, meta) {
+    const m = meta || { item_id: null, price_high: 0, price_low: 0, volume_high: 0, volume_low: 0 };
+    const linkable = m.item_id != null;
+    const nameHtml = linkable
+      ? `<button type="button" class="herblore-item-link" data-item-id="${m.item_id}" data-item-name="${escapeHtml(displayName)}">${escapeHtml(displayName)}</button>`
+      : escapeHtml(displayName);
+    return `<div class="herblore-expand-item role-${role}">
+      <span class="role-tag">${role}</span>
+      <span>${nameHtml}</span>
+      <span class="herblore-expand-stat"><span class="stat-label">Price H/L:</span> ${fmtGp(m.price_high)} / ${fmtGp(m.price_low)}</span>
+      <span class="herblore-expand-stat"><span class="stat-label">Vol H/L:</span> ${fmtVol(m.volume_high)} / ${fmtVol(m.volume_low)}</span>
+    </div>`;
+  }
+
+  function renderExpandRow(step, raw) {
+    const meta = raw.item_meta || {};
+    const parts = [];
+    if (step.output) parts.push(renderExpandPart("output", step.output, meta[step.output]));
+    if (step.input_1) parts.push(renderExpandPart("input", step.input_1, meta[step.input_1]));
+    (step.input_2 || []).forEach((n) => parts.push(renderExpandPart("input", n, meta[n])));
+
+    return `<tr class="herblore-expand-row">
+      <td colspan="7">
+        <div class="herblore-expand-list">${parts.join("")}</div>
+      </td>
+    </tr>`;
+  }
+
+  // ---- Item price-graph launcher (same protocol as item_search.html) ----
+
+  function openItemGraphWindow(itemId, itemName) {
+    const outerId = "price-graph-outer-" + itemId;
+
+    if (document.getElementById(outerId)) {
+      if (window.windowManager) window.windowManager.bringToFront(outerId);
+      return;
+    }
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
+
+    fetch("/osrs/item-price-graph", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+      body: JSON.stringify({ item_id: itemId, item_name: itemName }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.status !== "success") {
+          console.error("[herblore] Failed to load graph:", data.message);
+          return;
+        }
+        new window.OpenWindow(data.html).open(false);
+        setTimeout(() => {
+          if (window.windowManager) window.windowManager.centerWindow(outerId);
+        }, 100);
+      })
+      .catch((e) => console.error("[herblore] Network error:", e));
   }
 
   // ---- Controls ----
@@ -555,6 +734,31 @@
     document.getElementById("herblore-family-filter").addEventListener("change", (e) => {
       state.familyFilter = e.target.value;
       renderTable();
+    });
+
+    document.getElementById("herblore-hide-divine").addEventListener("change", (e) => {
+      state.hideDivine = e.target.checked;
+      renderTable();
+    });
+
+    document.getElementById("herblore-hide-untradable").addEventListener("change", (e) => {
+      state.hideUntradable = e.target.checked;
+      renderTable();
+    });
+
+    document.getElementById("herblore-table-body").addEventListener("click", (e) => {
+      const linkBtn = e.target.closest(".herblore-item-link");
+      if (linkBtn) {
+        openItemGraphWindow(Number(linkBtn.dataset.itemId), linkBtn.dataset.itemName);
+        return;
+      }
+      const row = e.target.closest("tr.herblore-row");
+      if (row) {
+        const sid = row.dataset.sid;
+        if (state.expandedSteps.has(sid)) state.expandedSteps.delete(sid);
+        else state.expandedSteps.add(sid);
+        renderTable();
+      }
     });
 
     document.getElementById("herblore-toggle-goggles").addEventListener("change", (e) => {
