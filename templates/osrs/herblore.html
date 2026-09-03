@@ -426,7 +426,8 @@
     const names = [];
     if (step.input_1) names.push(step.input_1);
     (step.input_2 || []).forEach((n) => names.push(n));
-    if (step.output) names.push(step.output);
+    const outputName = raw.output_display || step.output;
+    if (outputName) names.push(outputName);
     return names.some((n) => {
       const m = meta[n];
       return !m || (!m.price_high && !m.price_low);
@@ -680,7 +681,8 @@
   function renderExpandRow(step, raw) {
     const meta = raw.item_meta || {};
     const parts = [];
-    if (step.output) parts.push(renderExpandPart("output", step.output, meta[step.output]));
+    const outputName = raw.output_display || step.output;
+    if (outputName) parts.push(renderExpandPart("output", outputName, meta[outputName]));
     if (step.input_1) parts.push(renderExpandPart("input", step.input_1, meta[step.input_1]));
     (step.input_2 || []).forEach((n) => parts.push(renderExpandPart("input", n, meta[n])));
 

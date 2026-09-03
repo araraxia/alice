@@ -561,21 +561,28 @@ class HerbloreStepCalc:
 
         aoc_price = self._price_from_props(self._aoc_props(), timeframe, "low")
 
+        # Most potion trading happens as the 4-dose flask, decanted down to whatever dose is
+        # needed — 1/2/3-dose forms are usually untradable on the GE. So when a step's output
+        # carries doses, the item actually priced/linked for it is the 4-dose form (the same
+        # one four_dose_price above is computed from), not the exact dose the step produces.
+        output_display = _to_four_dose_name(step["output"]) if step["output_doses"] else step["output"]
+
         # Keyed by the same qty-prefixed display strings the frontend already carries in
-        # step.input_1 / step.input_2 / step.output, so it can look this up directly.
+        # step.input_1 / step.input_2 (and output_display below), so it can look this up directly.
         item_meta = {}
         if step["input_1"]:
             item_meta[self._display_item(step["input_1"])] = self._item_meta(step["input_1"]["name"], timeframe)
         for i in step["input_2"]:
             item_meta[self._display_item(i)] = self._item_meta(i["name"], timeframe)
-        if step["output"]:
-            item_meta[step["output"]] = self._item_meta(step["output"], timeframe)
+        if output_display:
+            item_meta[output_display] = self._item_meta(output_display, timeframe)
 
         return {
             "input_1_name": step["input_1"]["name"] if step["input_1"] else None,
             "input_1_price": round(in1_price, 2),
             "input_2": in2,
             "output_doses": step["output_doses"],
+            "output_display": output_display,
             "four_dose_price": round(four_dose_price, 2),
             "standalone_price": round(standalone_price, 2),
             "aoc_price": round(aoc_price, 2),
