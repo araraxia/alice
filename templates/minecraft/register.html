@@ -1,0 +1,96 @@
+<style>
+.mc-register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.mc-reg-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    column-gap: 6px;
+    align-items: start;
+}
+.mc-reg-lbl {
+    font-size: 11px;
+    font-family: 'MS Sans Serif', sans-serif;
+    white-space: nowrap;
+    text-align: right;
+    padding-top: 2px;
+}
+.mc-reg-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-align: left;
+}
+.mc-reg-in {
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    padding: 1px 3px;
+    background: white;
+    border: 2px solid;
+    border-color: #808080 #dfdfdf #dfdfdf #808080;
+    box-shadow: inset 1px 1px 0 #404040;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+}
+.mc-reg-in:focus {
+    border-color: #000080 #dfdfdf #dfdfdf #000080;
+}
+.mc-reg-err {
+    color: red;
+    font-size: 10px;
+}
+.mc-reg-status {
+    margin: 4px 0 0;
+    padding: 4px 6px;
+    text-align: left;
+    border: 1px solid #808080;
+    background: #ffffe1;
+}
+</style>
+
+<div class="mc-register-container" id="minecraft-register-container">
+    <div class="window-content" style="min-width: 360px; max-width: 420px;">
+        <div class="title-bar" id="minecraft-register-title-bar">
+            <div class="title-bar-icon">
+              <img
+                class="window-icon-image"
+                src="{{ url_for('static', filename='images/icons/minecraft.svg') }}"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <h4>Minecraft Registration</h4>
+            <button id="close-minecraft-register-button" class="w98-button title-button">X</button>
+        </div>
+        <div style="padding: 10px 14px 12px;">
+            <form method="POST" action="{{ url_for('minecraft.register_submit') }}" class="mc-register-form">
+                {{ form.hidden_tag() }}
+
+                {% for field in [form.mc_username, form.discord, form.message] %}
+                <div class="mc-reg-row">
+                    {{ field.label(class="mc-reg-lbl") }}
+                    <div class="mc-reg-wrap">
+                        {{ field(class="mc-reg-in") }}
+                        {% for e in field.errors %}<span class="mc-reg-err">{{ e }}</span>{% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% for e in form.csrf_token.errors %}
+                <p class="mc-reg-err">{{ e }}</p>
+                {% endfor %}
+
+                <p class="mc-reg-status" hidden></p>
+
+                <div style="text-align: right; margin-top: 6px;">
+                    {{ form.submit(class="w98-button") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/minecraft_register.js') }}"></script>

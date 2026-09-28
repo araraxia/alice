@@ -53,20 +53,37 @@
   </head>
   <body>
     <canvas id="background"></canvas>
-    <div
-      class="desktop-icon"
-      id="osrs-index-button"
-      role="button"
-      tabindex="0"
-      aria-pressed="false"
-    >
-      <img
-        class="desktop-icon-image"
-        src="{{ url_for('static', filename='images/crt-osrs-128x128.webp') }}"
-        alt=""
-        draggable="false"
-      />
-      <span class="desktop-icon-label">OSRS Tools</span>
+    <div class="desktop-icons">
+      <div
+        class="desktop-icon"
+        id="osrs-index-button"
+        role="button"
+        tabindex="0"
+        aria-pressed="false"
+      >
+        <img
+          class="desktop-icon-image"
+          src="{{ url_for('static', filename='images/crt-osrs-128x128.webp') }}"
+          alt=""
+          draggable="false"
+        />
+        <span class="desktop-icon-label">OSRS Tools</span>
+      </div>
+      <div
+        class="desktop-icon"
+        id="minecraft-button"
+        role="button"
+        tabindex="0"
+        aria-pressed="false"
+      >
+        <img
+          class="desktop-icon-image"
+          src="{{ url_for('static', filename='images/icons/minecraft.svg') }}"
+          alt=""
+          draggable="false"
+        />
+        <span class="desktop-icon-label">Minecraft</span>
+      </div>
     </div>
     <div
       id="index_container"
@@ -313,6 +330,8 @@
       const THEMEPREVIEWENDPOINT  = "{{ url_for('theme.preview') }}";
       const THEMEMANAGERENDPOINT  = "{{ url_for('theme.manager') }}";
       const THEMEGALLERYENDPOINT  = "{{ url_for('theme.gallery') }}";
+      const MINECRAFTENDPOINT = "{{ url_for('minecraft.index') }}";
+      const MINECRAFTREGISTERENDPOINT = "{{ url_for('minecraft.register_modal') }}";
       // Set global variables
       window.openStates = {};
     </script>
@@ -632,6 +651,84 @@
               e.preventDefault();
               await openOsrsWindow();
               osrsButton.blur();
+            }
+          });
+        }
+
+        // Open a lazily-loaded OpenWindow, or restore/focus it if it's already open
+        async function openOrFocus(windowInstance, windowId) {
+          if (windowInstance.opening) return;
+          try {
+            if (windowInstance.container) {
+              windowManager.showWindow(windowId);
+            } else {
+              windowInstance.opening = true;
+              await windowInstance.open();
+            }
+          } catch (error) {
+            console.error(`Failed to open ${windowId}:`, error);
+            alert(
+              "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaargh! Something went wrong. Please try again later."
+            );
+          } finally {
+            windowInstance.opening = false;
+          }
+        }
+
+        const minecraftButton = document.getElementById("minecraft-button");
+        if (minecraftButton) {
+          const minecraftInstance = new window.WindowInitializer(
+            windowManager,
+            "minecraftWindow",
+            "minecraft-window",
+            "minecraft-container",
+            "minecraft-button",
+            "minecraft-title-bar",
+            "close-minecraft-button",
+            MINECRAFTENDPOINT,
+            true
+          );
+          const minecraftRegisterInstance = new window.WindowInitializer(
+            windowManager,
+            "minecraftRegister",
+            "minecraft-register-window",
+            "minecraft-register-container",
+            "minecraft-register-button",
+            "minecraft-register-title-bar",
+            "close-minecraft-register-button",
+            MINECRAFTREGISTERENDPOINT,
+            true
+          );
+
+          // Same select/open behaviour as the OSRS desktop icon
+          minecraftButton.addEventListener("focus", () => {
+            minecraftButton.classList.add("selected");
+            minecraftButton.setAttribute("aria-pressed", "true");
+          });
+          minecraftButton.addEventListener("blur", () => {
+            minecraftButton.classList.remove("selected");
+            minecraftButton.setAttribute("aria-pressed", "false");
+          });
+
+          const openMinecraftWindow = async () => {
+            await openOrFocus(window.minecraftWindowInstance, "minecraft-window");
+            minecraftButton.blur();
+          };
+          minecraftButton.addEventListener("dblclick", (e) => {
+            e.preventDefault();
+            openMinecraftWindow();
+          });
+          minecraftButton.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              openMinecraftWindow();
+            }
+          });
+
+          // The Register button lives inside the lazily-injected Minecraft window
+          document.addEventListener("click", (e) => {
+            if (e.target.closest("#minecraft-register-button")) {
+              openOrFocus(window.minecraftRegisterInstance, "minecraft-register-window");
             }
           });
         }

@@ -70,6 +70,7 @@ class WindowInitializer {
                 }
             },
             onClose: () => {
+                window.openStates[this.windowName] = false;
                 this.windowManager.enableWindowButtons(this.windowId);
                 // Note: No unregisterWindow method exists, window manager handles cleanup automatically
             },

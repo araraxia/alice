@@ -1,0 +1,29 @@
+<div class="window-content" id="minecraft-container" style="min-width: 320px; max-width: 420px;">
+  <div class="title-bar" id="minecraft-title-bar">
+    <div class="title-bar-icon">
+      <img
+        class="window-icon-image"
+        src="{{ url_for('static', filename='images/icons/minecraft.svg') }}"
+        alt=""
+        draggable="false"
+      />
+    </div>
+    <h4>Minecraft</h4>
+    <div>
+      <button id="close-minecraft-button" class="w98-button title-button">
+        X
+      </button>
+    </div>
+  </div>
+
+  <div style="padding: 8px 14px 12px; text-align: left;">
+    <p style="margin: 0 0 8px;">
+      Welcome to the Minecraft server! To get build access, register
+      your Minecraft Java username below and you'll be added to the
+      <strong>player</strong> group.
+    </p>
+    <div style="text-align: center;">
+      <button id="minecraft-register-button" class="w98-button">Register</button>
+    </div>
+  </div>
+</div>

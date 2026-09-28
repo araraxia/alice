@@ -311,12 +311,18 @@ ul li p {
   gap: 10px;
 }
 
-/* Desktop icon (e.g. OSRS Tools) — sits on the desktop background itself,
-   not inside any draggable window */
-.desktop-icon {
+/* Desktop icons (e.g. OSRS Tools) — sit on the desktop background itself,
+   not inside any draggable window. Stacked in a column from the top-left. */
+.desktop-icons {
   position: fixed;
   top: 20px;
   left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.desktop-icon {
   display: flex;
   flex-direction: column;
   align-items: center;
