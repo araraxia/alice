@@ -13,6 +13,7 @@ from website.wiki_router import wiki_route
 from website.osrs_router import osrs_route
 from website.showcase_router import showcase_route
 from website.blog_router import blog_route
+from website.minecraft_router import minecraft_route
 from discord.discord_router import discord_route
 
 ROUTE_LIST = [
@@ -21,6 +22,7 @@ ROUTE_LIST = [
     osrs_route,
     showcase_route,
     blog_route,
+    minecraft_route,
     discord_route,
 ]
 

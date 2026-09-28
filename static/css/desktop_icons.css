@@ -1,0 +1,56 @@
+/* Win98-style desktop icon column. Sits above the background canvas, below every window. */
+#desktop-icons {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 1;
+}
+
+.desktop-icon {
+    width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 2px;
+    background: none;
+    border: none;
+    cursor: default;
+    font-family: "MS Sans Serif", sans-serif;
+    font-size: 11px;
+    color: #ffffff;
+}
+
+.desktop-icon:focus {
+    outline: none;
+}
+
+.desktop-icon img {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+}
+
+.desktop-icon span {
+    padding: 1px 2px;
+    line-height: 1.2;
+    text-shadow: 1px 1px 0 #000000;
+    border: 1px dotted transparent;
+}
+
+/* Selected: blue-tinted icon, highlighted label */
+.desktop-icon.selected img {
+    filter: sepia(1) hue-rotate(190deg) saturate(4) brightness(0.6);
+}
+
+.desktop-icon.selected span {
+    background: #000080;
+    text-shadow: none;
+}
+
+.desktop-icon:focus-visible span {
+    border-color: #ffffff;
+}
