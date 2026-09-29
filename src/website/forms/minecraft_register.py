@@ -90,7 +90,7 @@ class MinecraftRegistration:
                 return jsonify({"status": "error", "html": self.render_form(form)})
             username = canonical_name
 
-        command = f"lp user {username} parent add {self.group}"
+        command = f"lp user {username} parent set {self.group}"
         try:
             with RconClient.from_config() as rcon:
                 rcon_response = rcon.command(command)
