@@ -22,7 +22,7 @@
 #   * curl installed for health check.
 #
 # SECURITY NOTE:
-#   Avoid embedding secrets here; use /opt/alice/.env or similar EnvironmentFile in systemd.
+#   Avoid embedding secrets here; they live in $REPO_DIR/conf/cred/ (git-ignored, mode 600, owner alice).
 #
 
 set -euo pipefail
@@ -33,8 +33,8 @@ set -euo pipefail
 APP_NAME="alice"
 SERVICE_NAME="alice.service"
 APP_USER="alice"
-REPO_DIR="/opt/alice"
-VENV_DIR="/opt/alice/.venv"
+REPO_DIR="/mnt/ssd/opt/alice"
+VENV_DIR="$REPO_DIR/.venv"
 DEFAULT_BRANCH="main"
 HEALTH_URL="http://127.0.0.1:6969/health"
 HEALTH_TIMEOUT=5

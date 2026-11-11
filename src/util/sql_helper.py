@@ -1521,7 +1521,8 @@ def guess_column_type(value) -> str:
     if isinstance(value, bool):
         return "BOOLEAN"
     if isinstance(value, int):
-        return "INTEGER"
+        # BIGINT: OSRS prices/volumes can exceed int4's 2,147,483,647
+        return "BIGINT"
     if isinstance(value, float):
         return "FLOAT"
     if isinstance(value, dict):

@@ -29,7 +29,7 @@ python test_graph_methods.py   # Tests OSRS price/volume graph generation
 
 ## Deployment
 
-Production runs as a systemd service (`alice.service`) at `/opt/alice`. Deploy via:
+Production runs as a systemd service (`alice.service`, waitress on `127.0.0.1:6969`, behind an Apache reverse proxy) from `/mnt/ssd/opt/alice` as user `alice`. The `alice` user's home is `/var/lib/alice`, which holds the GitHub deploy key (`~/.ssh/id_ed25519`) used for pulls. The tree is group `alice` and group-writable (setgid dirs); `aria` is in the `alice` group. Do not make anything world-writable. Deploy via:
 
 ```bash
 sudo ./deploy.sh                     # Standard deploy
@@ -51,16 +51,19 @@ The script does a fast-forward merge, pip install (hash-cached), health check at
 - CSRF via flask-wtf
 - Rate limiting with Memcached (falls back to in-memory)
 - Session timeout: 90 minutes
-- Secret key stored encrypted at `conf/cred/secret_key.pkl`
+- Secret key stored as a pickled random hex string at `conf/cred/secret_key.pkl` (generated if missing; rotating it logs everyone out)
 
 Blueprints are registered from `src/util/blueprint_init.py` — 7 total: `fort_route` (/fort), `wiki_route` (/wiki), `osrs_route` (/osrs), `showcase_route` (/showcase), `blog_route` (/blog), `discord_route`, and user routes.
 
 ### Database
 
-Two PostgreSQL databases:
+PostgreSQL 15 on port 5454. The app connects as the non-superuser role `alice`, which owns these three databases and everything in them:
 
-- **accounts** — `auth.users` (users), `blog.post` (blog posts with `blog_post_status` ENUM: draft/published/deleted)
-- **osrs** — `items.map` (item ID → name/properties), `prices.latest` / `prices.5min` / `prices.1h` (price history with high/low/volume columns)
+- **accounts** — `auth.users` (users), `auth.user_themes` / `auth.theme_ratings`, `settings`; `blog.post` (blog posts with `blog_post_status` ENUM: draft/published/deleted) is created on first use
+- **osrs** — `items.map` (item ID → name/properties), `herblore.*`, and one table per item per timeframe in schema `prices`: `prices."<item_id>_latest"`, `"<item_id>_5min"`, `"<item_id>_1h"` (~13.6k tables, created on demand by `sql_helper.ensure_table_exists`; numeric columns are `BIGINT` because some prices exceed int4 — `guess_column_type` maps Python `int` → `BIGINT`)
+- **server** — `notification.*`
+
+The `postgres` superuser has no password (local `sudo -u postgres psql` only). `pg_hba.conf` allows password logins from localhost and the LAN (`192.168.1.0/24`) only.
 
 All DB access goes through `src/util/sql_helper.py` (50KB) — connection management and parameterized queries live there.
 
@@ -89,4 +92,4 @@ Retro Windows 98 aesthetic. Key JS modules: `drag_window.js` / `open_window.js` 
 
 ## Environment
 
-Public env vars are in `.env_public` (GE tax rate, Zahur fee, alchemy chances). Secrets (DB credentials, secret key) are loaded from `.env` in production (not committed). Python 3.12. Optional services: Memcached (rate limiting), Google Cloud Storage (backups), Discord.py (webhook integration).
+Public env vars are in `.env_public` (GE tax rate, Zahur fee, alchemy chances). Secrets live in `conf/cred/` (git-ignored, dir 700 / files 600, owner `alice`): `psql.json` (DB host/port/user/password), `secret_key.pkl`, `minecraft_rcon.json` (RCON to the Minecraft server at 192.168.1.50 — Minecraft is not hosted on this machine), `gcloud_service.json`. Python 3.13 (venv at `.venv`, interpreter from `/opt/python3.13`). Optional services: Memcached (rate limiting), Google Cloud Storage (backups), Discord.py (webhook integration).
